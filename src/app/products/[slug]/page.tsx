@@ -61,15 +61,19 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       <AnnouncementBar announcements={announcements} />
       <Header navigationItems={navigationItems} cartItemCount={0} />
 
-      <main className="container" style={{ paddingTop: '32px', paddingBottom: '64px' }}>
+      <main className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10 pt-4 sm:pt-8 pb-16 sm:pb-24">
         <ProductDetailView product={product} settings={settings} />
 
         {/* Related Garments */}
         {relatedProducts.length > 0 && (
-          <section className="section" style={{ marginTop: '64px', borderTop: '1px solid var(--color-border)' }}>
-            <div className="section-heading">
-              <h2 className="section-heading__title">YOU MAY ALSO LOVE</h2>
-              <p className="section-heading__subtitle">Curated styles to complement your wardrobe</p>
+          <section className="mt-12 sm:mt-20 pt-10 sm:pt-14 border-t border-[#E2D5C7]">
+            <div className="text-center mb-8 sm:mb-12">
+              <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C1D13] tracking-wide mb-2">
+                YOU MAY ALSO LOVE
+              </h2>
+              <p className="text-xs sm:text-sm text-[#6B5744]">
+                Curated styles to complement your wardrobe
+              </p>
             </div>
 
             <div className="product-grid">
