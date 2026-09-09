@@ -10,6 +10,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Instant PreIntro Zero-Flash Suppression ──────────────── */
+html.intro-seen #zarish-preintro {
+  display: none !important;
+}
+
 /* ─── CSS Custom Properties (Design Tokens) ────────────────── */
 :root {
   /* Colors — warm fashion palette */

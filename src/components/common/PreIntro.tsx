@@ -10,105 +10,120 @@ interface PreIntroProps {
 export default function PreIntro({
   subtitle = 'HAUTE COUTURE MODEST FASHION',
 }: PreIntroProps) {
-  const { seen, markSeen } = useIntroSeen('zarish_intro_seen', 'session');
-  const [mounted, setMounted] = useState(false);
+  const { markSeen } = useIntroSeen('zarish_intro_seen', 'session');
   const [phase, setPhase] = useState(0);
+  const [hidden, setHidden] = useState(false);
 
-  useEffect(() => {
-    if (!seen) {
-      setMounted(true);
-      const t1 = setTimeout(() => setPhase(1), 250);  // Logo blooms in with gold glow
-      const t2 = setTimeout(() => setPhase(2), 650);  // Expanding gold divider line
-      const t3 = setTimeout(() => setPhase(3), 950);  // Subtitle staggers in
-      const t4 = setTimeout(() => setPhase(4), 1600); // Split curtain doors glide open
-      const t5 = setTimeout(() => {
-        markSeen();
-        setMounted(false);
-      }, 2350); // Unmount after doors are fully parted
-
-      return () => {
-        clearTimeout(t1);
-        clearTimeout(t2);
-        clearTimeout(t3);
-        clearTimeout(t4);
-        clearTimeout(t5);
-      };
-    } else {
-      setMounted(false);
+  const completeIntro = useCallback(() => {
+    try {
+      markSeen();
+      var s = document.getElementById('zarish-suppress-intro');
+      if (!s) {
+        s = document.createElement('style');
+        s.id = 'zarish-suppress-intro';
+        s.textContent = '#zarish-preintro{display:none!important}';
+        document.head.appendChild(s);
+      }
+    } catch {
+      // ignore
     }
-  }, [seen, markSeen]);
-
-  // Allow visitor to skip by clicking or pressing any key
-  const handleSkip = useCallback(() => {
-    markSeen();
-    setMounted(false);
+    setHidden(true);
   }, [markSeen]);
 
+  const handleSkip = useCallback(() => {
+    // Initiate quick slide-up on user click
+    setPhase(4);
+    setTimeout(() => {
+      completeIntro();
+    }, 450);
+  }, [completeIntro]);
+
   useEffect(() => {
-    if (!mounted) return;
+    // Immediate check on client mount
+    try {
+      if (sessionStorage.getItem('zarish_intro_seen') === 'true') {
+        setHidden(true);
+        return;
+      }
+    } catch {
+      // ignore
+    }
+
+    // Step-by-step luxury timeline
+    const t1 = setTimeout(() => setPhase(1), 120);  // Logo blooms in with warm glow
+    const t2 = setTimeout(() => setPhase(2), 500);  // Gold accent bar expands
+    const t3 = setTimeout(() => setPhase(3), 800);  // Subtitle reveals
+    const t4 = setTimeout(() => setPhase(4), 1600); // Slide-up curtain reveal starts
+    const t5 = setTimeout(() => {
+      completeIntro();
+    }, 2450); // Complete removal
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+      clearTimeout(t5);
+    };
+  }, [completeIntro]);
+
+  // Click or keypress anywhere to skip
+  useEffect(() => {
+    if (hidden) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') {
+        handleSkip();
+      }
+    };
     window.addEventListener('click', handleSkip);
-    window.addEventListener('keydown', handleSkip);
+    window.addEventListener('keydown', onKey);
     return () => {
       window.removeEventListener('click', handleSkip);
-      window.removeEventListener('keydown', handleSkip);
+      window.removeEventListener('keydown', onKey);
     };
-  }, [mounted, handleSkip]);
+  }, [hidden, handleSkip]);
 
-  if (!mounted) return null;
+  if (hidden) return null;
 
   return (
     <div
-      className={`fixed inset-0 z-[99999] flex items-center justify-center overflow-hidden select-none cursor-pointer transition-opacity duration-400 ${
-        phase >= 4 ? 'pointer-events-none' : ''
-      }`}
+      id="zarish-preintro"
+      className="fixed inset-0 z-[999999] flex items-center justify-center bg-[#FAF6F0] overflow-hidden select-none cursor-pointer will-change-transform"
+      style={{
+        transform: phase >= 4 ? 'translateY(-100%)' : 'translateY(0)',
+        transition: 'transform 0.8s cubic-bezier(0.76, 0, 0.24, 1), opacity 0.5s ease',
+        pointerEvents: phase >= 4 ? 'none' : 'auto',
+      }}
       aria-label="Welcome to ZARISH"
       role="dialog"
       aria-modal="true"
     >
-      {/* ─── Split-Curtain Boutique Doors (Left & Right) ─────── */}
-      {/* Left Door */}
+      {/* ─── Ambient Warm Golden Aura (Light Brand Theme) ───────── */}
       <div
-        className="absolute top-0 bottom-0 left-0 w-1/2 bg-[#0A0806] z-10 will-change-transform"
-        style={{
-          transform: phase >= 4 ? 'translateX(-100%)' : 'translateX(0)',
-          transition: 'transform 0.75s cubic-bezier(0.76, 0, 0.24, 1)',
-        }}
-      />
-      {/* Right Door */}
-      <div
-        className="absolute top-0 bottom-0 left-1/2 w-1/2 bg-[#0A0806] z-10 will-change-transform"
-        style={{
-          transform: phase >= 4 ? 'translateX(100%)' : 'translateX(0)',
-          transition: 'transform 0.75s cubic-bezier(0.76, 0, 0.24, 1)',
-        }}
+        className={`absolute w-80 h-80 sm:w-96 sm:h-96 rounded-full bg-[radial-gradient(circle,rgba(212,175,55,0.22)_0%,rgba(240,228,216,0.55)_45%,transparent_70%)] blur-2xl pointer-events-none transition-all duration-1000 ${
+          phase >= 1 ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
+        }`}
       />
 
-      {/* ─── Central Brand Showcase ────────────────────────────── */}
+      {/* ─── Center Content ────────────────────────────────────── */}
       <div
         className={`relative z-20 flex flex-col items-center gap-4 px-6 text-center transition-all duration-700 ${
-          phase >= 4 ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100 scale-100'
+          phase >= 4 ? 'opacity-0 scale-98' : 'opacity-100 scale-100'
         }`}
       >
-        {/* Ambient Radial Golden Glow behind Logo */}
-        <div
-          className={`absolute w-72 h-72 rounded-full bg-[radial-gradient(circle,rgba(212,175,55,0.25)_0%,rgba(139,78,90,0.15)_40%,transparent_70%)] blur-2xl pointer-events-none transition-all duration-1000 ${
-            phase >= 1 ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
-          }`}
-        />
-
-        {/* ZARISH Brand Logo with Radiant Glow */}
+        {/* ZARISH Brand Logo in Natural Luxury Bronze with Warm Champagne Glow */}
         <div
           className="relative transition-all duration-700 ease-out flex items-center justify-center"
           style={{
             opacity: phase >= 1 ? 1 : 0,
-            transform: phase >= 1 ? 'translateY(0) scale(1)' : 'translateY(18px) scale(0.92)',
+            transform: phase >= 1 ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.94)',
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo-zarish.png"
             alt="ZARISH by Nehala Mufeed"
-            className="w-56 sm:w-72 md:w-80 h-auto object-contain filter drop-shadow-[0_0_22px_rgba(212,175,55,0.55)] drop-shadow-[0_0_55px_rgba(200,169,126,0.35)] invert brightness-0 [filter:brightness(0)_invert(1)_drop-shadow(0_0_25px_rgba(212,175,55,0.6))_drop-shadow(0_0_50px_rgba(200,169,126,0.35))]"
+            className="w-56 sm:w-72 md:w-84 h-auto object-contain filter drop-shadow-[0_4px_20px_rgba(123,91,58,0.18)] drop-shadow-[0_0_35px_rgba(212,175,55,0.25)]"
           />
         </div>
 
@@ -126,10 +141,10 @@ export default function PreIntro({
           className="overflow-hidden transition-all duration-500 ease-out"
           style={{
             opacity: phase >= 3 ? 1 : 0,
-            transform: phase >= 3 ? 'translateY(0)' : 'translateY(8px)',
+            transform: phase >= 3 ? 'translateY(0)' : 'translateY(6px)',
           }}
         >
-          <p className="text-[10px] sm:text-xs font-medium tracking-[0.32em] uppercase text-[#C8A97E] drop-shadow-[0_1px_10px_rgba(200,169,126,0.4)]">
+          <p className="text-[10px] sm:text-xs font-semibold tracking-[0.32em] uppercase text-[#7B5B3A]">
             {subtitle}
           </p>
         </div>
@@ -137,7 +152,7 @@ export default function PreIntro({
 
       {/* ─── Skip Hint ────────────────────────────────────────── */}
       <div
-        className={`absolute bottom-6 z-20 text-[10px] tracking-[0.22em] uppercase text-[#666666] transition-opacity duration-300 ${
+        className={`absolute bottom-6 z-20 text-[10px] tracking-[0.22em] uppercase text-[#8C7B6B] transition-opacity duration-300 ${
           phase >= 4 ? 'opacity-0' : 'opacity-70 hover:opacity-100'
         }`}
       >

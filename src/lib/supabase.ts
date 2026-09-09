@@ -64,19 +64,26 @@ export async function getNavigationItems(): Promise<NavigationItem[]> {
   }
 }
 
-export async function getActiveHeroSlide(): Promise<HeroSlide | null> {
+export async function getActiveHeroSlides(): Promise<HeroSlide[]> {
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from('hero_slides')
       .select('*')
       .eq('is_active', true)
-      .order('display_order', { ascending: true })
-      .limit(1)
-      .maybeSingle();
+      .order('display_order', { ascending: true });
 
-    if (error || !data) return null;
-    return data as HeroSlide;
+    if (error || !data) return [];
+    return data as HeroSlide[];
+  } catch {
+    return [];
+  }
+}
+
+export async function getActiveHeroSlide(): Promise<HeroSlide | null> {
+  try {
+    const slides = await getActiveHeroSlides();
+    return slides.length > 0 ? slides[0] : null;
   } catch {
     return null;
   }

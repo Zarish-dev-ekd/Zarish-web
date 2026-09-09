@@ -10,7 +10,7 @@ export const revalidate = 0;
 import {
   getAnnouncements,
   getNavigationItems,
-  getActiveHeroSlide,
+  getActiveHeroSlides,
   getBenefits,
   getCategories,
   getSizes,
@@ -45,7 +45,7 @@ export default async function HomePage() {
     siteSettings,
     announcements,
     dbNavItems,
-    heroSlide,
+    heroSlides,
     benefits,
     categories,
     sizes,
@@ -54,7 +54,7 @@ export default async function HomePage() {
     getSiteSettings(),
     getAnnouncements(),
     getNavigationItems(),
-    getActiveHeroSlide(),
+    getActiveHeroSlides(),
     getBenefits(),
     getCategories(),
     getSizes(),
@@ -73,7 +73,7 @@ export default async function HomePage() {
 
       <main id="main-content">
         {/* C. HERO */}
-        <HeroSection hero={heroSlide} />
+        <HeroSection hero={heroSlides[0] || null} slides={heroSlides} />
 
         {/* D. BENEFITS STRIP */}
         <BenefitsStrip benefits={benefits} />
