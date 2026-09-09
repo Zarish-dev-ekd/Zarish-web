@@ -11,31 +11,6 @@ export default function HeroSection({ hero }: HeroSectionProps) {
   const desktopImg = hero?.image_url;
   const mobileImg = hero?.mobile_image_url || hero?.image_url;
 
-  if (!hero) {
-    return (
-      <section className="hero">
-        <div className="hero__inner">
-          <div className="hero__content">
-            <div className="hero__eyebrow">MODEST FASHION</div>
-            <h1 className="hero__title">
-              BEAUTY<br />IN MODESTY
-            </h1>
-            <p className="hero__subtitle">
-              Graceful pieces for your everyday and special moments.
-            </p>
-            <Link href="/products" className="btn btn--primary btn--lg hero__cta">
-              EXPLORE COLLECTION
-              <IconArrowRight size={16} />
-            </Link>
-          </div>
-          <div className="hero__image">
-            <div className="hero__image-placeholder" aria-hidden="true" />
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   return (
     <section className="hero">
       {/* Mobile Full-Cover Banner Background (Active on <= 768px) */}
@@ -44,7 +19,7 @@ export default function HeroSection({ hero }: HeroSectionProps) {
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={optimizeCloudinaryUrl(mobileImg, { width: 900 })}
-            alt={hero.image_alt || hero.title}
+            alt={hero?.image_alt || hero?.title || 'ZARISH Modest Fashion'}
             className="hero__mobile-img"
           />
         ) : (
@@ -53,32 +28,60 @@ export default function HeroSection({ hero }: HeroSectionProps) {
         <div className="hero__mobile-overlay" />
       </div>
 
+      {/* Desktop Full-Cover Banner Background (Active on > 768px) */}
+      <div className="hero__desktop-cover-bg" aria-hidden="true">
+        {desktopImg ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={optimizeCloudinaryUrl(desktopImg, { width: 1920 })}
+            alt={hero?.image_alt || hero?.title || 'ZARISH Modest Fashion'}
+            className="hero__desktop-img"
+          />
+        ) : (
+          <div className="hero__image-placeholder" />
+        )}
+        <div className="hero__desktop-overlay" />
+      </div>
+
       <div className="hero__inner">
-        {/* Text Content */}
+        {/* Left Content Column */}
         <div className="hero__content">
-          {hero.eyebrow && (
-            <div className="hero__eyebrow">
-              {hero.eyebrow}
-              {hero.campaign_badge && (
-                <span className="hero__badge-pill">{hero.campaign_badge}</span>
-              )}
-            </div>
-          )}
+          <div className="hero__eyebrow">
+            {hero?.eyebrow || 'MODEST FASHION'}
+            {hero?.campaign_badge && (
+              <span className="hero__badge-pill">{hero.campaign_badge}</span>
+            )}
+          </div>
 
-          <h1 className="hero__title">{hero.title}</h1>
+          <h1 className="hero__title">
+            {hero?.title ? (
+              hero.title.toUpperCase().includes('IN MODESTY') ? (
+                <>
+                  BEAUTY<br />IN MODESTY
+                </>
+              ) : (
+                hero.title
+              )
+            ) : (
+              <>
+                BEAUTY<br />IN MODESTY
+              </>
+            )}
+          </h1>
 
-          {hero.subtitle && (
-            <p className="hero__subtitle">{hero.subtitle}</p>
-          )}
+          <p className="hero__subtitle">
+            {hero?.subtitle || 'Graceful pieces for your everyday and special moments.'}
+          </p>
 
-          {hero.cta_text && hero.cta_url && (
-            <Link href={hero.cta_url} className="btn btn--primary btn--lg hero__cta">
-              {hero.cta_text}
-              <IconArrowRight size={16} />
-            </Link>
-          )}
+          <Link
+            href={hero?.cta_url || '/products'}
+            className="btn btn--primary btn--lg hero__cta"
+          >
+            {hero?.cta_text || 'SHOP NEW ARRIVALS'}
+            <IconArrowRight size={16} />
+          </Link>
 
-          {/* Value propositions below CTA */}
+          {/* Value propositions with vertical dividers matching reference */}
           <div className="hero__values">
             <div className="hero__value-item">
               <span className="hero__value-number">01</span>
@@ -95,24 +98,23 @@ export default function HeroSection({ hero }: HeroSectionProps) {
           </div>
         </div>
 
-        {/* Desktop Image Column (Hidden on mobile via CSS) */}
-        <div className="hero__image hero__image--desktop">
-          {desktopImg ? (
-            <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={optimizeCloudinaryUrl(desktopImg, { width: 1400 })}
-                alt={hero.image_alt || hero.title}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-              {hero.overlay_text && (
-                <div className="hero__decorative-text">{hero.overlay_text}</div>
-              )}
-            </>
+        {/* Floating handwritten cursive script on right (as in reference photo 2) */}
+        <aside className="hero__floating-script" aria-hidden="true">
+          {hero?.overlay_text ? (
+            <div className="hero__script-lines">
+              {hero.overlay_text.split('\n').map((line, i) => (
+                <span key={i}>{line}</span>
+              ))}
+            </div>
           ) : (
-            <div className="hero__image-placeholder" aria-hidden="true" />
+            <div className="hero__script-lines">
+              <span>Modesty</span>
+              <span>Looks</span>
+              <span>Beautiful</span>
+              <span className="hero__script-heart">On You ♡</span>
+            </div>
           )}
-        </div>
+        </aside>
       </div>
     </section>
   );

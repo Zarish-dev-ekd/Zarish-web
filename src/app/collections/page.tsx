@@ -73,7 +73,10 @@ export default async function CollectionsPage() {
                     {cat.name}
                   </h3>
                   <span className="category-card__cta">
-                    {cat.cta_label || 'EXPLORE COLLECTION'} <IconArrowRight size={14} />
+                    <span>{cat.cta_label || 'EXPLORE COLLECTION'}</span>
+                    <span className="category-card__cta-circle" aria-hidden="true">
+                      <IconArrowRight size={12} />
+                    </span>
                   </span>
                 </div>
               </Link>

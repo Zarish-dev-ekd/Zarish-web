@@ -27,7 +27,9 @@ export default function CategorySection({
       <div className="container">
         <div className="section-heading">
           <h2 id="category-heading" className="section-heading__title">
-            {sectionTitle}
+            <span className="section-heading__rule" aria-hidden="true" />
+            <span>{sectionTitle}</span>
+            <span className="section-heading__rule" aria-hidden="true" />
           </h2>
           {sectionSubtitle && (
             <p className="section-heading__subtitle">{sectionSubtitle}</p>
@@ -59,8 +61,10 @@ export default function CategorySection({
                 <div className="category-card__content">
                   <h3 className="category-card__name">{category.name}</h3>
                   <span className="category-card__cta">
-                    {category.cta_label || 'EXPLORE'}
-                    <IconArrowRight size={14} />
+                    <span>{category.cta_label || 'EXPLORE'}</span>
+                    <span className="category-card__cta-circle" aria-hidden="true">
+                      <IconArrowRight size={12} />
+                    </span>
                   </span>
                 </div>
               </Link>
