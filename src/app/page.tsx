@@ -4,6 +4,9 @@
    Connected to Supabase live data with graceful empty states.
    ============================================================ */
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import {
   getAnnouncements,
   getNavigationItems,

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Product } from '@/lib/types';
-import { formatPrice, getDiscountPercent } from '@/lib/utils';
+import { formatPrice, getDiscountPercent, optimizeCloudinaryUrl } from '@/lib/utils';
 import WishlistButton from './WishlistButton';
 import Badge from './Badge';
 
@@ -22,7 +22,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           {primaryImage ? (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
-              src={primaryImage.secure_url}
+              src={optimizeCloudinaryUrl(primaryImage.secure_url, { width: 600 })}
               alt={primaryImage.alt_text || product.name}
               loading="lazy"
               width={primaryImage.width}

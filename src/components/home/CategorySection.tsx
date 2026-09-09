@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Category } from '@/lib/types';
 import { IconArrowRight } from '@/components/icons';
+import { optimizeCloudinaryUrl } from '@/lib/utils';
 
 interface CategorySectionProps {
   categories: Category[];
@@ -46,7 +47,7 @@ export default function CategorySection({
                   {category.image_url ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
-                      src={category.image_url}
+                      src={optimizeCloudinaryUrl(category.image_url, { width: 600 })}
                       alt={category.image_alt || category.name}
                       loading="lazy"
                     />

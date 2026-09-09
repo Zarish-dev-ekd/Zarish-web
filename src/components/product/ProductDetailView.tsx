@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { formatPrice, getDiscountPercent } from '@/lib/utils';
+import { formatPrice, getDiscountPercent, optimizeCloudinaryUrl } from '@/lib/utils';
 import { IconArrowRight, IconHeart, IconTruck, IconShield, IconPackage } from '@/components/icons';
 import Badge from './Badge';
 import WishlistButton from './WishlistButton';
@@ -82,7 +82,7 @@ export default function ProductDetailView({ product, settings }: ProductDetailVi
             {activeImage ? (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
-                src={activeImage.secure_url}
+                src={optimizeCloudinaryUrl(activeImage.secure_url, { width: 1000 })}
                 alt={activeImage.alt_text || product.name}
                 className="product-detail__main-image"
                 width={activeImage.width || 800}
@@ -114,7 +114,7 @@ export default function ProductDetailView({ product, settings }: ProductDetailVi
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={img.secure_url}
+                    src={optimizeCloudinaryUrl(img.secure_url, { width: 160 })}
                     alt={img.alt_text || `${product.name} preview ${idx + 1}`}
                     className="product-detail__thumbnail-img"
                   />

@@ -13,6 +13,9 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ProductCard from '@/components/product/ProductCard';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: 'All Garments | ZARISH by Nehala Mufeed',
   description: 'Explore the complete modest collection of abayas, dresses, and co-ords by ZARISH.',

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { HeroSlide } from '@/lib/types';
 import { IconArrowRight } from '@/components/icons';
+import { optimizeCloudinaryUrl } from '@/lib/utils';
 
 interface HeroSectionProps {
   hero: HeroSlide | null;
@@ -68,7 +69,7 @@ export default function HeroSection({ hero }: HeroSectionProps) {
             <>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={hero.image_url}
+                src={optimizeCloudinaryUrl(hero.image_url, { width: 1200 })}
                 alt={hero.image_alt || hero.title}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />

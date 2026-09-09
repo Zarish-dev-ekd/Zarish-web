@@ -39,24 +39,48 @@ export function getCloudinaryUrl(
   options: {
     width?: number;
     height?: number;
-    quality?: number;
+    quality?: number | string;
     format?: string;
     crop?: string;
   } = {}
 ): string {
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'sjo0iipf';
   if (!cloudName) return '';
 
   const transforms: string[] = [];
   if (options.width) transforms.push(`w_${options.width}`);
   if (options.height) transforms.push(`h_${options.height}`);
   transforms.push(`q_${options.quality || 'auto'}`);
-  transforms.push(`f_${options.format || 'auto'}`);
+  transforms.push(`f_${options.format || 'auto'}`); // Auto-converts PNG/JPG to WebP/AVIF!
   if (options.crop) transforms.push(`c_${options.crop}`);
-  else transforms.push('c_fill');
+  else if (options.width || options.height) transforms.push('c_fill');
 
   const transformation = transforms.join(',');
   return `https://res.cloudinary.com/${cloudName}/image/upload/${transformation}/${publicId}`;
+}
+
+/**
+ * Automatically injects WebP/AVIF automatic optimization (f_auto,q_auto)
+ * into any existing Cloudinary URL.
+ */
+export function optimizeCloudinaryUrl(
+  url: string | null | undefined,
+  options: { width?: number; height?: number } = {}
+): string {
+  if (!url) return '';
+  if (!url.includes('res.cloudinary.com')) return url;
+
+  // Build transformation string
+  const transforms = ['f_auto', 'q_auto'];
+  if (options.width) transforms.push(`w_${options.width}`);
+  if (options.height) transforms.push(`h_${options.height}`);
+  const transformStr = transforms.join(',');
+
+  // If already has transformation, avoid duplicate
+  if (url.includes('/f_auto')) return url;
+
+  // Insert f_auto,q_auto after /image/upload/
+  return url.replace('/image/upload/', `/image/upload/${transformStr}/`);
 }
 
 /**
