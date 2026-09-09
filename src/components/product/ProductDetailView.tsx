@@ -62,7 +62,7 @@ export default function ProductDetailView({ product, settings }: ProductDetailVi
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${orderMessage}`;
 
   return (
-    <div className="w-full">
+    <div className="w-full pb-20 lg:pb-0">
       {/* Breadcrumbs */}
       <nav
         className="mb-4 sm:mb-6 flex items-center gap-1.5 overflow-x-auto whitespace-nowrap scrollbar-none text-[11px] sm:text-xs text-[#8C7B6B] py-0.5"
@@ -90,8 +90,8 @@ export default function ProductDetailView({ product, settings }: ProductDetailVi
 
       {/* Main Grid: Gallery & Product Info */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 xl:gap-16 items-start">
-        {/* Left Column: Gallery */}
-        <div className="flex flex-col gap-3 sm:gap-4 lg:sticky lg:top-28">
+        {/* Left Column: Gallery (static on mobile, sticky only on desktop >= 1024px) */}
+        <div className="flex flex-col gap-3 sm:gap-4 static lg:sticky lg:top-28 z-0">
           {/* Main Showcase Image */}
           <div className="relative aspect-[3/4] sm:aspect-[4/5] bg-[#F5EDE3] rounded-2xl sm:rounded-3xl overflow-hidden shadow-[0_4px_24px_rgba(44,29,19,0.06)] group">
             {activeImage ? (
@@ -393,7 +393,7 @@ export default function ProductDetailView({ product, settings }: ProductDetailVi
       </div>
 
       {/* Sticky Mobile Bottom Order Bar */}
-      <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xl border-t border-[#E2D5C7] px-4 py-3 shadow-[0_-8px_30px_rgba(44,29,19,0.12)] flex items-center justify-between gap-3 md:hidden">
+      <div className="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-xl border-t border-[#E2D5C7] px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(44,29,19,0.12)] flex items-center justify-between gap-3 md:hidden">
         <div className="flex flex-col min-w-0">
           <span className="text-[11px] text-[#8C7B6B] truncate font-medium">
             {selectedSize ? `Size: ${selectedSize}` : product.name}
