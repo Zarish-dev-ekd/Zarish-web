@@ -12,6 +12,9 @@ export default function AdminCategoriesPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  // Edit State
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+
   // Form State
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
@@ -45,9 +48,70 @@ export default function AdminCategoriesPage() {
     fetchCategories();
   }, []);
 
+  const resetForm = () => {
+    setName('');
+    setSlug('');
+    setDescription('');
+    setImageUrl('');
+    setCtaLabel('EXPLORE');
+    setDisplayOrder('0');
+    setIsActive(true);
+    setEditingCategory(null);
+  };
+
+  // Helper to ensure a unique slug is always generated
+  const generateUniqueSlug = (baseSlug: string, currentId?: string): string => {
+    let cleanSlug = baseSlug
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+
+    if (!cleanSlug) cleanSlug = 'category';
+
+    const existingSlugs = categories
+      .filter((c) => c.id !== currentId)
+      .map((c) => c.slug.toLowerCase().trim());
+
+    if (!existingSlugs.includes(cleanSlug)) {
+      return cleanSlug;
+    }
+
+    let counter = 1;
+    while (existingSlugs.includes(`${cleanSlug}-${counter}`)) {
+      counter++;
+    }
+    return `${cleanSlug}-${counter}`;
+  };
+
   const handleNameChange = (val: string) => {
     setName(val);
-    setSlug(val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
+    // Only auto-update slug if not editing an existing category, or if slug was empty
+    if (!editingCategory || !slug) {
+      setSlug(val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
+    }
+  };
+
+  const handleStartEdit = (cat: Category) => {
+    setEditingCategory(cat);
+    setName(cat.name);
+    setSlug(cat.slug);
+    setDescription(cat.description || '');
+    setImageUrl(cat.image_url || '');
+    setCtaLabel(cat.cta_label || 'EXPLORE');
+    setDisplayOrder(String(cat.display_order ?? 0));
+    setIsActive(cat.is_active);
+    setError(null);
+    setSuccess(null);
+
+    // Scroll smoothly to form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    resetForm();
+    setError(null);
+    setSuccess(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,47 +126,77 @@ export default function AdminCategoriesPage() {
     setSuccess(null);
 
     try {
-      const { error: insertErr } = await supabase.from('categories').insert([
-        {
-          name: name.trim(),
-          slug: slug.trim() || name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-          description: description.trim() || null,
-          image_url: imageUrl || '',
-          cta_label: ctaLabel.trim() || 'EXPLORE',
-          display_order: parseInt(displayOrder, 10) || 0,
-          is_active: isActive,
-        },
-      ]);
+      if (editingCategory) {
+        // UPDATE existing category
+        const finalSlug = generateUniqueSlug(slug || name, editingCategory.id);
 
-      if (insertErr) throw insertErr;
+        const { error: updateErr } = await supabase
+          .from('categories')
+          .update({
+            name: name.trim(),
+            slug: finalSlug,
+            description: description.trim() || null,
+            image_url: imageUrl || '',
+            cta_label: ctaLabel.trim() || 'EXPLORE',
+            display_order: parseInt(displayOrder, 10) || 0,
+            is_active: isActive,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', editingCategory.id);
 
-      setSuccess('Category created successfully!');
-      // Reset form
-      setName('');
-      setSlug('');
-      setDescription('');
-      setImageUrl('');
-      setDisplayOrder('0');
-      setIsActive(true);
+        if (updateErr) throw updateErr;
 
-      // Refresh list
-      fetchCategories();
+        setSuccess(`Category "${name.trim()}" updated successfully!`);
+        resetForm();
+        fetchCategories();
+      } else {
+        // INSERT new category with guaranteed unique slug
+        const finalSlug = generateUniqueSlug(slug || name);
+
+        const { error: insertErr } = await supabase.from('categories').insert([
+          {
+            name: name.trim(),
+            slug: finalSlug,
+            description: description.trim() || null,
+            image_url: imageUrl || '',
+            cta_label: ctaLabel.trim() || 'EXPLORE',
+            display_order: parseInt(displayOrder, 10) || 0,
+            is_active: isActive,
+          },
+        ]);
+
+        if (insertErr) throw insertErr;
+
+        setSuccess(`Category "${name.trim()}" created successfully!`);
+        resetForm();
+        fetchCategories();
+      }
     } catch (err: any) {
-      console.error('Error creating category:', err);
-      setError(err?.message || 'Failed to create category');
+      console.error('Error saving category:', err);
+      // Helpful friendly message if a slug conflict still occurs
+      if (err?.message?.includes('categories_slug_key')) {
+        setError(`A category with this URL slug already exists. Please choose a different slug or name.`);
+      } else {
+        setError(err?.message || 'Failed to save category');
+      }
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this category?')) return;
+    const catToDelete = categories.find((c) => c.id === id);
+    if (!confirm(`Are you sure you want to delete category "${catToDelete?.name || 'this category'}"?`)) return;
 
     try {
       const { error: delErr } = await supabase.from('categories').delete().eq('id', id);
       if (delErr) throw delErr;
+
       setCategories(categories.filter((c) => c.id !== id));
-      setSuccess('Category deleted');
+      if (editingCategory?.id === id) {
+        resetForm();
+      }
+      setSuccess('Category deleted successfully');
     } catch (err: any) {
       setError(err?.message || 'Failed to delete category');
     }
@@ -114,27 +208,47 @@ export default function AdminCategoriesPage() {
         <div>
           <h2 className="admin-page-title">Category Management</h2>
           <p className="admin-page-subtitle">
-            Create and organize product collections displayed in the &quot;SHOP BY CATEGORY&quot; section.
+            Create, edit, and organize product collections displayed in the &quot;SHOP BY CATEGORY&quot; section.
           </p>
         </div>
       </div>
 
       {error && (
-        <div className="admin-card" style={{ background: '#FFEBEE', color: '#D32F2F', padding: '12px 16px' }}>
+        <div className="admin-card" style={{ background: '#FFEBEE', color: '#D32F2F', padding: '12px 16px', borderLeft: '4px solid #D32F2F' }}>
           {error}
         </div>
       )}
 
       {success && (
-        <div className="admin-card" style={{ background: '#E8F5E9', color: '#2E7D32', padding: '12px 16px' }}>
+        <div className="admin-card" style={{ background: '#E8F5E9', color: '#2E7D32', padding: '12px 16px', borderLeft: '4px solid #2E7D32' }}>
           {success}
         </div>
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '24px', alignItems: 'start' }}>
-        {/* Create Category Form */}
+        {/* Create / Edit Category Form */}
         <div className="admin-card">
-          <h3 className="admin-card__title">Add New Category</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 className="admin-card__title" style={{ margin: 0 }}>
+              {editingCategory ? `Edit Category` : `Add New Category`}
+            </h3>
+            {editingCategory && (
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="admin-btn admin-btn--secondary admin-btn--sm"
+              >
+                ✕ Cancel Edit
+              </button>
+            )}
+          </div>
+
+          {editingCategory && (
+            <div style={{ background: '#F5EDE3', padding: '8px 12px', borderRadius: '6px', marginBottom: '16px', fontSize: '13px', color: '#3D2B1F' }}>
+              Editing: <strong>{editingCategory.name}</strong> (/{editingCategory.slug})
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
             <div className="admin-form-group">
               <label className="admin-label">Category Name *</label>
@@ -157,6 +271,9 @@ export default function AdminCategoriesPage() {
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
               />
+              <small style={{ display: 'block', marginTop: '4px', color: '#777', fontSize: '11px' }}>
+                Used in links: <code>/category/{slug || 'example'}</code>. Must be unique.
+              </small>
             </div>
 
             <div className="admin-form-group">
@@ -214,14 +331,29 @@ export default function AdminCategoriesPage() {
               />
             </div>
 
-            <button
-              type="submit"
-              className="admin-btn admin-btn--primary"
-              disabled={submitting}
-              style={{ width: '100%' }}
-            >
-              {submitting ? 'Saving to Supabase...' : 'Save Category'}
-            </button>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+              <button
+                type="submit"
+                className="admin-btn admin-btn--primary"
+                disabled={submitting}
+                style={{ flex: 1 }}
+              >
+                {submitting
+                  ? 'Saving to Supabase...'
+                  : editingCategory
+                  ? '✓ Update Category'
+                  : '+ Save Category'}
+              </button>
+              {editingCategory && (
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  className="admin-btn admin-btn--secondary"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
           </form>
         </div>
 
@@ -253,39 +385,59 @@ export default function AdminCategoriesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {categories.map((cat) => (
-                    <tr key={cat.id}>
-                      <td>
-                        {cat.image_url ? (
-                          /* eslint-disable-next-line @next/next/no-img-element */
-                          <img src={cat.image_url} alt={cat.name} className="admin-thumbnail" />
-                        ) : (
-                          <span style={{ fontSize: '12px', color: '#999' }}>No img</span>
-                        )}
-                      </td>
-                      <td>
-                        <strong>{cat.name}</strong>
-                      </td>
-                      <td>
-                        <code>/{cat.slug}</code>
-                      </td>
-                      <td>{cat.display_order}</td>
-                      <td>
-                        <span className={`admin-badge ${cat.is_active ? 'admin-badge--active' : 'admin-badge--inactive'}`}>
-                          {cat.is_active ? 'Active' : 'Hidden'}
-                        </span>
-                      </td>
-                      <td>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(cat.id)}
-                          className="admin-btn admin-btn--danger admin-btn--sm"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {categories.map((cat) => {
+                    const isBeingEdited = editingCategory?.id === cat.id;
+                    return (
+                      <tr
+                        key={cat.id}
+                        style={isBeingEdited ? { backgroundColor: '#FAF6F0', borderLeft: '3px solid #7B5B3A' } : undefined}
+                      >
+                        <td>
+                          {cat.image_url ? (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img src={cat.image_url} alt={cat.name} className="admin-thumbnail" />
+                          ) : (
+                            <span style={{ fontSize: '12px', color: '#999' }}>No img</span>
+                          )}
+                        </td>
+                        <td>
+                          <strong>{cat.name}</strong>
+                          {isBeingEdited && (
+                            <span style={{ marginLeft: '6px', fontSize: '10px', background: '#7B5B3A', color: '#fff', padding: '1px 5px', borderRadius: '4px' }}>
+                              Editing
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          <code>/{cat.slug}</code>
+                        </td>
+                        <td>{cat.display_order}</td>
+                        <td>
+                          <span className={`admin-badge ${cat.is_active ? 'admin-badge--active' : 'admin-badge--inactive'}`}>
+                            {cat.is_active ? 'Active' : 'Hidden'}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleStartEdit(cat)}
+                              className={`admin-btn admin-btn--sm ${isBeingEdited ? 'admin-btn--primary' : 'admin-btn--secondary'}`}
+                            >
+                              {isBeingEdited ? 'Editing' : 'Edit'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(cat.id)}
+                              className="admin-btn admin-btn--danger admin-btn--sm"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
