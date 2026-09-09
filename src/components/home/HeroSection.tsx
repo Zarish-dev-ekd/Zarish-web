@@ -8,6 +8,9 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ hero }: HeroSectionProps) {
+  const desktopImg = hero?.image_url;
+  const mobileImg = hero?.mobile_image_url || hero?.image_url;
+
   if (!hero) {
     return (
       <section className="hero">
@@ -20,6 +23,10 @@ export default function HeroSection({ hero }: HeroSectionProps) {
             <p className="hero__subtitle">
               Graceful pieces for your everyday and special moments.
             </p>
+            <Link href="/products" className="btn btn--primary btn--lg hero__cta">
+              EXPLORE COLLECTION
+              <IconArrowRight size={16} />
+            </Link>
           </div>
           <div className="hero__image">
             <div className="hero__image-placeholder" aria-hidden="true" />
@@ -31,15 +38,39 @@ export default function HeroSection({ hero }: HeroSectionProps) {
 
   return (
     <section className="hero">
+      {/* Mobile Full-Cover Banner Background (Active on <= 768px) */}
+      <div className="hero__mobile-cover-bg" aria-hidden="true">
+        {mobileImg ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={optimizeCloudinaryUrl(mobileImg, { width: 900 })}
+            alt={hero.image_alt || hero.title}
+            className="hero__mobile-img"
+          />
+        ) : (
+          <div className="hero__image-placeholder" />
+        )}
+        <div className="hero__mobile-overlay" />
+      </div>
+
       <div className="hero__inner">
+        {/* Text Content */}
         <div className="hero__content">
           {hero.eyebrow && (
-            <div className="hero__eyebrow">{hero.eyebrow}</div>
+            <div className="hero__eyebrow">
+              {hero.eyebrow}
+              {hero.campaign_badge && (
+                <span className="hero__badge-pill">{hero.campaign_badge}</span>
+              )}
+            </div>
           )}
+
           <h1 className="hero__title">{hero.title}</h1>
+
           {hero.subtitle && (
             <p className="hero__subtitle">{hero.subtitle}</p>
           )}
+
           {hero.cta_text && hero.cta_url && (
             <Link href={hero.cta_url} className="btn btn--primary btn--lg hero__cta">
               {hero.cta_text}
@@ -64,12 +95,13 @@ export default function HeroSection({ hero }: HeroSectionProps) {
           </div>
         </div>
 
-        <div className="hero__image">
-          {hero.image_url ? (
+        {/* Desktop Image Column (Hidden on mobile via CSS) */}
+        <div className="hero__image hero__image--desktop">
+          {desktopImg ? (
             <>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={optimizeCloudinaryUrl(hero.image_url, { width: 1200 })}
+                src={optimizeCloudinaryUrl(desktopImg, { width: 1400 })}
                 alt={hero.image_alt || hero.title}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />

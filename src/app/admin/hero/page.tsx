@@ -19,6 +19,7 @@ export default function AdminHeroPage() {
   const [ctaText, setCtaText] = useState('EXPLORE COLLECTION');
   const [ctaUrl, setCtaUrl] = useState('/collections');
   const [imageUrl, setImageUrl] = useState('');
+  const [mobileImageUrl, setMobileImageUrl] = useState('');
   const [campaignBadge, setCampaignBadge] = useState('');
   const [isActive, setIsActive] = useState(true);
 
@@ -44,6 +45,7 @@ export default function AdminHeroPage() {
         setCtaText(first.cta_text || 'EXPLORE COLLECTION');
         setCtaUrl(first.cta_url || '/collections');
         setImageUrl(first.image_url || '');
+        setMobileImageUrl(first.mobile_image_url || '');
         setCampaignBadge(first.campaign_badge || '');
         setIsActive(first.is_active ?? true);
       }
@@ -61,8 +63,8 @@ export default function AdminHeroPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !imageUrl) {
-      setError('Title and Hero Image are both required');
+    if (!title.trim() || (!imageUrl && !mobileImageUrl)) {
+      setError('Title and at least one banner image (Desktop or Mobile) are required');
       return;
     }
 
@@ -78,7 +80,8 @@ export default function AdminHeroPage() {
         subtitle: subtitle.trim(),
         cta_text: ctaText.trim() || 'EXPLORE COLLECTION',
         cta_url: ctaUrl.trim() || '/collections',
-        image_url: imageUrl,
+        image_url: imageUrl || mobileImageUrl,
+        mobile_image_url: mobileImageUrl.trim() || null,
         image_alt: `${title} - ZARISH`,
         campaign_badge: campaignBadge.trim() || null,
         is_active: isActive,
@@ -100,7 +103,7 @@ export default function AdminHeroPage() {
         if (insertErr) throw insertErr;
       }
 
-      setSuccess('Hero banner updated successfully! Check the live storefront.');
+      setSuccess('Hero banner updated successfully! Live storefront updated.');
       fetchSlides();
     } catch (err: any) {
       console.error('Error saving hero slide:', err);
@@ -116,7 +119,7 @@ export default function AdminHeroPage() {
         <div>
           <h2 className="admin-page-title">Hero Banner Management</h2>
           <p className="admin-page-subtitle">
-            Customize the main visual banner, campaign titles, and call-to-action on the storefront homepage.
+            Configure desktop and mobile full-cover hero banners with separate image uploads.
           </p>
         </div>
       </div>
@@ -133,19 +136,61 @@ export default function AdminHeroPage() {
         </div>
       )}
 
-      <div style={{ maxWidth: '840px' }}>
-        <div className="admin-card">
-          <h3 className="admin-card__title">Primary Hero Slide</h3>
-          <form onSubmit={handleSubmit}>
-            <div className="admin-form-group">
-              <ImageUpload
-                label="Hero Image (Cloudinary) *"
-                value={imageUrl}
-                onChange={(url) => setImageUrl(url)}
-                folder="zarish/hero"
-                helperText="Upload your real editorial shoot photo or campaign banner."
-              />
+      <div style={{ maxWidth: '960px' }}>
+        <form onSubmit={handleSubmit}>
+          {/* Dual Banners: Desktop & Mobile */}
+          <div className="admin-card">
+            <h3 className="admin-card__title">Banner Media Uploads</h3>
+            <p style={{ fontSize: '13px', color: 'var(--admin-text-muted)', marginBottom: '20px' }}>
+              Upload separate imagery for desktop and mobile for optimal responsive presentation and full-bleed coverage.
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
+              {/* Desktop Banner */}
+              <div style={{ background: '#FAF8F5', padding: '20px', borderRadius: '8px', border: '1px solid var(--admin-border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '18px' }}>🖥️</span>
+                  <div>
+                    <strong style={{ fontSize: '14px', display: 'block' }}>Desktop Banner</strong>
+                    <span style={{ fontSize: '12px', color: 'var(--admin-text-muted)' }}>
+                      Landscape / Wide (e.g. 1920×900 or 1200×800)
+                    </span>
+                  </div>
+                </div>
+                <ImageUpload
+                  label="Upload Desktop Image"
+                  value={imageUrl}
+                  onChange={(url) => setImageUrl(url)}
+                  folder="zarish/hero"
+                  helperText="Shown on laptops, desktops, and wide screens."
+                />
+              </div>
+
+              {/* Mobile Full-Cover Banner */}
+              <div style={{ background: '#FAF8F5', padding: '20px', borderRadius: '8px', border: '1px solid var(--admin-border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '18px' }}>📱</span>
+                  <div>
+                    <strong style={{ fontSize: '14px', display: 'block' }}>Mobile Full-Cover Banner</strong>
+                    <span style={{ fontSize: '12px', color: 'var(--admin-text-muted)' }}>
+                      Portrait / Tall 9:16 (e.g. 800×1400 or 1080×1920)
+                    </span>
+                  </div>
+                </div>
+                <ImageUpload
+                  label="Upload Mobile Image"
+                  value={mobileImageUrl}
+                  onChange={(url) => setMobileImageUrl(url)}
+                  folder="zarish/hero/mobile"
+                  helperText="Covers the full mobile screen with luxury full-bleed impact."
+                />
+              </div>
             </div>
+          </div>
+
+          {/* Banner Content & Typography */}
+          <div className="admin-card">
+            <h3 className="admin-card__title">Banner Content & Text</h3>
 
             <div className="admin-form-row">
               <div className="admin-form-group">
@@ -233,12 +278,12 @@ export default function AdminHeroPage() {
               type="submit"
               className="admin-btn admin-btn--primary"
               disabled={submitting}
-              style={{ width: '100%', marginTop: '8px' }}
+              style={{ width: '100%', marginTop: '12px', padding: '14px' }}
             >
               {submitting ? 'Saving to Supabase...' : 'Save & Publish Hero Banner'}
             </button>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
   );
