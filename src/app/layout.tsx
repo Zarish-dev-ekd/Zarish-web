@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
 
+import PreIntro from '@/components/common/PreIntro';
+
 export const metadata: Metadata = {
   title: 'ZARISH by Nehala Mufeed | Premium Modest Fashion',
   description:
@@ -42,6 +44,7 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning>
+        <PreIntro />
         {children}
       </body>
     </html>
