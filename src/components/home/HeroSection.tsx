@@ -131,8 +131,8 @@ export default function HeroSection({ hero, slides }: HeroSectionProps) {
               ) : (
                 <div className="w-full h-full bg-gradient-to-tr from-[#F0E4D8] to-[#FAF6F0]" />
               )}
-              {/* Soft, clean ivory gradient rising smoothly from the lower half only — leaves model's face 100% crystal-clear */}
-              <div className="absolute bottom-0 inset-x-0 h-[62%] bg-gradient-to-t from-[#FAF6F0] via-[#FAF6F0]/90 via-55% to-transparent pointer-events-none" />
+              {/* Minimal, soft ivory gradient only at the very bottom on mobile — leaves model's face, body, and backdrop 100% crystal-clear */}
+              <div className="absolute bottom-0 inset-x-0 h-[44%] bg-gradient-to-t from-[#FAF6F0] via-[#FAF6F0]/75 via-32% to-transparent pointer-events-none" />
             </div>
 
             {/* Desktop Full-Cover Banner Background (> 768px) */}
@@ -149,8 +149,8 @@ export default function HeroSection({ hero, slides }: HeroSectionProps) {
               ) : (
                 <div className="w-full h-full bg-gradient-to-tr from-[#F0E4D8] to-[#FAF6F0]" />
               )}
-              {/* Soft translucent gradient to protect text contrast while keeping florals visible */}
-              <div className="absolute inset-0 bg-gradient-to-r from-[#FAF6F0]/90 via-[#FAF6F0]/80 via-30% via-[#FAF6F0]/40 via-50% to-transparent to-70%" />
+              {/* Ultra-subtle text-readability gradient only on the far left margin — leaves 70%+ of the photo, model, and florals 100% crystal-clear */}
+              <div className="absolute inset-0 bg-gradient-to-r from-[#FAF6F0]/80 via-[#FAF6F0]/35 via-24% via-transparent via-36% to-transparent pointer-events-none" />
             </div>
           </div>
         );
@@ -197,7 +197,7 @@ export default function HeroSection({ hero, slides }: HeroSectionProps) {
         </div>
 
         {/* Heading */}
-        <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#2C1D13] leading-[1.08] tracking-normal mb-2 transition-all duration-500">
+        <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#2C1D13] leading-[1.08] tracking-normal mb-2 transition-all duration-500 drop-shadow-[0_1px_2px_rgba(255,255,255,0.7)]">
           {currentSlide?.title ? (
             currentSlide.title.toUpperCase().includes('IN MODESTY') ? (
               <>
@@ -214,7 +214,7 @@ export default function HeroSection({ hero, slides }: HeroSectionProps) {
         </h1>
 
         {/* Subtitle */}
-        <p className="text-xs sm:text-sm text-[#6B5744] leading-relaxed mb-4 max-w-[340px] transition-all duration-500">
+        <p className="text-xs sm:text-sm text-[#3D2B1F] font-medium leading-relaxed mb-4 max-w-[340px] transition-all duration-500 drop-shadow-[0_1px_2px_rgba(255,255,255,0.6)]">
           {currentSlide?.subtitle || 'Graceful pieces for your everyday and special moments.'}
         </p>
 
@@ -281,26 +281,26 @@ export default function HeroSection({ hero, slides }: HeroSectionProps) {
           </div>
 
           {/* Heading */}
-          <h1 className="font-display text-4xl sm:text-5xl lg:text-[60px] font-bold text-[#2C1D13] leading-[1.06] tracking-normal mb-3 md:mb-4 transition-all duration-500">
-            {currentSlide?.title ? (
-              currentSlide.title.toUpperCase().includes('IN MODESTY') ? (
-                <>
-                  BEAUTY<br />IN MODESTY
-                </>
-              ) : (
-                currentSlide.title
-              )
-            ) : (
+        <h1 className="font-display text-4xl sm:text-5xl lg:text-[60px] font-bold text-[#2C1D13] leading-[1.06] tracking-normal mb-3 md:mb-4 transition-all duration-500 drop-shadow-[0_1px_2px_rgba(255,255,255,0.7)]">
+          {currentSlide?.title ? (
+            currentSlide.title.toUpperCase().includes('IN MODESTY') ? (
               <>
                 BEAUTY<br />IN MODESTY
               </>
-            )}
-          </h1>
+            ) : (
+              currentSlide.title
+            )
+          ) : (
+            <>
+              BEAUTY<br />IN MODESTY
+            </>
+          )}
+        </h1>
 
-          {/* Subtitle */}
-          <p className="text-sm md:text-base text-[#6B5744] leading-relaxed mb-6 md:mb-8 max-w-[390px] transition-all duration-500">
-            {currentSlide?.subtitle || 'Graceful pieces for your everyday and special moments.'}
-          </p>
+        {/* Subtitle */}
+        <p className="text-sm md:text-base text-[#3D2B1F] font-medium leading-relaxed mb-6 md:mb-8 max-w-[390px] transition-all duration-500 drop-shadow-[0_1px_2px_rgba(255,255,255,0.6)]">
+          {currentSlide?.subtitle || 'Graceful pieces for your everyday and special moments.'}
+        </p>
 
           {/* CTA Pill Button */}
           <Link
