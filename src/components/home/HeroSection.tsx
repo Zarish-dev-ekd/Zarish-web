@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import type { HeroSlide } from '@/lib/types';
-import { IconArrowRight, IconChevronLeft, IconChevronRight } from '@/components/icons';
+import { IconArrowRight } from '@/components/icons';
 import { optimizeCloudinaryUrl } from '@/lib/utils';
 
 interface HeroSectionProps {
@@ -349,50 +349,27 @@ export default function HeroSection({ hero, slides }: HeroSectionProps) {
           )}
         </aside>
 
-        {/* Desktop Carousel Controls: Prev/Next Floating Arrows & Indicators (Only when 2+ slides exist) */}
+        {/* Desktop Slide Indicators (Only when 2+ slides exist) */}
         {total > 1 && (
-          <>
-            {/* Prev Arrow */}
-            <button
-              type="button"
-              onClick={goToPrev}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white/75 hover:bg-white text-[#2C1D13] backdrop-blur-md shadow-[0_4px_16px_rgba(44,29,19,0.12)] flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95"
-              aria-label="Previous slide"
-            >
-              <IconChevronLeft size={20} />
-            </button>
-
-            {/* Next Arrow */}
-            <button
-              type="button"
-              onClick={goToNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white/75 hover:bg-white text-[#2C1D13] backdrop-blur-md shadow-[0_4px_16px_rgba(44,29,19,0.12)] flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95"
-              aria-label="Next slide"
-            >
-              <IconChevronRight size={20} />
-            </button>
-
-            {/* Desktop Slide Indicators */}
-            <div className="absolute bottom-6 left-6 sm:left-8 lg:left-14 z-30 flex items-center gap-2.5">
-              {allSlides.map((_, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setCurrentIndex(idx)}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    idx === currentIndex
-                      ? 'w-10 bg-[#2C1D13]'
-                      : 'w-2.5 bg-[#2C1D13]/25 hover:bg-[#2C1D13]/55'
-                  }`}
-                  aria-label={`Go to slide ${idx + 1}`}
-                  aria-current={idx === currentIndex ? 'true' : 'false'}
-                />
-              ))}
-              <span className="ml-3 text-[11px] font-semibold tracking-wider text-[#7B5B3A]">
-                0{currentIndex + 1} / 0{total}
-              </span>
-            </div>
-          </>
+          <div className="absolute bottom-6 left-6 sm:left-8 lg:left-14 z-30 flex items-center gap-2.5">
+            {allSlides.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setCurrentIndex(idx)}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  idx === currentIndex
+                    ? 'w-10 bg-[#2C1D13]'
+                    : 'w-2.5 bg-[#2C1D13]/25 hover:bg-[#2C1D13]/55'
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+                aria-current={idx === currentIndex ? 'true' : 'false'}
+              />
+            ))}
+            <span className="ml-3 text-[11px] font-semibold tracking-wider text-[#7B5B3A]">
+              0{currentIndex + 1} / 0{total}
+            </span>
+          </div>
         )}
       </div>
     </section>
