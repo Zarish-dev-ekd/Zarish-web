@@ -27,7 +27,7 @@ const config: Config = {
         'zarish-border': '#E2D5C7',
       },
       fontFamily: {
-        display: ['Playfair Display', 'Georgia', 'serif'],
+        display: ['Cinzel', 'Playfair Display', 'Georgia', 'serif'],
         body: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
         script: ['Alex Brush', 'cursive'],
       },
