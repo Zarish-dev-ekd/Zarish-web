@@ -297,3 +297,50 @@ export interface MediaAsset {
   folder: string;
   created_at: string;
 }
+
+// ─── Orders & Payments ───────────────────────────────────────
+export interface ShippingAddress {
+  fullName: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+}
+
+export interface OrderItem {
+  id: string;
+  order_id: string;
+  product_id?: string | null;
+  product_name: string;
+  size?: string | null;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  image_url?: string | null;
+}
+
+export interface Order {
+  id: string;
+  order_number: string;
+  user_id?: string | null;
+  customer_name: string;
+  customer_email: string;
+  customer_phone?: string | null;
+  shipping_address: ShippingAddress;
+  total_amount: number;
+  currency: string;
+  payment_method: 'razorpay' | 'cod' | 'whatsapp';
+  payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
+  razorpay_order_id?: string | null;
+  razorpay_payment_id?: string | null;
+  razorpay_signature?: string | null;
+  order_status: 'placed' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  tracking_number?: string | null;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+  items?: OrderItem[];
+}

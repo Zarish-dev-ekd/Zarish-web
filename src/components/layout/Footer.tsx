@@ -6,7 +6,7 @@ import { IconInstagram, IconFacebook, IconWhatsapp, IconMail } from '@/component
 interface FooterProps {
   footerGroups: FooterGroup[];
   brandDescription: string;
-  socialLinks: {
+  socialLinks?: {
     instagram?: string;
     facebook?: string;
     whatsapp?: string;
@@ -14,7 +14,7 @@ interface FooterProps {
   };
 }
 
-export default function Footer({ footerGroups, brandDescription, socialLinks }: FooterProps) {
+export default function Footer({ footerGroups, brandDescription, socialLinks = {} }: FooterProps) {
   const activeGroups = footerGroups.filter((g) => g.is_active);
   const currentYear = new Date().getFullYear();
 

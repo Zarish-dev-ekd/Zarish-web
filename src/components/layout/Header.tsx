@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
 import type { NavigationItem } from '@/lib/types';
 import { IconSearch, IconUser, IconHeart, IconShoppingBag, IconMenu, IconX, IconChevronRight } from '@/components/icons';
 
@@ -12,7 +14,53 @@ interface HeaderProps {
 }
 
 export default function Header({ navigationItems, cartItemCount }: HeaderProps) {
+  const router = useRouter();
+  const supabase = createClient();
+
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Monitor Auth State
+  useEffect(() => {
+    async function checkAuth() {
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+      setUser(authUser);
+    }
+    checkAuth();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
+
+  // Click outside to close account dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setAccountMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setAccountMenuOpen(false);
+    router.push('/');
+    router.refresh();
+  };
 
   const openDrawer = useCallback(() => {
     setIsDrawerOpen(true);
@@ -82,9 +130,135 @@ export default function Header({ navigationItems, cartItemCount }: HeaderProps) 
             <Link href="/search" className="header__action-btn" aria-label="Search garments">
               <IconSearch />
             </Link>
-            <Link href="/admin" className="header__action-btn header__action-btn--account" aria-label="Store Management Portal">
-              <IconUser />
-            </Link>
+
+            {/* Profile Action with Auth Dropdown / Direct Link */}
+            <div className="relative" ref={menuRef}>
+              {user ? (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setAccountMenuOpen(!accountMenuOpen)}
+                    className="header__action-btn header__action-btn--account relative"
+                    aria-label="My Account"
+                    title={`Signed in as ${user.email}`}
+                  >
+                    <IconUser />
+                    <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#0E7064] ring-2 ring-white" />
+                  </button>
+
+                  {accountMenuOpen && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        right: 0,
+                        top: 'calc(100% + 8px)',
+                        width: '220px',
+                        backgroundColor: '#FFFFFF',
+                        borderRadius: '16px',
+                        boxShadow: '0 10px 30px rgba(44,29,19,0.12)',
+                        border: '1px solid #E2D5C7',
+                        padding: '12px 8px',
+                        zIndex: 50,
+                      }}
+                    >
+                      <div
+                        style={{
+                          padding: '4px 12px 8px 12px',
+                          borderBottom: '1px solid #F0EBE5',
+                          marginBottom: '6px',
+                        }}
+                      >
+                        <span style={{ fontSize: '11px', color: '#8C7B6B', display: 'block' }}>
+                          Signed in as
+                        </span>
+                        <strong
+                          style={{
+                            fontSize: '12px',
+                            color: '#2C1D13',
+                            display: 'block',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {user.user_metadata?.full_name || user.email}
+                        </strong>
+                      </div>
+
+                      <Link
+                        href="/account"
+                        onClick={() => setAccountMenuOpen(false)}
+                        style={{
+                          display: 'block',
+                          padding: '8px 12px',
+                          fontSize: '12px',
+                          color: '#2C1D13',
+                          textDecoration: 'none',
+                          borderRadius: '8px',
+                        }}
+                        className="hover:bg-[#FAF6F0]"
+                      >
+                        My Account & Orders
+                      </Link>
+
+                      <Link
+                        href="/admin"
+                        onClick={() => setAccountMenuOpen(false)}
+                        style={{
+                          display: 'block',
+                          padding: '8px 12px',
+                          fontSize: '12px',
+                          color: '#7B5B3A',
+                          fontWeight: 600,
+                          textDecoration: 'none',
+                          borderRadius: '8px',
+                        }}
+                        className="hover:bg-[#FAF6F0]"
+                      >
+                        Store Admin Portal
+                      </Link>
+
+                      <div
+                        style={{
+                          borderTop: '1px solid #F0EBE5',
+                          marginTop: '6px',
+                          paddingTop: '6px',
+                        }}
+                      >
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          style={{
+                            width: '100%',
+                            textAlign: 'left',
+                            padding: '8px 12px',
+                            fontSize: '12px',
+                            color: '#C62828',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            borderRadius: '8px',
+                          }}
+                          className="hover:bg-[#FFF1F2]"
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  className="header__action-btn header__action-btn--account"
+                  aria-label="Sign In or Register"
+                  title="Sign In / Register"
+                >
+                  <IconUser />
+                </Link>
+              )}
+            </div>
+
             <Link href="/products?sale=true" className="header__action-btn header__action-btn--wishlist" aria-label="Special Offers">
               <IconHeart />
             </Link>
@@ -139,19 +313,61 @@ export default function Header({ navigationItems, cartItemCount }: HeaderProps) 
 
           <div className="mobile-drawer__divider" />
 
-          <div className="mobile-drawer__section-title">Account</div>
-          <Link href="/account" className="mobile-drawer__nav-link" onClick={closeDrawer}>
-            My Account
-            <IconChevronRight size={14} />
-          </Link>
-          <Link href="/account/wishlist" className="mobile-drawer__nav-link" onClick={closeDrawer}>
-            Wishlist
-            <IconChevronRight size={14} />
-          </Link>
-          <Link href="/account/orders" className="mobile-drawer__nav-link" onClick={closeDrawer}>
-            My Orders
-            <IconChevronRight size={14} />
-          </Link>
+          <div className="mobile-drawer__section-title">
+            {user ? `Account (${user.email?.split('@')[0]})` : 'Customer Account'}
+          </div>
+
+          {user ? (
+            <>
+              <Link href="/account" className="mobile-drawer__nav-link" onClick={closeDrawer}>
+                My Account & Orders
+                <IconChevronRight size={14} />
+              </Link>
+              <Link
+                href="/admin"
+                className="mobile-drawer__nav-link"
+                onClick={closeDrawer}
+                style={{ color: '#7B5B3A', fontWeight: 600 }}
+              >
+                Store Admin Portal
+                <IconChevronRight size={14} />
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  closeDrawer();
+                  handleSignOut();
+                }}
+                className="mobile-drawer__nav-link"
+                style={{
+                  width: '100%',
+                  textAlign: 'left',
+                  color: '#C62828',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="mobile-drawer__nav-link" onClick={closeDrawer}>
+                Sign In
+                <IconChevronRight size={14} />
+              </Link>
+              <Link
+                href="/signup"
+                className="mobile-drawer__nav-link"
+                onClick={closeDrawer}
+                style={{ color: '#7B5B3A', fontWeight: 600 }}
+              >
+                Create Account
+                <IconChevronRight size={14} />
+              </Link>
+            </>
+          )}
         </nav>
       </aside>
     </>

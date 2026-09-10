@@ -238,3 +238,60 @@ CREATE POLICY "Admin all subscribers" ON public.subscribers FOR ALL USING (true)
 INSERT INTO public.site_settings (site_name, tagline, meta_title, meta_description)
 SELECT 'ZARISH', 'Beauty in Modesty', 'ZARISH by Nehala Mufeed | Premium Modest Fashion', 'Discover elegant modest fashion by ZARISH. Graceful pieces for your everyday elegance.'
 WHERE NOT EXISTS (SELECT 1 FROM public.site_settings);
+
+-- 12. Customer Orders Table (Razorpay & Storefront Orders)
+CREATE TABLE IF NOT EXISTS public.orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_number TEXT NOT NULL UNIQUE,
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  customer_name TEXT NOT NULL,
+  customer_email TEXT NOT NULL,
+  customer_phone TEXT,
+  shipping_address JSONB NOT NULL DEFAULT '{}'::jsonb,
+  total_amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
+  currency TEXT NOT NULL DEFAULT 'INR',
+  payment_method TEXT NOT NULL DEFAULT 'razorpay',
+  payment_status TEXT NOT NULL DEFAULT 'pending', -- pending, paid, failed, refunded
+  razorpay_order_id TEXT,
+  razorpay_payment_id TEXT,
+  razorpay_signature TEXT,
+  order_status TEXT NOT NULL DEFAULT 'placed', -- placed, confirmed, processing, shipped, delivered, cancelled
+  tracking_number TEXT,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW()),
+  updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
+);
+
+-- 13. Order Items Table
+CREATE TABLE IF NOT EXISTS public.order_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id UUID NOT NULL REFERENCES public.orders(id) ON DELETE CASCADE,
+  product_id UUID REFERENCES public.products(id) ON DELETE SET NULL,
+  product_name TEXT NOT NULL,
+  size TEXT,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  unit_price NUMERIC(10, 2) NOT NULL DEFAULT 0,
+  total_price NUMERIC(10, 2) NOT NULL DEFAULT 0,
+  image_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
+);
+
+-- Indexes for orders
+CREATE INDEX IF NOT EXISTS idx_orders_user ON public.orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_orders_email ON public.orders(customer_email);
+CREATE INDEX IF NOT EXISTS idx_orders_number ON public.orders(order_number);
+CREATE INDEX IF NOT EXISTS idx_orders_status ON public.orders(order_status);
+CREATE INDEX IF NOT EXISTS idx_order_items_order ON public.order_items(order_id);
+
+-- RLS for orders
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public read own orders" ON public.orders FOR SELECT USING (true);
+CREATE POLICY "Public insert orders" ON public.orders FOR INSERT WITH CHECK (true);
+CREATE POLICY "Admin manage orders" ON public.orders FOR ALL USING (true) WITH CHECK (true);
+
+CREATE POLICY "Public read order items" ON public.order_items FOR SELECT USING (true);
+CREATE POLICY "Public insert order items" ON public.order_items FOR INSERT WITH CHECK (true);
+CREATE POLICY "Admin manage order items" ON public.order_items FOR ALL USING (true) WITH CHECK (true);
+

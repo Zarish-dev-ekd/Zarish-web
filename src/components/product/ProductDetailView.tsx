@@ -6,6 +6,7 @@ import { formatPrice, getDiscountPercent, optimizeCloudinaryUrl } from '@/lib/ut
 import { IconArrowRight, IconTruck, IconShield, IconPackage, IconWhatsapp } from '@/components/icons';
 import Badge from './Badge';
 import WishlistButton from './WishlistButton';
+import CheckoutModal from '@/components/checkout/CheckoutModal';
 import type { Product, SiteSettings } from '@/lib/types';
 
 interface ProductDetailViewProps {
@@ -17,6 +18,9 @@ export default function ProductDetailView({ product, settings }: ProductDetailVi
   // Gallery images (fallback to single image if none)
   const images = product.images && product.images.length > 0 ? product.images : [];
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  // Checkout modal state
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   // Variants and sizes
   const availableSizes =
@@ -290,20 +294,30 @@ export default function ProductDetailView({ product, settings }: ProductDetailVi
           </div>
 
           {/* Main Action Buttons */}
-          <div className="flex items-center gap-3 mb-8">
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-2.5 rounded-full bg-[#128C7E] hover:bg-[#0E7064] text-white py-3.5 sm:py-4 px-6 text-xs sm:text-sm font-bold tracking-[0.14em] uppercase shadow-[0_4px_18px_rgba(18,140,126,0.3)] hover:shadow-[0_6px_22px_rgba(18,140,126,0.4)] active:scale-[0.99] transition-all"
+          <div className="flex flex-col sm:flex-row items-stretch gap-3 mb-8">
+            <button
+              type="button"
+              onClick={() => setIsCheckoutOpen(true)}
+              className="flex-1 flex items-center justify-center gap-2 rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white py-3.5 sm:py-4 px-6 text-xs sm:text-sm font-bold tracking-[0.14em] uppercase shadow-[0_4px_18px_rgba(44,29,19,0.2)] hover:shadow-[0_6px_22px_rgba(123,91,58,0.3)] active:scale-[0.99] transition-all"
             >
-              <IconWhatsapp size={20} className="flex-shrink-0" />
-              <span>Order via WhatsApp</span>
+              <span>Instant Checkout (Razorpay)</span>
               <IconArrowRight size={16} className="opacity-80" />
-            </a>
+            </button>
 
-            <div className="w-11 h-11 sm:w-12 sm:h-12 flex-shrink-0 rounded-full border border-[#E2D5C7] bg-white flex items-center justify-center hover:border-[#7B5B3A] transition-colors shadow-xs">
-              <WishlistButton productId={product.id} />
+            <div className="flex items-center gap-3">
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-2 rounded-full bg-[#128C7E] hover:bg-[#0E7064] text-white py-3.5 sm:py-4 px-5 text-xs sm:text-sm font-bold tracking-[0.12em] uppercase shadow-[0_4px_16px_rgba(18,140,126,0.25)] hover:shadow-[0_6px_20px_rgba(18,140,126,0.35)] active:scale-[0.99] transition-all whitespace-nowrap"
+              >
+                <IconWhatsapp size={18} className="flex-shrink-0" />
+                <span>WhatsApp</span>
+              </a>
+
+              <div className="w-11 h-11 sm:w-12 sm:h-12 flex-shrink-0 rounded-full border border-[#E2D5C7] bg-white flex items-center justify-center hover:border-[#7B5B3A] transition-colors shadow-xs">
+                <WishlistButton productId={product.id} />
+              </div>
             </div>
           </div>
 
@@ -403,16 +417,35 @@ export default function ProductDetailView({ product, settings }: ProductDetailVi
           </span>
         </div>
 
-        <a
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-1 max-w-[210px] flex items-center justify-center gap-2 rounded-full bg-[#128C7E] hover:bg-[#0E7064] text-white py-3 px-4 text-xs font-bold tracking-wider uppercase shadow-md active:scale-95 transition-all"
-        >
-          <IconWhatsapp size={16} />
-          <span>Order via WhatsApp</span>
-        </a>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsCheckoutOpen(true)}
+            className="flex items-center justify-center rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white py-2.5 px-4 text-xs font-bold tracking-wider uppercase shadow-md active:scale-95 transition-all"
+          >
+            <span>Buy Now</span>
+          </button>
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-1.5 rounded-full bg-[#128C7E] hover:bg-[#0E7064] text-white py-2.5 px-3.5 text-xs font-bold tracking-wider uppercase shadow-md active:scale-95 transition-all"
+            aria-label="Order on WhatsApp"
+          >
+            <IconWhatsapp size={15} />
+            <span>WA</span>
+          </a>
+        </div>
       </div>
+
+      {/* Checkout Modal */}
+      <CheckoutModal
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+        product={product}
+        selectedSize={selectedSize}
+        quantity={quantity}
+      />
     </div>
   );
 }
