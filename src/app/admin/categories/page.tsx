@@ -86,10 +86,11 @@ export default function AdminCategoriesPage() {
 
   const handleNameChange = (val: string) => {
     setName(val);
-    // Only auto-update slug if not editing an existing category, or if slug was empty
-    if (!editingCategory || !slug) {
-      setSlug(val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
-    }
+    setSlug(val.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
+  };
+
+  const syncSlugWithName = () => {
+    setSlug(name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
   };
 
   const handleStartEdit = (cat: Category) => {
@@ -263,7 +264,25 @@ export default function AdminCategoriesPage() {
             </div>
 
             <div className="admin-form-group">
-              <label className="admin-label">URL Slug</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <label className="admin-label" style={{ margin: 0 }}>URL Slug</label>
+                <button
+                  type="button"
+                  onClick={syncSlugWithName}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--admin-primary)',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    padding: '2px 6px',
+                  }}
+                  title="Regenerate slug from current name"
+                >
+                  ↺ Sync with Name
+                </button>
+              </div>
               <input
                 type="text"
                 className="admin-input"
