@@ -1,13 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import MultiImageUpload, { UploadedImageItem } from '@/components/admin/MultiImageUpload';
-import type { Category, Size } from '@/lib/types';
+import type { Category, Size, Product } from '@/lib/types';
 
-export default function AdminNewProductPage() {
+interface EditProductPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function AdminEditProductPage({ params }: EditProductPageProps) {
+  const { id: productId } = use(params);
   const router = useRouter();
   const supabase = createClient();
 
@@ -37,31 +42,99 @@ export default function AdminNewProductPage() {
   const [isNewArrival, setIsNewArrival] = useState(true);
   const [isOnSale, setIsOnSale] = useState(false);
 
-  // Cloudinary multiple images
+  // Images state
   const [images, setImages] = useState<UploadedImageItem[]>([]);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [{ data: cats }, { data: szs }] = await Promise.all([
+        setLoadingInitial(true);
+        const [
+          { data: cats },
+          { data: szs },
+          { data: prod, error: prodErr }
+        ] = await Promise.all([
           supabase.from('categories').select('*').eq('is_active', true).order('name'),
           supabase.from('sizes').select('*').eq('is_active', true).order('display_order'),
+          supabase
+            .from('products')
+            .select(`
+              *,
+              images:product_images(*),
+              variants:product_variants(*)
+            `)
+            .eq('id', productId)
+            .single(),
         ]);
 
         if (cats) setCategories(cats);
         if (szs) setSizes(szs);
+
+        if (prodErr || !prod) {
+          setError('Product not found or failed to load.');
+          return;
+        }
+
+        const p = prod as Product;
+        setName(p.name || '');
+        setSlug(p.slug || '');
+        setCategoryId(p.category_id || '');
+        setPrice(p.price !== undefined ? String(p.price) : '');
+        setComparePrice(p.compare_at_price ? String(p.compare_at_price) : '');
+        setSku(p.sku || '');
+        setStockQuantity(String(p.stock_quantity ?? 10));
+        setShortDescription(p.short_description || '');
+        setDescription(p.description || '');
+        setMaterials(p.materials || '');
+        setCareInstructions(p.care_instructions || '');
+        setIsActive(Boolean(p.is_active));
+        setIsFeatured(Boolean(p.is_featured));
+        setIsNewArrival(Boolean(p.is_new_arrival));
+        setIsOnSale(Boolean(p.is_on_sale));
+
+        // Populate sizes
+        if (p.variants && p.variants.length > 0) {
+          setSelectedSizes(p.variants.map((v) => v.size_id));
+        }
+
+        // Populate images sorted by primary first, then display_order
+        if (p.images && p.images.length > 0) {
+          const sorted = [...p.images].sort((a, b) => {
+            if (a.role === 'primary') return -1;
+            if (b.role === 'primary') return 1;
+            return (a.display_order ?? 0) - (b.display_order ?? 0);
+          });
+
+          setImages(
+            sorted.map((img, index) => ({
+              id: img.id,
+              secure_url: img.secure_url,
+              cloudinary_public_id: img.cloudinary_public_id,
+              role: img.role as any,
+              display_order: index,
+              alt_text: img.alt_text,
+              width: img.width,
+              height: img.height,
+            }))
+          );
+        }
       } catch (err: any) {
-        console.error('Failed to load categories/sizes:', err);
+        console.error('Failed to load product details:', err);
+        setError(err?.message || 'Failed to load product details');
       } finally {
         setLoadingInitial(false);
       }
     }
+
     loadData();
-  }, []);
+  }, [productId, supabase]);
 
   const handleNameChange = (val: string) => {
     setName(val);
-    setSlug(val.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
+    // Keep slug synced if user hasn't typed custom slug or if empty
+    if (!slug || slug === name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) {
+      setSlug(val.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
+    }
   };
 
   const toggleSize = (sizeId: string) => {
@@ -81,41 +154,48 @@ export default function AdminNewProductPage() {
     setError(null);
 
     try {
-      // 1. Insert product record
       const parsedPrice = parseFloat(price) || 0;
       const parsedComparePrice = comparePrice ? parseFloat(comparePrice) : null;
       const parsedStock = parseInt(stockQuantity, 10) || 0;
 
-      const { data: product, error: prodErr } = await supabase
+      // 1. Update product table
+      const { error: updateErr } = await supabase
         .from('products')
-        .insert([
-          {
-            name: name.trim(),
-            slug: slug.trim() || name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-            category_id: categoryId || null,
-            price: parsedPrice,
-            compare_at_price: parsedComparePrice,
-            sku: sku.trim() || null,
-            stock_quantity: parsedStock,
-            short_description: shortDescription.trim() || null,
-            description: description.trim() || null,
-            materials: materials.trim() || null,
-            care_instructions: careInstructions.trim() || null,
-            is_active: isActive,
-            is_featured: isFeatured,
-            is_new_arrival: isNewArrival,
-            is_on_sale: isOnSale,
-          },
-        ])
-        .select()
-        .single();
+        .update({
+          name: name.trim(),
+          slug: slug.trim() || name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          category_id: categoryId || null,
+          price: parsedPrice,
+          compare_at_price: parsedComparePrice,
+          sku: sku.trim() || null,
+          stock_quantity: parsedStock,
+          short_description: shortDescription.trim() || null,
+          description: description.trim() || null,
+          materials: materials.trim() || null,
+          care_instructions: careInstructions.trim() || null,
+          is_active: isActive,
+          is_featured: isFeatured,
+          is_new_arrival: isNewArrival,
+          is_on_sale: isOnSale,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', productId);
 
-      if (prodErr) throw prodErr;
+      if (updateErr) throw updateErr;
 
-      // 2. Insert product images if uploaded
-      if (images.length > 0 && product) {
+      // 2. Sync product images
+      // Delete existing images for this product
+      const { error: delImgErr } = await supabase
+        .from('product_images')
+        .delete()
+        .eq('product_id', productId);
+
+      if (delImgErr) console.warn('Could not clear old product images:', delImgErr);
+
+      // Insert current list of images
+      if (images.length > 0) {
         const imageRows = images.map((img, idx) => ({
-          product_id: product.id,
+          product_id: productId,
           secure_url: img.secure_url,
           cloudinary_public_id: img.cloudinary_public_id || 'zarish_img',
           alt_text: img.alt_text || name.trim(),
@@ -124,14 +204,17 @@ export default function AdminNewProductPage() {
           width: img.width || 800,
           height: img.height || 1000,
         }));
-        const { error: imgErr } = await supabase.from('product_images').insert(imageRows);
-        if (imgErr) console.warn('Could not save product image records:', imgErr);
+
+        const { error: imgInsertErr } = await supabase.from('product_images').insert(imageRows);
+        if (imgInsertErr) console.warn('Could not save product image records:', imgInsertErr);
       }
 
-      // 3. Insert variants for selected sizes
-      if (selectedSizes.length > 0 && product) {
+      // 3. Sync variants for selected sizes
+      await supabase.from('product_variants').delete().eq('product_id', productId);
+
+      if (selectedSizes.length > 0) {
         const variantRows = selectedSizes.map((sizeId) => ({
-          product_id: product.id,
+          product_id: productId,
           size_id: sizeId,
           stock_quantity: Math.max(1, Math.floor(parsedStock / selectedSizes.length)),
           is_active: true,
@@ -141,35 +224,52 @@ export default function AdminNewProductPage() {
           .from('product_variants')
           .insert(variantRows);
 
-        if (varErr) console.warn('Could not save product variants:', varErr);
+        if (varErr) console.warn('Could not update product variants:', varErr);
       }
 
       router.push('/admin/products');
     } catch (err: any) {
       console.error('Error saving product:', err);
-      setError(err?.message || 'Failed to save product to Supabase');
+      setError(err?.message || 'Failed to update product in Supabase');
       setSubmitting(false);
     }
   };
+
+  if (loadingInitial) {
+    return (
+      <div style={{ textAlign: 'center', padding: '60px 0' }}>
+        <span className="admin-spinner" />
+        <p style={{ marginTop: '16px', color: 'var(--admin-text-muted)' }}>Loading product details...</p>
+      </div>
+    );
+  }
 
   return (
     <div>
       <div className="admin-page-header">
         <div>
-          <h2 className="admin-page-title">Add New Product</h2>
+          <h2 className="admin-page-title">Edit Product: {name || 'Garment'}</h2>
           <p className="admin-page-subtitle">
-            Enter garment details, pricing, upload editorial photography, and set sizing.
+            Update garment imagery, pricing, details, and stock.
           </p>
         </div>
-        <div>
+        <div style={{ display: 'flex', gap: '8px' }}>
           <Link href="/admin/products" className="admin-btn admin-btn--secondary">
             Cancel
           </Link>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="admin-btn admin-btn--primary"
+          >
+            {submitting ? 'Saving Changes...' : 'Save Changes'}
+          </button>
         </div>
       </div>
 
       {error && (
-        <div className="admin-card" style={{ background: '#FFEBEE', color: '#D32F2F', padding: '12px 16px' }}>
+        <div className="admin-card" style={{ background: '#FFEBEE', color: '#D32F2F', padding: '12px 16px', marginBottom: '20px' }}>
           {error}
         </div>
       )}
@@ -193,7 +293,16 @@ export default function AdminNewProductPage() {
               </div>
 
               <div className="admin-form-group">
-                <label className="admin-label">URL Slug</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <label className="admin-label">URL Slug</label>
+                  <button
+                    type="button"
+                    onClick={() => setSlug(name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))}
+                    style={{ fontSize: '11px', color: '#7B5B3A', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  >
+                    ↺ Sync with Name
+                  </button>
+                </div>
                 <input
                   type="text"
                   className="admin-input"
@@ -226,7 +335,7 @@ export default function AdminNewProductPage() {
               </div>
             </div>
 
-            {/* Media Upload */}
+            {/* Multiple Photos Upload & Gallery Manager */}
             <div className="admin-card">
               <h3 className="admin-card__title">Product Photography</h3>
               <MultiImageUpload
@@ -234,7 +343,7 @@ export default function AdminNewProductPage() {
                 onChange={setImages}
                 folder="zarish/products"
                 label="Product Images (Multiple)"
-                helperText="Upload multiple high-resolution photos. First image or starred image will be the primary cover showcase."
+                helperText="Add multiple high-resolution photos. First or starred image will be the primary cover showcase."
               />
             </div>
 
@@ -412,7 +521,7 @@ export default function AdminNewProductPage() {
                 disabled={submitting}
                 style={{ width: '100%', marginTop: '20px' }}
               >
-                {submitting ? 'Saving to Supabase...' : 'Publish Product'}
+                {submitting ? 'Saving Changes...' : 'Save Changes'}
               </button>
             </div>
           </div>

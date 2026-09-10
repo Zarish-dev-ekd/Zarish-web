@@ -120,25 +120,51 @@ export default function AdminProductsPage() {
                     <tr key={p.id}>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          {primaryImg ? (
-                            /* eslint-disable-next-line @next/next/no-img-element */
-                            <img
-                              src={primaryImg.secure_url}
-                              alt={p.name}
-                              className="admin-thumbnail"
-                            />
-                          ) : (
-                            <div
-                              className="admin-thumbnail"
-                              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#999' }}
-                            >
-                              No img
-                            </div>
-                          )}
+                          <Link href={`/admin/products/${p.id}`} style={{ position: 'relative', display: 'block', textDecoration: 'none' }}>
+                            {primaryImg ? (
+                              /* eslint-disable-next-line @next/next/no-img-element */
+                              <img
+                                src={primaryImg.secure_url}
+                                alt={p.name}
+                                className="admin-thumbnail"
+                              />
+                            ) : (
+                              <div
+                                className="admin-thumbnail"
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#999' }}
+                              >
+                                No img
+                              </div>
+                            )}
+                            {p.images && p.images.length > 1 && (
+                              <span
+                                style={{
+                                  position: 'absolute',
+                                  bottom: '2px',
+                                  right: '2px',
+                                  background: 'rgba(0,0,0,0.75)',
+                                  color: '#FFF',
+                                  fontSize: '9px',
+                                  fontWeight: 700,
+                                  padding: '1px 4px',
+                                  borderRadius: '3px',
+                                  lineHeight: '1.1',
+                                }}
+                              >
+                                +{p.images.length - 1}
+                              </span>
+                            )}
+                          </Link>
                           <div>
-                            <strong>{p.name}</strong>
+                            <Link
+                              href={`/admin/products/${p.id}`}
+                              style={{ fontWeight: 600, color: 'var(--admin-text-main)', textDecoration: 'none' }}
+                              className="hover:underline"
+                            >
+                              {p.name}
+                            </Link>
                             <div style={{ fontSize: '12px', color: 'var(--admin-text-muted)' }}>
-                              SKU: {p.sku || 'N/A'}
+                              SKU: {p.sku || 'N/A'} • {p.images?.length || 0} photo{p.images?.length === 1 ? '' : 's'}
                             </div>
                           </div>
                         </div>
@@ -175,13 +201,21 @@ export default function AdminProductsPage() {
                         </div>
                       </td>
                       <td>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(p.id)}
-                          className="admin-btn admin-btn--danger admin-btn--sm"
-                        >
-                          Delete
-                        </button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Link
+                            href={`/admin/products/${p.id}`}
+                            className="admin-btn admin-btn--secondary admin-btn--sm"
+                          >
+                            Edit
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(p.id)}
+                            className="admin-btn admin-btn--danger admin-btn--sm"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
