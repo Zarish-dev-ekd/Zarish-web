@@ -15,6 +15,7 @@ import {
 const adminNav = [
   { label: 'Overview', href: '/admin', icon: 'dashboard' },
   { label: 'Orders', href: '/admin/orders', icon: 'truck' },
+  { label: 'Coupons', href: '/admin/coupons', icon: 'tag' },
   { label: 'Products', href: '/admin/products', icon: 'bag' },
   { label: 'Categories', href: '/admin/categories', icon: 'package' },
   { label: 'Sizes', href: '/admin/sizes', icon: 'size' },

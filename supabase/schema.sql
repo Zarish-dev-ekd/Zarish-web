@@ -257,6 +257,8 @@ CREATE TABLE IF NOT EXISTS public.orders (
   razorpay_signature TEXT,
   order_status TEXT NOT NULL DEFAULT 'placed', -- placed, confirmed, processing, shipped, delivered, cancelled
   tracking_number TEXT,
+  coupon_code TEXT,
+  discount_amount NUMERIC(10, 2) DEFAULT 0,
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW()),
   updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
@@ -276,16 +278,32 @@ CREATE TABLE IF NOT EXISTS public.order_items (
   created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
 );
 
--- Indexes for orders
+-- 14. Coupons & Promo Codes
+CREATE TABLE IF NOT EXISTS public.coupons (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code TEXT NOT NULL UNIQUE,
+  discount_type TEXT NOT NULL DEFAULT 'percentage', -- 'percentage' or 'fixed'
+  discount_value NUMERIC(10, 2) NOT NULL DEFAULT 10,
+  min_order_value NUMERIC(10, 2) DEFAULT 0,
+  valid_until TIMESTAMPTZ,
+  is_active BOOLEAN DEFAULT true,
+  usage_count INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW()),
+  updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
+);
+
+-- Indexes
 CREATE INDEX IF NOT EXISTS idx_orders_user ON public.orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_orders_email ON public.orders(customer_email);
 CREATE INDEX IF NOT EXISTS idx_orders_number ON public.orders(order_number);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON public.orders(order_status);
 CREATE INDEX IF NOT EXISTS idx_order_items_order ON public.order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_coupons_code ON public.coupons(code);
 
--- RLS for orders
+-- RLS
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Public read own orders" ON public.orders FOR SELECT USING (true);
 CREATE POLICY "Public insert orders" ON public.orders FOR INSERT WITH CHECK (true);
@@ -294,4 +312,7 @@ CREATE POLICY "Admin manage orders" ON public.orders FOR ALL USING (true) WITH C
 CREATE POLICY "Public read order items" ON public.order_items FOR SELECT USING (true);
 CREATE POLICY "Public insert order items" ON public.order_items FOR INSERT WITH CHECK (true);
 CREATE POLICY "Admin manage order items" ON public.order_items FOR ALL USING (true) WITH CHECK (true);
+
+CREATE POLICY "Public read active coupons" ON public.coupons FOR SELECT USING (true);
+CREATE POLICY "Admin manage coupons" ON public.coupons FOR ALL USING (true) WITH CHECK (true);
 

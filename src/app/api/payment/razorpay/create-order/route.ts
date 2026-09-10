@@ -101,13 +101,49 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid order amount.' }, { status: 400 });
     }
 
+    // Process coupon code if provided
+    let discountAmount = 0;
+    let appliedCouponCode: string | null = null;
+
+    if (body.couponCode && typeof body.couponCode === 'string') {
+      const cleanCode = body.couponCode.trim().toUpperCase();
+      const { data: coupon } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('code', cleanCode)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (coupon) {
+        const isExpired = coupon.valid_until && new Date(coupon.valid_until) < new Date();
+        const minMet = !coupon.min_order_value || calculatedTotal >= Number(coupon.min_order_value);
+
+        if (!isExpired && minMet) {
+          if (coupon.discount_type === 'percentage') {
+            discountAmount = Math.round((calculatedTotal * Number(coupon.discount_value)) / 100);
+          } else {
+            discountAmount = Math.min(calculatedTotal, Number(coupon.discount_value));
+          }
+          appliedCouponCode = coupon.code;
+
+          // Increment coupon usage count
+          await supabase
+            .from('coupons')
+            .update({ usage_count: (coupon.usage_count || 0) + 1 })
+            .eq('id', coupon.id);
+        }
+      }
+    }
+
+    const finalPayableTotal = Math.max(1, calculatedTotal - discountAmount);
+
     // Generate readable order number: ZR-XXXXXX
     const orderNumber = `ZR-${Date.now().toString().slice(-6)}-${Math.floor(
       Math.random() * 899 + 100
     )}`;
 
     // Create order on Razorpay (Amount in paise: ₹1 = 100 paise)
-    const amountInPaise = Math.round(calculatedTotal * 100);
+    const amountInPaise = Math.round(finalPayableTotal * 100);
     const rzpOrder = await createRazorpayOrder({
       amountInPaise,
       currency: 'INR',
@@ -115,6 +151,7 @@ export async function POST(request: Request) {
       notes: {
         customerEmail: customer.email,
         customerName: customer.fullName,
+        couponCode: appliedCouponCode || 'none',
       },
     });
 
@@ -129,12 +166,14 @@ export async function POST(request: Request) {
           customer_email: customer.email.trim(),
           customer_phone: customer.phone || shippingAddress?.phone || null,
           shipping_address: shippingAddress || {},
-          total_amount: calculatedTotal,
+          total_amount: finalPayableTotal,
           currency: 'INR',
           payment_method: 'razorpay',
           payment_status: 'pending',
           razorpay_order_id: rzpOrder.id,
           order_status: 'placed',
+          coupon_code: appliedCouponCode,
+          discount_amount: discountAmount,
         },
       ])
       .select()
@@ -142,7 +181,6 @@ export async function POST(request: Request) {
 
     if (orderErr) {
       console.error('Error saving order in database:', orderErr);
-      // Still proceed if DB table is being created, returning the Razorpay parameters
     }
 
     // Insert order items if order was saved
@@ -163,6 +201,10 @@ export async function POST(request: Request) {
       currency: rzpOrder.currency,
       keyId: getRazorpayKeyId(),
       isSimulated: Boolean(rzpOrder.isSimulated),
+      subtotal: calculatedTotal,
+      discountAmount,
+      finalAmount: finalPayableTotal,
+      couponCode: appliedCouponCode,
     });
   } catch (err: any) {
     console.error('Error creating Razorpay order:', err);

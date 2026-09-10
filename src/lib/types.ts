@@ -339,8 +339,25 @@ export interface Order {
   razorpay_signature?: string | null;
   order_status: 'placed' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   tracking_number?: string | null;
+  coupon_code?: string | null;
+  discount_amount?: number | null;
   notes?: string | null;
   created_at: string;
   updated_at: string;
   items?: OrderItem[];
 }
+
+// ─── Coupons & Promo Codes ───────────────────────────────────
+export interface Coupon {
+  id: string;
+  code: string;
+  discount_type: 'percentage' | 'fixed';
+  discount_value: number;
+  min_order_value: number;
+  valid_until: string | null;
+  is_active: boolean;
+  usage_count: number;
+  created_at: string;
+  updated_at: string;
+}
+

@@ -37,6 +37,17 @@ export default function CheckoutModal({
   const [stateName, setStateName] = useState('Kerala');
   const [postalCode, setPostalCode] = useState('');
 
+  // Coupon state
+  const [couponInput, setCouponInput] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    discountAmount: number;
+    discountType: string;
+    discountValue: number;
+  } | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+
   // Pre-fill if authenticated
   useEffect(() => {
     async function loadUser() {
@@ -64,11 +75,54 @@ export default function CheckoutModal({
 
   if (!isOpen) return null;
 
-  const totalPrice = product.price * quantity;
+  const subtotal = product.price * quantity;
+  const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const finalPrice = Math.max(1, subtotal - discountAmount);
+
   const primaryImg =
     product.images?.find((img) => img.role === 'primary')?.secure_url ||
     product.images?.[0]?.secure_url ||
     '';
+
+  const handleApplyCoupon = async () => {
+    if (!couponInput.trim()) return;
+    setCouponLoading(true);
+    setCouponError(null);
+
+    try {
+      const res = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: couponInput.trim(),
+          orderAmount: subtotal,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.valid) {
+        setCouponError(data.error || 'Invalid coupon code.');
+        setAppliedCoupon(null);
+      } else {
+        setAppliedCoupon({
+          code: data.coupon.code,
+          discountAmount: data.discountAmount,
+          discountType: data.coupon.discount_type,
+          discountValue: data.coupon.discount_value,
+        });
+        setCouponInput('');
+      }
+    } catch (err: any) {
+      setCouponError('Failed to validate coupon code.');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponError(null);
+  };
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,6 +157,7 @@ export default function CheckoutModal({
             postalCode: postalCode.trim(),
             country: 'India',
           },
+          couponCode: appliedCoupon ? appliedCoupon.code : undefined,
         }),
       });
 
@@ -228,13 +283,94 @@ export default function CheckoutModal({
             </div>
           </div>
           <div className="text-right">
-            <div className="text-sm sm:text-base font-bold text-[#2C1D13]">
-              {formatPrice(totalPrice)}
-            </div>
-            <span className="text-[10px] text-[#0E7064] font-semibold uppercase tracking-wider block">
-              Free Express Shipping
-            </span>
+            {appliedCoupon ? (
+              <div>
+                <span className="text-xs text-[#8C7B6B] line-through block leading-none mb-1">
+                  {formatPrice(subtotal)}
+                </span>
+                <div className="text-sm sm:text-base font-bold text-[#2C1D13]">
+                  {formatPrice(finalPrice)}
+                </div>
+                <span className="text-[10px] text-[#047857] font-bold uppercase tracking-wider block">
+                  Saved {formatPrice(discountAmount)}
+                </span>
+              </div>
+            ) : (
+              <div>
+                <div className="text-sm sm:text-base font-bold text-[#2C1D13]">
+                  {formatPrice(subtotal)}
+                </div>
+                <span className="text-[10px] text-[#0E7064] font-semibold uppercase tracking-wider block">
+                  Free Express Shipping
+                </span>
+              </div>
+            )}
           </div>
+        </div>
+
+        {/* Coupon Code Section */}
+        <div className="px-5 py-3.5 sm:px-6 bg-white border-b border-[#E2D5C7]">
+          {appliedCoupon ? (
+            <div className="flex items-center justify-between bg-[#EBF8F2] border border-[#A7F3D0] rounded-xl px-3.5 py-2.5">
+              <div className="flex items-center gap-2.5">
+                <span className="text-sm text-[#0E7064]">★</span>
+                <div>
+                  <div className="text-xs font-bold text-[#065F46] font-mono tracking-wider">
+                    {appliedCoupon.code} APPLIED
+                  </div>
+                  <p className="text-[11px] text-[#047857]">
+                    You save {formatPrice(appliedCoupon.discountAmount)} (
+                    {appliedCoupon.discountType === 'percentage'
+                      ? `${appliedCoupon.discountValue}% OFF`
+                      : 'Flat Discount'}
+                    )
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleRemoveCoupon}
+                className="text-xs font-semibold text-[#991B1B] hover:text-[#DC2626] transition-colors px-2 py-1"
+              >
+                ✕ Remove
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={couponInput}
+                  onChange={(e) => {
+                    setCouponInput(e.target.value.toUpperCase());
+                    setCouponError(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleApplyCoupon();
+                    }
+                  }}
+                  placeholder="Have a coupon code? (e.g. WELCOME10)"
+                  className="flex-1 h-10 px-3 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-xs sm:text-sm font-mono uppercase text-[#2C1D13] placeholder-[#A89887] focus:outline-none focus:border-[#7B5B3A] focus:bg-white"
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyCoupon}
+                  disabled={couponLoading || !couponInput.trim()}
+                  className="px-4 h-10 rounded-xl bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-xs font-bold tracking-wider uppercase transition-all disabled:opacity-50 whitespace-nowrap"
+                >
+                  {couponLoading ? 'Checking...' : 'Apply'}
+                </button>
+              </div>
+
+              {couponError && (
+                <p className="text-xs text-[#991B1B] mt-1.5 flex items-center gap-1">
+                  <span>⚠</span> {couponError}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Form */}
@@ -347,7 +483,7 @@ export default function CheckoutModal({
                 <span>Opening Razorpay Gateway...</span>
               </>
             ) : (
-              <span>Proceed to Pay {formatPrice(totalPrice)}</span>
+              <span>Proceed to Pay {formatPrice(finalPrice)}</span>
             )}
           </button>
         </form>

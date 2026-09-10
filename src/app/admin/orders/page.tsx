@@ -263,6 +263,11 @@ export default function AdminOrdersPage() {
                         <div style={{ fontWeight: 700, fontSize: '14px' }}>
                           {formatPrice(order.total_amount)}
                         </div>
+                        {order.coupon_code && (
+                          <div style={{ fontSize: '11px', color: '#047857', fontWeight: 600 }}>
+                            🏷️ {order.coupon_code} (-{formatPrice(order.discount_amount || 0)})
+                          </div>
+                        )}
                         <span style={{ fontSize: '11px', color: 'var(--admin-text-muted)' }}>
                           via {order.payment_method}
                         </span>
