@@ -141,52 +141,51 @@ export default function AdminCouponsPage() {
 
   return (
     <div>
-      <div className="admin-page-header">
+      <div className="flex items-center justify-between mb-6 max-sm:flex-col max-sm:items-start max-sm:gap-4">
         <div>
-          <h2 className="admin-page-title">Coupons & Promotional Offers</h2>
-          <p className="admin-page-subtitle">
+          <h2 className="font-serif text-[26px] text-[#2C241E] m-0 mb-1.5 font-semibold">Coupons & Promotional Offers</h2>
+          <p className="text-sm text-[#7A6F66] m-0">
             Create discount codes, set percentage or flat savings, define validity dates, and track redemptions.
           </p>
         </div>
       </div>
 
       {error && (
-        <div className="admin-card" style={{ background: '#FFEBEE', color: '#D32F2F', padding: '12px 16px', marginBottom: '20px' }}>
+        <div className="bg-[#FFEBEE] text-[#D32F2F] border border-[#FECACA] rounded-lg p-3.5 px-4 mb-5 text-sm">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="admin-card" style={{ background: '#E8F5E9', color: '#2E7D32', padding: '12px 16px', marginBottom: '20px' }}>
+        <div className="bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] rounded-lg p-3.5 px-4 mb-5 text-sm">
           {success}
         </div>
       )}
 
       {/* Creation Card */}
-      <div className="admin-card" style={{ marginBottom: '24px' }}>
-        <h3 className="admin-card__title" style={{ marginBottom: '16px' }}>
+      <div className="bg-white border border-[#E8E0D5] rounded-lg p-6 mb-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+        <h3 className="text-lg font-semibold m-0 mb-4 text-[#2C241E]">
           Create New Coupon Code
         </h3>
 
         <form onSubmit={handleCreateCoupon}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', alignItems: 'end' }}>
-            <div className="admin-form-group" style={{ margin: 0 }}>
-              <label className="admin-label">Coupon Code *</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 items-end">
+            <div>
+              <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Coupon Code *</label>
               <input
                 type="text"
-                className="admin-input"
+                className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15 font-mono font-bold"
                 placeholder="e.g. WELCOME10 or EID500"
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
-                style={{ fontFamily: 'monospace', fontWeight: 'bold' }}
                 required
               />
             </div>
 
-            <div className="admin-form-group" style={{ margin: 0 }}>
-              <label className="admin-label">Discount Type</label>
+            <div>
+              <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Discount Type</label>
               <select
-                className="admin-select"
+                className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
                 value={discountType}
                 onChange={(e) => {
                   const t = e.target.value as 'percentage' | 'fixed';
@@ -199,14 +198,14 @@ export default function AdminCouponsPage() {
               </select>
             </div>
 
-            <div className="admin-form-group" style={{ margin: 0 }}>
-              <label className="admin-label">
+            <div>
+              <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">
                 {discountType === 'percentage' ? 'Percentage (% Off) *' : 'Flat Amount (INR ₹) *'}
               </label>
               <input
                 type="number"
                 step="0.01"
-                className="admin-input"
+                className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
                 placeholder={discountType === 'percentage' ? '10' : '500'}
                 value={discountValue}
                 onChange={(e) => setDiscountValue(e.target.value)}
@@ -214,23 +213,23 @@ export default function AdminCouponsPage() {
               />
             </div>
 
-            <div className="admin-form-group" style={{ margin: 0 }}>
-              <label className="admin-label">Min. Order Value (₹)</label>
+            <div>
+              <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Min. Order Value (₹)</label>
               <input
                 type="number"
                 step="1"
-                className="admin-input"
+                className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
                 placeholder="0"
                 value={minOrderValue}
                 onChange={(e) => setMinOrderValue(e.target.value)}
               />
             </div>
 
-            <div className="admin-form-group" style={{ margin: 0 }}>
-              <label className="admin-label">Valid Until (Expiry Date)</label>
+            <div>
+              <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Valid Until (Expiry Date)</label>
               <input
                 type="date"
-                className="admin-input"
+                className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
                 value={validUntil}
                 onChange={(e) => setValidUntil(e.target.value)}
               />
@@ -240,8 +239,7 @@ export default function AdminCouponsPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="admin-btn admin-btn--primary"
-                style={{ width: '100%', height: '40px' }}
+                className="w-full h-10 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-md bg-[#7B5B3A] text-white hover:bg-[#63472C] transition-colors disabled:opacity-50"
               >
                 {submitting ? 'Creating...' : '+ Create Coupon'}
               </button>
@@ -251,38 +249,38 @@ export default function AdminCouponsPage() {
       </div>
 
       {/* Existing Coupons Table */}
-      <div className="admin-card">
-        <h3 className="admin-card__title" style={{ marginBottom: '16px' }}>
+      <div className="bg-white border border-[#E8E0D5] rounded-lg p-6 mb-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+        <h3 className="text-lg font-semibold m-0 mb-4 text-[#2C241E]">
           Active & Past Coupons ({coupons.length})
         </h3>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px 0' }}>
-            <span className="admin-spinner" />
-            <p style={{ marginTop: '12px', color: 'var(--admin-text-muted)' }}>Loading coupons...</p>
+          <div className="text-center py-10">
+            <span className="w-5 h-5 border-2 border-[#E8E0D5] border-t-[#7B5B3A] rounded-full animate-spin inline-block" />
+            <p className="mt-3 text-sm text-[#7A6F66]">Loading coupons...</p>
           </div>
         ) : coupons.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '50px 0', color: 'var(--admin-text-muted)' }}>
-            <div style={{ fontSize: '32px', marginBottom: '8px' }}>🏷️</div>
-            <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--admin-text-main)' }}>
+          <div className="text-center py-12 text-[#7A6F66]">
+            <div className="text-3xl mb-2">🏷️</div>
+            <p className="text-[15px] font-semibold text-[#2C241E]">
               No promotional coupons created yet.
             </p>
-            <p style={{ fontSize: '13px' }}>
+            <p className="text-xs mt-1">
               Create your first code above (e.g. WELCOME10 for 10% off).
             </p>
           </div>
         ) : (
-          <div className="admin-table-container">
-            <table className="admin-table">
+          <div className="overflow-x-auto border border-[#E8E0D5] rounded-lg">
+            <table className="w-full border-collapse text-left text-sm">
               <thead>
-                <tr>
-                  <th>Coupon Code</th>
-                  <th>Discount Offer</th>
-                  <th>Min Order</th>
-                  <th>Validity / Expiry</th>
-                  <th>Redemptions</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                <tr className="bg-[#FAF8F5]">
+                  <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Coupon Code</th>
+                  <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Discount Offer</th>
+                  <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Min Order</th>
+                  <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Validity / Expiry</th>
+                  <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Redemptions</th>
+                  <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Status</th>
+                  <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -297,74 +295,54 @@ export default function AdminCouponsPage() {
                     : 'Perpetual (No Expiry)';
 
                   return (
-                    <tr key={c.id}>
-                      <td>
-                        <strong
-                          style={{
-                            fontFamily: 'monospace',
-                            fontSize: '14px',
-                            background: '#FAF6F0',
-                            padding: '3px 8px',
-                            borderRadius: '6px',
-                            border: '1px solid #E2D5C7',
-                            color: '#2C1D13',
-                            letterSpacing: '0.05em',
-                          }}
-                        >
+                    <tr key={c.id} className="hover:bg-black/[0.01]">
+                      <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle">
+                        <strong className="font-mono text-sm bg-[#FAF6F0] px-2 py-0.5 rounded border border-[#E2D5C7] text-[#2C1D13] tracking-wide">
                           {c.code}
                         </strong>
                       </td>
 
-                      <td>
-                        <strong style={{ color: '#7B5B3A', fontSize: '13px' }}>
+                      <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle">
+                        <strong className="text-[#7B5B3A] text-[13px]">
                           {c.discount_type === 'percentage'
                             ? `${c.discount_value}% OFF`
                             : `${formatPrice(c.discount_value)} FLAT OFF`}
                         </strong>
                       </td>
 
-                      <td>
-                        <span style={{ fontSize: '12px' }}>
-                          {c.min_order_value > 0 ? formatPrice(c.min_order_value) : 'None (₹0)'}
-                        </span>
+                      <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle text-xs">
+                        {c.min_order_value > 0 ? formatPrice(c.min_order_value) : 'None (₹0)'}
                       </td>
 
-                      <td>
-                        <span
-                          style={{
-                            fontSize: '12px',
-                            color: isExpired ? '#D32F2F' : 'var(--admin-text-main)',
-                            fontWeight: isExpired ? 700 : 400,
-                          }}
-                        >
+                      <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle text-xs">
+                        <span className={isExpired ? 'text-[#D32F2F] font-bold' : 'text-[#2C241E]'}>
                           {expiryFormatted}
                           {isExpired && ' (Expired)'}
                         </span>
                       </td>
 
-                      <td>
-                        <span style={{ fontSize: '12px', color: 'var(--admin-text-muted)' }}>
-                          {c.usage_count || 0} times used
-                        </span>
+                      <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle text-xs text-[#7A6F66]">
+                        {c.usage_count || 0} times used
                       </td>
 
-                      <td>
+                      <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle">
                         <button
                           type="button"
                           onClick={() => handleToggleActive(c.id, c.is_active)}
-                          className={`admin-badge ${c.is_active && !isExpired ? 'admin-badge--active' : 'admin-badge--inactive'}`}
-                          style={{ cursor: 'pointer', border: 'none' }}
+                          className={`inline-block px-2 py-0.5 text-[11px] font-semibold rounded uppercase cursor-pointer border-none ${
+                            c.is_active && !isExpired ? 'bg-[#E8F5E9] text-[#2E7D32]' : 'bg-[#FFEBEE] text-[#D32F2F]'
+                          }`}
                           title="Click to toggle status"
                         >
                           {c.is_active && !isExpired ? 'Active' : 'Inactive'}
                         </button>
                       </td>
 
-                      <td>
+                      <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle">
                         <button
                           type="button"
                           onClick={() => handleDeleteCoupon(c.id, c.code)}
-                          className="admin-btn admin-btn--danger admin-btn--sm"
+                          className="px-2.5 py-1 text-xs font-medium rounded bg-[#FEE2E2] border border-[#FECACA] text-[#D32F2F] hover:bg-[#FCA5A5] transition-colors"
                         >
                           Delete
                         </button>

@@ -121,6 +121,18 @@ CREATE TABLE IF NOT EXISTS public.sizes (
   updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
 );
 
+-- 7b. Colors Table
+CREATE TABLE IF NOT EXISTS public.colors (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  hex_code TEXT NOT NULL DEFAULT '#000000',
+  slug TEXT NOT NULL UNIQUE,
+  display_order INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW()),
+  updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
+);
+
 -- 8. Products Table
 CREATE TABLE IF NOT EXISTS public.products (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -158,6 +170,8 @@ CREATE TABLE IF NOT EXISTS public.product_images (
   height INTEGER DEFAULT 1000,
   role TEXT DEFAULT 'gallery',
   display_order INTEGER DEFAULT 0,
+  color TEXT,
+  color_id UUID REFERENCES public.colors(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
 );
 
@@ -189,6 +203,7 @@ CREATE INDEX IF NOT EXISTS idx_products_category ON public.products(category_id)
 CREATE INDEX IF NOT EXISTS idx_products_slug ON public.products(slug);
 CREATE INDEX IF NOT EXISTS idx_products_active ON public.products(is_active);
 CREATE INDEX IF NOT EXISTS idx_categories_slug ON public.categories(slug);
+CREATE INDEX IF NOT EXISTS idx_colors_slug ON public.colors(slug);
 CREATE INDEX IF NOT EXISTS idx_product_images_product ON public.product_images(product_id);
 CREATE INDEX IF NOT EXISTS idx_product_variants_product ON public.product_variants(product_id);
 
@@ -200,6 +215,7 @@ ALTER TABLE public.hero_slides ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.benefits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sizes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.colors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.product_images ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.product_variants ENABLE ROW LEVEL SECURITY;
@@ -213,6 +229,7 @@ CREATE POLICY "Public read hero_slides" ON public.hero_slides FOR SELECT USING (
 CREATE POLICY "Public read benefits" ON public.benefits FOR SELECT USING (true);
 CREATE POLICY "Public read categories" ON public.categories FOR SELECT USING (true);
 CREATE POLICY "Public read sizes" ON public.sizes FOR SELECT USING (true);
+CREATE POLICY "Public read colors" ON public.colors FOR SELECT USING (true);
 CREATE POLICY "Public read products" ON public.products FOR SELECT USING (true);
 CREATE POLICY "Public read product_images" ON public.product_images FOR SELECT USING (true);
 CREATE POLICY "Public read product_variants" ON public.product_variants FOR SELECT USING (true);
@@ -229,6 +246,7 @@ CREATE POLICY "Admin all hero_slides" ON public.hero_slides FOR ALL USING (true)
 CREATE POLICY "Admin all benefits" ON public.benefits FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Admin all categories" ON public.categories FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Admin all sizes" ON public.sizes FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Admin all colors" ON public.colors FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Admin all products" ON public.products FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Admin all product_images" ON public.product_images FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Admin all product_variants" ON public.product_variants FOR ALL USING (true) WITH CHECK (true);

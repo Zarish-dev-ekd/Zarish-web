@@ -62,18 +62,18 @@ export default function ImageUpload({
   };
 
   return (
-    <div className="admin-image-upload">
-      {label && <label className="admin-label">{label}</label>}
+    <div>
+      {label && <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">{label}</label>}
 
       {value ? (
-        <div className="admin-image-preview">
+        <div className="relative max-w-[240px] rounded-lg overflow-hidden border border-[#E8E0D5]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={value} alt="Preview" className="admin-image-preview__img" />
-          <div className="admin-image-preview__overlay">
+          <img src={value} alt="Preview" className="w-full h-auto block" />
+          <div className="absolute bottom-0 inset-x-0 bg-black/70 p-2 flex gap-2 justify-center">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="admin-btn admin-btn--sm admin-btn--secondary"
+              className="px-3 py-1.5 text-xs font-medium rounded bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors"
               disabled={uploading}
             >
               {uploading ? 'Uploading...' : 'Replace'}
@@ -81,7 +81,7 @@ export default function ImageUpload({
             <button
               type="button"
               onClick={handleRemove}
-              className="admin-btn admin-btn--sm admin-btn--danger"
+              className="px-3 py-1.5 text-xs font-medium rounded bg-[#FEE2E2] text-[#D32F2F] hover:bg-[#FCA5A5] transition-colors"
               disabled={uploading}
             >
               Remove
@@ -91,15 +91,17 @@ export default function ImageUpload({
       ) : (
         <div
           onClick={() => !uploading && fileInputRef.current?.click()}
-          className={`admin-image-dropzone ${uploading ? 'admin-image-dropzone--uploading' : ''}`}
+          className={`border-2 border-dashed border-[#E8E0D5] rounded-lg p-6 text-center cursor-pointer bg-[#FAFAF8] transition-all duration-200 hover:border-[#7B5B3A] hover:bg-[#F5EFE6] ${
+            uploading ? 'cursor-wait bg-[#F5EFE6]' : ''
+          }`}
         >
           {uploading ? (
-            <div className="admin-image-dropzone__loading">
-              <span className="admin-spinner" />
+            <div className="flex flex-col items-center gap-2 text-[#7A6F66] text-sm">
+              <span className="w-5 h-5 border-2 border-[#E8E0D5] border-t-[#7B5B3A] rounded-full animate-spin inline-block" />
               <span>Uploading to Cloudinary...</span>
             </div>
           ) : (
-            <div className="admin-image-dropzone__content">
+            <div className="flex flex-col items-center gap-2 text-[#7A6F66]">
               <svg
                 width="32"
                 height="32"
@@ -112,8 +114,8 @@ export default function ImageUpload({
                 <circle cx="8.5" cy="8.5" r="1.5" />
                 <polyline points="21 15 16 10 5 21" />
               </svg>
-              <p className="admin-image-dropzone__text">Click to choose image or drag & drop</p>
-              {helperText && <p className="admin-image-dropzone__subtext">{helperText}</p>}
+              <p className="text-sm font-medium text-[#2C241E] m-0">Click to choose image or drag & drop</p>
+              {helperText && <p className="text-xs text-[#7A6F66] m-0">{helperText}</p>}
             </div>
           )}
         </div>
@@ -127,7 +129,7 @@ export default function ImageUpload({
         style={{ display: 'none' }}
       />
 
-      {error && <p className="admin-error-text">{error}</p>}
+      {error && <p className="text-xs text-[#D32F2F] mt-1">{error}</p>}
     </div>
   );
 }

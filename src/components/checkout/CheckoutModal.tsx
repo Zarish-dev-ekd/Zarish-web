@@ -12,6 +12,7 @@ interface CheckoutModalProps {
   onClose: () => void;
   product: Product;
   selectedSize: string;
+  selectedColor?: string | null;
   quantity: number;
 }
 
@@ -20,6 +21,7 @@ export default function CheckoutModal({
   onClose,
   product,
   selectedSize,
+  selectedColor,
   quantity,
 }: CheckoutModalProps) {
   const router = useRouter();
@@ -376,8 +378,15 @@ export default function CheckoutModal({
         {/* Form */}
         <form onSubmit={handleCheckout} className="p-5 sm:p-6 space-y-4">
           {error && (
-            <div className="p-3 rounded-xl text-xs bg-[#FFF1F2] text-[#9F1239] border border-[#FECDD3]">
-              {error}
+            <div className="p-3.5 rounded-2xl text-xs bg-[#FDF8F5] text-[#6B2822] border border-[#E8D5CE] flex items-start gap-2.5 shadow-[0_2px_8px_rgba(107,40,34,0.04)]">
+              <div className="w-4 h-4 rounded-full bg-[#F4E2DB] text-[#6B2822] flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+              </div>
+              <span className="leading-relaxed font-medium">{error}</span>
             </div>
           )}
 

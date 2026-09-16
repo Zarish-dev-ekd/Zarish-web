@@ -111,37 +111,37 @@ export default function AdminAnnouncementsPage() {
 
   return (
     <div>
-      <div className="admin-page-header">
+      <div className="flex items-center justify-between mb-6 max-sm:flex-col max-sm:items-start max-sm:gap-4">
         <div>
-          <h2 className="admin-page-title">Top Announcement Bar</h2>
-          <p className="admin-page-subtitle">
+          <h2 className="font-serif text-[26px] text-[#2C241E] m-0 mb-1.5 font-semibold">Top Announcement Bar</h2>
+          <p className="text-sm text-[#7A6F66] m-0">
             Configure the slim notifications banner located at the very top of the website.
           </p>
         </div>
       </div>
 
       {error && (
-        <div className="admin-card" style={{ background: '#FFEBEE', color: '#D32F2F', padding: '12px 16px' }}>
+        <div className="bg-[#FFEBEE] text-[#D32F2F] border border-[#FECACA] rounded-lg p-3.5 px-4 mb-5 text-sm">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="admin-card" style={{ background: '#E8F5E9', color: '#2E7D32', padding: '12px 16px' }}>
+        <div className="bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] rounded-lg p-3.5 px-4 mb-5 text-sm">
           {success}
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '24px', alignItems: 'start' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-6 items-start">
         {/* Form */}
-        <div className="admin-card">
-          <h3 className="admin-card__title">Add Announcement</h3>
+        <div className="bg-white border border-[#E8E0D5] rounded-lg p-6 mb-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+          <h3 className="text-lg font-semibold m-0 mb-4 text-[#2C241E]">Add Announcement</h3>
           <form onSubmit={handleSubmit}>
-            <div className="admin-form-group">
-              <label className="admin-label">Announcement Text *</label>
+            <div className="mb-5">
+              <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Announcement Text *</label>
               <input
                 type="text"
-                className="admin-input"
+                className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
                 placeholder="e.g. Free delivery on orders over ₹2,999"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
@@ -149,10 +149,14 @@ export default function AdminAnnouncementsPage() {
               />
             </div>
 
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label className="admin-label">Icon</label>
-                <select className="admin-select" value={icon} onChange={(e) => setIcon(e.target.value)}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
+              <div>
+                <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Icon</label>
+                <select
+                  className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
+                  value={icon}
+                  onChange={(e) => setIcon(e.target.value)}
+                >
                   <option value="truck">Truck (Shipping)</option>
                   <option value="package">Package (Delivery)</option>
                   <option value="globe">Globe (Worldwide)</option>
@@ -161,34 +165,35 @@ export default function AdminAnnouncementsPage() {
                 </select>
               </div>
 
-              <div className="admin-form-group">
-                <label className="admin-label">Display Order</label>
+              <div>
+                <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Display Order</label>
                 <input
                   type="number"
-                  className="admin-input"
+                  className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
                   value={displayOrder}
                   onChange={(e) => setDisplayOrder(e.target.value)}
                 />
               </div>
             </div>
 
-            <div className="admin-form-group">
-              <label className="admin-label">Link URL (Optional)</label>
+            <div className="mb-5">
+              <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Link URL (Optional)</label>
               <input
                 type="text"
-                className="admin-input"
+                className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
                 placeholder="/offers or /shipping"
                 value={linkUrl}
                 onChange={(e) => setLinkUrl(e.target.value)}
               />
             </div>
 
-            <div className="admin-form-group">
-              <label className="admin-checkbox-label">
+            <div className="mb-5">
+              <label className="flex items-center gap-2 text-sm cursor-pointer text-[#2C241E]">
                 <input
                   type="checkbox"
                   checked={isActive}
                   onChange={(e) => setIsActive(e.target.checked)}
+                  className="w-4 h-4 rounded text-[#7B5B3A] focus:ring-[#7B5B3A]"
                 />
                 <span>Active (Show on storefront)</span>
               </label>
@@ -196,30 +201,27 @@ export default function AdminAnnouncementsPage() {
 
             <button
               type="submit"
-              className="admin-btn admin-btn--primary"
               disabled={submitting}
-              style={{ width: '100%' }}
+              className="w-full inline-flex items-center justify-center gap-2 px-[18px] py-2.5 text-sm font-medium rounded-md bg-[#7B5B3A] text-white hover:bg-[#63472C] transition-colors disabled:opacity-50"
             >
               {submitting ? 'Saving...' : 'Add Announcement'}
             </button>
           </form>
 
-          <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--admin-border)' }}>
-            <p style={{ fontSize: '13px', fontWeight: 600, margin: '0 0 8px 0' }}>Quick Presets:</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div className="mt-6 pt-4 border-t border-[#E8E0D5]">
+            <p className="text-[13px] font-semibold m-0 mb-2 text-[#2C241E]">Quick Presets:</p>
+            <div className="flex flex-col gap-2">
               <button
                 type="button"
                 onClick={() => handleQuickAdd('Free express delivery on prepaid orders across India', 'truck')}
-                className="admin-btn admin-btn--sm admin-btn--secondary"
-                style={{ justifyContent: 'flex-start' }}
+                className="inline-flex items-center justify-start gap-1.5 px-3 py-1.5 text-xs font-medium rounded border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors text-left"
               >
                 + Free express delivery on prepaid orders across India
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickAdd('Worldwide International Shipping Available', 'globe')}
-                className="admin-btn admin-btn--sm admin-btn--secondary"
-                style={{ justifyContent: 'flex-start' }}
+                className="inline-flex items-center justify-start gap-1.5 px-3 py-1.5 text-xs font-medium rounded border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors text-left"
               >
                 + Worldwide International Shipping Available
               </button>
@@ -228,49 +230,49 @@ export default function AdminAnnouncementsPage() {
         </div>
 
         {/* Table */}
-        <div className="admin-card">
-          <h3 className="admin-card__title">Active Top Announcements ({announcements.length})</h3>
+        <div className="bg-white border border-[#E8E0D5] rounded-lg p-6 mb-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+          <h3 className="text-lg font-semibold m-0 mb-4 text-[#2C241E]">Active Top Announcements ({announcements.length})</h3>
 
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '40px 0' }}>
-              <span className="admin-spinner" />
-              <p style={{ marginTop: '12px', color: 'var(--admin-text-muted)' }}>Loading...</p>
+            <div className="text-center py-10">
+              <span className="w-5 h-5 border-2 border-[#E8E0D5] border-t-[#7B5B3A] rounded-full animate-spin inline-block" />
+              <p className="mt-3 text-sm text-[#7A6F66]">Loading...</p>
             </div>
           ) : announcements.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--admin-text-muted)' }}>
-              <p>No announcements configured yet.</p>
-              <p style={{ fontSize: '13px' }}>The top bar will remain hidden until you add one.</p>
+            <div className="text-center py-10 text-[#7A6F66]">
+              <p className="text-sm">No announcements configured yet.</p>
+              <p className="text-xs mt-1">The top bar will remain hidden until you add one.</p>
             </div>
           ) : (
-            <div className="admin-table-container">
-              <table className="admin-table">
+            <div className="overflow-x-auto border border-[#E8E0D5] rounded-lg">
+              <table className="w-full border-collapse text-left text-sm">
                 <thead>
-                  <tr>
-                    <th>Icon</th>
-                    <th>Message</th>
-                    <th>Order</th>
-                    <th>Status</th>
-                    <th>Action</th>
+                  <tr className="bg-[#FAF8F5]">
+                    <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Icon</th>
+                    <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Message</th>
+                    <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Order</th>
+                    <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Status</th>
+                    <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {announcements.map((a) => (
-                    <tr key={a.id}>
-                      <td>
-                        <code>{a.icon}</code>
+                    <tr key={a.id} className="hover:bg-black/[0.01]">
+                      <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle">
+                        <code className="text-xs bg-black/[0.04] px-1.5 py-0.5 rounded">{a.icon}</code>
                       </td>
-                      <td>{a.text}</td>
-                      <td>{a.display_order}</td>
-                      <td>
-                        <span className={`admin-badge ${a.is_active ? 'admin-badge--active' : 'admin-badge--inactive'}`}>
+                      <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle text-[#2C241E]">{a.text}</td>
+                      <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle text-[#2C241E]">{a.display_order}</td>
+                      <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle">
+                        <span className={`inline-block px-2 py-0.5 text-[11px] font-semibold rounded uppercase ${a.is_active ? 'bg-[#E8F5E9] text-[#2E7D32]' : 'bg-[#FFEBEE] text-[#D32F2F]'}`}>
                           {a.is_active ? 'Active' : 'Hidden'}
                         </span>
                       </td>
-                      <td>
+                      <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle">
                         <button
                           type="button"
                           onClick={() => handleDelete(a.id)}
-                          className="admin-btn admin-btn--danger admin-btn--sm"
+                          className="px-2.5 py-1 text-xs font-medium rounded bg-[#FEE2E2] border border-[#FECACA] text-[#D32F2F] hover:bg-[#FCA5A5] transition-colors"
                         >
                           Delete
                         </button>

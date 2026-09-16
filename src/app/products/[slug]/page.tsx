@@ -6,6 +6,7 @@ import {
   getSiteSettings,
   getAnnouncements,
   getNavigationItems,
+  getAllColors,
 } from '@/lib/supabase';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import Header from '@/components/layout/Header';
@@ -43,11 +44,12 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { slug } = await params;
 
-  const [product, settings, announcements, navigationItems] = await Promise.all([
+  const [product, settings, announcements, navigationItems, colors] = await Promise.all([
     getProductBySlug(slug),
     getSiteSettings(),
     getAnnouncements(),
     getNavigationItems(),
+    getAllColors(),
   ]);
 
   if (!product) {
@@ -62,7 +64,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       <Header navigationItems={navigationItems} cartItemCount={0} />
 
       <main className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10 pt-4 sm:pt-8 pb-16 sm:pb-24">
-        <ProductDetailView product={product} settings={settings} />
+        <ProductDetailView product={product} settings={settings} colors={colors} />
 
         {/* Related Garments */}
         {relatedProducts.length > 0 && (
@@ -76,7 +78,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               </p>
             </div>
 
-            <div className="product-grid">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {relatedProducts.map((relProduct) => (
                 <ProductCard key={relProduct.id} product={relProduct} />
               ))}

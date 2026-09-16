@@ -157,6 +157,8 @@ export interface ProductImage {
   height: number;
   role: 'primary' | 'secondary' | 'gallery' | 'thumbnail';
   display_order: number;
+  color?: string | null;
+  color_id?: string | null;
   created_at: string;
 }
 
@@ -357,6 +359,17 @@ export interface Coupon {
   valid_until: string | null;
   is_active: boolean;
   usage_count: number;
+  created_at: string;
+  updated_at: string;
+}
+// ─── Colors ──────────────────────────────────────────────────
+export interface ProductColor {
+  id: string;
+  name: string;
+  hex_code: string;
+  slug: string;
+  display_order: number;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }

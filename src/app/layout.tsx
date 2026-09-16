@@ -2,6 +2,10 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 import PreIntro from '@/components/common/PreIntro';
+import { WishlistProvider } from '@/context/WishlistContext';
+import WishlistDrawer from '@/components/wishlist/WishlistDrawer';
+import { CartProvider } from '@/context/CartContext';
+import CartDrawer from '@/components/cart/CartDrawer';
 
 export const metadata: Metadata = {
   title: 'ZARISH by Nehala Mufeed | Premium Modest Fashion',
@@ -34,7 +38,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning className="bg-white">
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -48,9 +52,15 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body suppressHydrationWarning>
-        <PreIntro />
-        {children}
+      <body suppressHydrationWarning className="bg-white">
+        <CartProvider>
+          <WishlistProvider>
+            <PreIntro />
+            <WishlistDrawer />
+            <CartDrawer />
+            {children}
+          </WishlistProvider>
+        </CartProvider>
       </body>
     </html>
   );

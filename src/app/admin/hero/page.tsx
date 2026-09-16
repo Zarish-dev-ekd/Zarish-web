@@ -181,29 +181,29 @@ export default function AdminHeroPage() {
   return (
     <div>
       {/* ─── Page Header ────────────────────────────────────────── */}
-      <div className="admin-page-header">
+      <div className="flex items-center justify-between mb-6 max-sm:flex-col max-sm:items-start max-sm:gap-4">
         <div>
-          <h2 className="admin-page-title">Hero Banner Management (3 Banners)</h2>
-          <p className="admin-page-subtitle">
+          <h2 className="font-serif text-[26px] text-[#2C241E] m-0 mb-1.5 font-semibold">Hero Banner Management (3 Banners)</h2>
+          <p className="text-sm text-[#7A6F66] m-0">
             Configure up to 3 hero banners for desktop & mobile. Your live storefront auto-slides through all active banners.
           </p>
         </div>
       </div>
 
       {error && (
-        <div className="admin-card" style={{ background: '#FFEBEE', color: '#D32F2F', padding: '12px 16px', marginBottom: '16px' }}>
+        <div className="bg-[#FFEBEE] text-[#D32F2F] p-4 rounded-lg border border-[#FFCDD2] mb-6 text-sm">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="admin-card" style={{ background: '#E8F5E9', color: '#2E7D32', padding: '12px 16px', marginBottom: '16px' }}>
+        <div className="bg-[#E8F5E9] text-[#2E7D32] p-4 rounded-lg border border-[#C8E6C9] mb-6 text-sm">
           {success}
         </div>
       )}
 
       {/* ─── 3 Banner Slots Overview Grid ────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
         {slots.map((slotIndex) => {
           const slide = slides[slotIndex];
           const isConfigured = !!slide;
@@ -212,53 +212,29 @@ export default function AdminHeroPage() {
           return (
             <div
               key={slotIndex}
-              className="admin-card"
-              style={{
-                border: isCurrentlyEditing
-                  ? '2px solid var(--admin-primary)'
+              className={`rounded-lg p-5 flex flex-col justify-between transition-all ${
+                isCurrentlyEditing
+                  ? 'border-2 border-[#7B5B3A] bg-[#FAF8F5] shadow-md'
                   : isConfigured
-                  ? '1px solid var(--admin-border)'
-                  : '2px dashed var(--admin-border)',
-                background: isCurrentlyEditing ? '#FAF8F5' : '#FFFFFF',
-                position: 'relative',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-              }}
+                  ? 'border border-[#E8E0D5] bg-white shadow-sm'
+                  : 'border-2 border-dashed border-[#E8E0D5] bg-white'
+              }`}
             >
               <div>
                 {/* Slot Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span
-                      style={{
-                        width: '24px',
-                        height: '24px',
-                        borderRadius: '50%',
-                        background: 'var(--admin-primary)',
-                        color: '#FFFFFF',
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
+                <div className="flex justify-between items-center mb-3.5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-[#7B5B3A] text-white text-xs font-bold flex items-center justify-center">
                       {slotIndex + 1}
                     </span>
-                    <strong style={{ fontSize: '15px' }}>Banner {slotIndex + 1}</strong>
+                    <strong className="text-[15px] text-[#2C241E]">Banner {slotIndex + 1}</strong>
                   </div>
 
                   {isConfigured && (
                     <span
-                      style={{
-                        fontSize: '11px',
-                        padding: '2px 8px',
-                        borderRadius: '12px',
-                        fontWeight: '600',
-                        background: slide.is_active ? '#E8F5E9' : '#FFEBEE',
-                        color: slide.is_active ? '#2E7D32' : '#C62828',
-                      }}
+                      className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
+                        slide.is_active ? 'bg-[#E8F5E9] text-[#2E7D32]' : 'bg-[#FFEBEE] text-[#C62828]'
+                      }`}
                     >
                       {slide.is_active ? 'Active' : 'Draft'}
                     </span>
@@ -269,9 +245,9 @@ export default function AdminHeroPage() {
                 {isConfigured ? (
                   <div>
                     {/* Desktop & Mobile Previews */}
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '12px' }}>
-                      <div style={{ flex: 1 }}>
-                        <span style={{ fontSize: '10px', color: 'var(--admin-text-muted)', display: 'block', marginBottom: '2px' }}>
+                    <div className="flex gap-2.5 items-center mb-3">
+                      <div className="flex-1">
+                        <span className="text-[10px] text-[#7A6F66] block mb-0.5">
                           Desktop (16:9)
                         </span>
                         {slide.image_url ? (
@@ -279,15 +255,15 @@ export default function AdminHeroPage() {
                           <img
                             src={optimizeCloudinaryUrl(slide.image_url, { width: 300 })}
                             alt={slide.title}
-                            style={{ width: '100%', height: '85px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--admin-border)' }}
+                            className="w-full h-[85px] object-cover rounded border border-[#E8E0D5]"
                           />
                         ) : (
-                          <div style={{ width: '100%', height: '85px', background: '#f0f0f0', borderRadius: '4px' }} />
+                          <div className="w-full h-[85px] bg-[#f0f0f0] rounded" />
                         )}
                       </div>
 
-                      <div style={{ width: '60px' }}>
-                        <span style={{ fontSize: '10px', color: 'var(--admin-text-muted)', display: 'block', marginBottom: '2px' }}>
+                      <div className="w-[60px]">
+                        <span className="text-[10px] text-[#7A6F66] block mb-0.5">
                           Mobile (9:16)
                         </span>
                         {slide.mobile_image_url ? (
@@ -295,31 +271,31 @@ export default function AdminHeroPage() {
                           <img
                             src={optimizeCloudinaryUrl(slide.mobile_image_url, { width: 140 })}
                             alt={slide.title}
-                            style={{ width: '100%', height: '85px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--admin-border)' }}
+                            className="w-full h-[85px] object-cover rounded border border-[#E8E0D5]"
                           />
                         ) : (
-                          <div style={{ width: '100%', height: '85px', background: '#f0f0f0', borderRadius: '4px' }} />
+                          <div className="w-full h-[85px] bg-[#f0f0f0] rounded" />
                         )}
                       </div>
                     </div>
 
-                    <div style={{ fontSize: '11px', color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    <div className="text-[11px] text-[#7A6F66] uppercase tracking-[0.08em]">
                       {slide.eyebrow || 'MODEST FASHION'}
                     </div>
-                    <h4 style={{ margin: '2px 0 6px 0', fontSize: '16px', fontWeight: 'bold', color: 'var(--admin-text)' }}>
+                    <h4 className="m-0 mt-0.5 mb-1.5 text-base font-bold text-[#2C241E]">
                       {slide.title}
                     </h4>
-                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--admin-text-muted)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    <p className="m-0 text-xs text-[#7A6F66] line-clamp-2">
                       {slide.subtitle || 'No subtitle configured.'}
                     </p>
                   </div>
                 ) : (
-                  <div style={{ padding: '28px 12px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '28px', marginBottom: '8px' }}>🖼️</div>
-                    <p style={{ margin: 0, fontSize: '13px', color: 'var(--admin-text-muted)' }}>
+                  <div className="py-7 px-3 text-center">
+                    <div className="text-3xl mb-2">🖼️</div>
+                    <p className="m-0 text-[13px] text-[#7A6F66]">
                       Banner slot {slotIndex + 1} is currently empty.
                     </p>
-                    <span style={{ fontSize: '11px', color: 'var(--admin-text-muted)' }}>
+                    <span className="text-[11px] text-[#7A6F66]">
                       Upload desktop & mobile images to activate.
                     </span>
                   </div>
@@ -327,12 +303,15 @@ export default function AdminHeroPage() {
               </div>
 
               {/* Slot Actions */}
-              <div style={{ display: 'flex', gap: '8px', marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--admin-border)' }}>
+              <div className="flex gap-2 mt-4 pt-3 border-t border-[#E8E0D5]">
                 <button
                   type="button"
-                  className={isConfigured ? 'admin-btn admin-btn--primary' : 'admin-btn admin-btn--secondary'}
+                  className={`flex-1 text-xs py-2 px-3 rounded-md font-medium transition-colors ${
+                    isConfigured
+                      ? 'bg-[#7B5B3A] text-white hover:bg-[#63472C]'
+                      : 'border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0]'
+                  }`}
                   onClick={() => openSlotEditor(slotIndex)}
-                  style={{ flex: 1, fontSize: '12px', padding: '8px 12px' }}
                 >
                   {isCurrentlyEditing ? 'Editing...' : isConfigured ? 'Edit Banner' : `+ Add Banner ${slotIndex + 1}`}
                 </button>
@@ -340,9 +319,8 @@ export default function AdminHeroPage() {
                 {isConfigured && (
                   <button
                     type="button"
-                    className="admin-btn admin-btn--danger"
+                    className="text-xs py-2 px-3 rounded-md font-medium bg-[#FFEBEE] text-[#C62828] border border-[#FFCDD2] hover:bg-[#FCA5A5] transition-colors"
                     onClick={() => handleDelete(slide.id, slotIndex + 1)}
-                    style={{ fontSize: '12px', padding: '8px 12px', background: '#FFEBEE', color: '#C62828', border: '1px solid #FFCDD2' }}
                   >
                     Delete
                   </button>
@@ -355,16 +333,15 @@ export default function AdminHeroPage() {
 
       {/* ─── Editor Form for Selected Slot ───────────────────────── */}
       {editingSlot !== null && (
-        <div className="admin-card" style={{ border: '2px solid var(--admin-primary)', marginBottom: '32px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--admin-border)', paddingBottom: '12px' }}>
-            <h3 className="admin-card__title" style={{ margin: 0 }}>
+        <div className="bg-white border-2 border-[#7B5B3A] rounded-lg p-6 mb-8 shadow-md">
+          <div className="flex justify-between items-center mb-5 border-b border-[#E8E0D5] pb-3">
+            <h3 className="text-lg font-semibold m-0 text-[#2C241E]">
               {slideId ? `Edit Banner Slot ${editingSlot + 1}` : `Add New Banner in Slot ${editingSlot + 1}`}
             </h3>
             <button
               type="button"
-              className="admin-btn admin-btn--secondary"
+              className="inline-flex items-center justify-center gap-2 px-3.5 py-1.5 text-xs font-medium rounded-md border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors"
               onClick={closeEditor}
-              style={{ fontSize: '12px', padding: '6px 14px' }}
             >
               Close Editor
             </button>
@@ -372,14 +349,14 @@ export default function AdminHeroPage() {
 
           <form onSubmit={handleSubmit}>
             {/* Dual Responsive Image Uploads */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
               {/* Desktop Image */}
-              <div style={{ background: '#FAF8F5', padding: '18px', borderRadius: '8px', border: '1px solid var(--admin-border)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '18px' }}>🖥️</span>
+              <div className="bg-[#FAF8F5] p-4 rounded-lg border border-[#E8E0D5]">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-lg">🖥️</span>
                   <div>
-                    <strong style={{ fontSize: '14px', display: 'block' }}>Desktop Banner Image</strong>
-                    <span style={{ fontSize: '12px', color: 'var(--admin-text-muted)' }}>
+                    <strong className="text-sm block text-[#2C241E]">Desktop Banner Image</strong>
+                    <span className="text-xs text-[#7A6F66]">
                       Landscape (16:9 or 1920×900)
                     </span>
                   </div>
@@ -394,12 +371,12 @@ export default function AdminHeroPage() {
               </div>
 
               {/* Mobile Image */}
-              <div style={{ background: '#FAF8F5', padding: '18px', borderRadius: '8px', border: '1px solid var(--admin-border)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '18px' }}>📱</span>
+              <div className="bg-[#FAF8F5] p-4 rounded-lg border border-[#E8E0D5]">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-lg">📱</span>
                   <div>
-                    <strong style={{ fontSize: '14px', display: 'block' }}>Mobile Full-Cover Image</strong>
-                    <span style={{ fontSize: '12px', color: 'var(--admin-text-muted)' }}>
+                    <strong className="text-sm block text-[#2C241E]">Mobile Full-Cover Image</strong>
+                    <span className="text-xs text-[#7A6F66]">
                       Portrait (9:16 or 1080×1920)
                     </span>
                   </div>
@@ -415,23 +392,23 @@ export default function AdminHeroPage() {
             </div>
 
             {/* Banner Text Content */}
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label className="admin-label">Eyebrow Tag</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="mb-5">
+                <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Eyebrow Tag</label>
                 <input
                   type="text"
-                  className="admin-input"
+                  className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
                   placeholder="MODEST FASHION"
                   value={eyebrow}
                   onChange={(e) => setEyebrow(e.target.value)}
                 />
               </div>
 
-              <div className="admin-form-group">
-                <label className="admin-label">Campaign Badge (Optional)</label>
+              <div className="mb-5">
+                <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Campaign Badge (Optional)</label>
                 <input
                   type="text"
-                  className="admin-input"
+                  className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
                   placeholder="e.g. EXCLUSIVE or NEW"
                   value={campaignBadge}
                   onChange={(e) => setCampaignBadge(e.target.value)}
@@ -439,11 +416,11 @@ export default function AdminHeroPage() {
               </div>
             </div>
 
-            <div className="admin-form-group">
-              <label className="admin-label">Main Heading (Title) *</label>
+            <div className="mb-5">
+              <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Main Heading (Title) *</label>
               <input
                 type="text"
-                className="admin-input"
+                className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
                 placeholder="BEAUTY IN MODESTY"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -451,10 +428,10 @@ export default function AdminHeroPage() {
               />
             </div>
 
-            <div className="admin-form-group">
-              <label className="admin-label">Subtitle / Description</label>
+            <div className="mb-5">
+              <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Subtitle / Description</label>
               <textarea
-                className="admin-textarea"
+                className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
                 rows={2}
                 placeholder="Graceful pieces for your everyday and special moments."
                 value={subtitle}
@@ -462,37 +439,37 @@ export default function AdminHeroPage() {
               />
             </div>
 
-            <div className="admin-form-group">
-              <label className="admin-label">Floating Calligraphy Script (Top Right)</label>
+            <div className="mb-5">
+              <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Floating Calligraphy Script (Top Right)</label>
               <textarea
-                className="admin-textarea"
+                className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
                 rows={3}
                 placeholder={"Modesty\nLooks\nBeautiful\nOn You ♡"}
                 value={overlayText}
                 onChange={(e) => setOverlayText(e.target.value)}
               />
-              <span style={{ fontSize: '11px', color: 'var(--admin-text-muted)' }}>
+              <span className="text-[11px] text-[#7A6F66] mt-1 block">
                 Separate lines with Enter. Appears in natural cursive handwriting at top right.
               </span>
             </div>
 
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label className="admin-label">Button Text</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="mb-5">
+                <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Button Text</label>
                 <input
                   type="text"
-                  className="admin-input"
+                  className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
                   placeholder="SHOP NEW ARRIVALS"
                   value={ctaText}
                   onChange={(e) => setCtaText(e.target.value)}
                 />
               </div>
 
-              <div className="admin-form-group">
-                <label className="admin-label">Button Link</label>
+              <div className="mb-5">
+                <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Button Link</label>
                 <input
                   type="text"
-                  className="admin-input"
+                  className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
                   placeholder="/collections"
                   value={ctaUrl}
                   onChange={(e) => setCtaUrl(e.target.value)}
@@ -500,10 +477,11 @@ export default function AdminHeroPage() {
               </div>
             </div>
 
-            <div className="admin-form-group">
-              <label className="admin-checkbox-label">
+            <div className="mb-5">
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-[#2C241E]">
                 <input
                   type="checkbox"
+                  className="w-4 h-4 accent-[#7B5B3A] rounded"
                   checked={isActive}
                   onChange={(e) => setIsActive(e.target.checked)}
                 />
@@ -511,21 +489,19 @@ export default function AdminHeroPage() {
               </label>
             </div>
 
-            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+            <div className="flex gap-3 mt-5">
               <button
                 type="submit"
-                className="admin-btn admin-btn--primary"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-medium rounded-md bg-[#7B5B3A] text-white hover:bg-[#63472C] transition-colors disabled:opacity-50"
                 disabled={submitting}
-                style={{ flex: 1, padding: '12px' }}
               >
                 {submitting ? 'Saving to Database...' : slideId ? `Update Banner ${editingSlot + 1}` : `Publish Banner ${editingSlot + 1}`}
               </button>
               <button
                 type="button"
-                className="admin-btn admin-btn--secondary"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium rounded-md border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors"
                 onClick={closeEditor}
                 disabled={submitting}
-                style={{ padding: '12px 24px' }}
               >
                 Cancel
               </button>

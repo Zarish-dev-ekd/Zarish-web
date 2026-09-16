@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import AdminSidebar from '@/components/admin/AdminSidebar';
-import './admin.css';
+import AdminHeader from '@/components/admin/AdminHeader';
 
 export const metadata: Metadata = {
   title: 'ZARISH Admin — Management Dashboard',
@@ -17,16 +17,11 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="admin-layout">
+    <div className="flex min-h-screen bg-[#F8F5F0] text-[#2C241E] font-sans max-md:flex-col">
       <AdminSidebar />
-      <div className="admin-main">
-        <header className="admin-topbar">
-          <h1 className="admin-topbar__title">Store Management</h1>
-          <div className="admin-topbar__user">
-            <span>Admin Portal</span>
-          </div>
-        </header>
-        <main className="admin-content">{children}</main>
+      <div className="flex-1 flex flex-col min-w-0 relative">
+        <AdminHeader />
+        <main className="p-8 flex-1 max-w-[1280px] w-full max-md:p-4">{children}</main>
       </div>
     </div>
   );
