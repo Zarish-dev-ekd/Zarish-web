@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/utils/supabase/client';
+import { IconGoogle } from '@/components/icons';
 
 function SignupForm() {
   const router = useRouter();
@@ -17,10 +18,37 @@ function SignupForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [signupSuccess, setSignupSuccess] = useState(false);
 
   const supabase = createClient();
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    setError(null);
+
+    try {
+      const { error: oauthErr } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback${
+            redirectTo && redirectTo !== '/account'
+              ? `?next=${encodeURIComponent(redirectTo)}`
+              : ''
+          }`,
+        },
+      });
+
+      if (oauthErr) {
+        throw oauthErr;
+      }
+    } catch (err: any) {
+      console.error('Google sign in error:', err);
+      setError(err?.message || 'Failed to initialize Google sign in.');
+      setGoogleLoading(false);
+    }
+  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +86,21 @@ function SignupForm() {
 
       if (authErr) {
         throw authErr;
+      }
+
+      // Dispatch welcome email via Brevo
+      try {
+        await fetch('/api/auth/welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email.trim(),
+            name: fullName.trim(),
+            provider: 'email',
+          }),
+        });
+      } catch (welcomeErr) {
+        console.error('Welcome email dispatch error:', welcomeErr);
       }
 
       if (data.session) {
@@ -137,23 +180,26 @@ function SignupForm() {
         <div className="bg-white py-8 px-6 sm:px-10 shadow-[0_8px_30px_rgba(44,29,19,0.06)] rounded-2xl sm:rounded-3xl border border-[#E2D5C7]/80">
           {error && (
             <div
-              className="mb-6 p-3.5 rounded-xl text-xs sm:text-sm bg-[#FFF1F2] border border-[#FECDD3] text-[#9F1239] flex items-start gap-2.5"
+              className="mb-6 p-3.5 sm:p-4 rounded-2xl bg-[#FDF8F5] border border-[#E8D5CE] text-[#6B2822] text-xs sm:text-sm flex items-start gap-3 shadow-[0_2px_12px_rgba(107,40,34,0.04)]"
               role="alert"
             >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="flex-shrink-0 mt-0.5"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-              <span>{error}</span>
+              <div className="w-5 h-5 rounded-full bg-[#F4E2DB] text-[#6B2822] flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+              </div>
+              <span className="leading-relaxed font-medium">{error}</span>
             </div>
           )}
 
@@ -268,6 +314,37 @@ function SignupForm() {
               )}
             </button>
           </form>
+
+          {/* Social Sign In */}
+          <div className="relative my-5">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-[#E2D5C7]" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-3 text-[#A89887] tracking-wider font-medium">
+                or
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={googleLoading || loading}
+            className="w-full h-11 sm:h-12 rounded-full border border-[#D9C9B8] hover:border-[#7B5B3A] bg-white hover:bg-[#FAF8F5] text-[#2C1D13] text-xs sm:text-sm font-semibold tracking-wide transition-all shadow-xs active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+          >
+            {googleLoading ? (
+              <>
+                <span className="w-4 h-4 border-2 border-[#7B5B3A]/30 border-t-[#7B5B3A] rounded-full animate-spin" />
+                <span>Connecting to Google...</span>
+              </>
+            ) : (
+              <>
+                <IconGoogle size={18} />
+                <span>Continue with Google</span>
+              </>
+            )}
+          </button>
 
           {/* Divider */}
           <div className="relative my-6">

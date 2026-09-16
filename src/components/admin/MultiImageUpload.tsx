@@ -136,28 +136,27 @@ export default function MultiImageUpload({
   return (
     <div style={{ marginBottom: '24px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-        <label className="admin-label" style={{ margin: 0 }}>
+        <label className="block text-[13px] font-semibold text-[#2C241E] m-0">
           {label} ({images.length})
         </label>
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="admin-btn admin-btn--secondary admin-btn--sm"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors disabled:opacity-50"
         >
           <span>+ Add Images</span>
         </button>
       </div>
 
       {helperText && (
-        <p style={{ fontSize: '12px', color: 'var(--admin-text-muted)', marginBottom: '14px' }}>
+        <p className="text-xs text-[#7A6F66] mb-3.5">
           {helperText}
         </p>
       )}
 
       {error && (
-        <div style={{ background: '#FFEBEE', color: '#D32F2F', padding: '10px 14px', borderRadius: '6px', fontSize: '13px', marginBottom: '14px' }}>
+        <div className="bg-[#FFEBEE] text-[#D32F2F] p-3 rounded-md text-[13px] mb-3.5 border border-[#FFCDD2]">
           {error}
         </div>
       )}
@@ -183,7 +182,7 @@ export default function MultiImageUpload({
                   borderRadius: '8px',
                   overflow: 'hidden',
                   background: '#FAF8F5',
-                  border: isPrimary ? '2px solid #8B4E5A' : '1px solid var(--admin-border)',
+                  border: isPrimary ? '2px solid #8B4E5A' : '1px solid #E8E0D5',
                   boxShadow: isPrimary ? '0 2px 8px rgba(139,78,90,0.18)' : '0 1px 3px rgba(0,0,0,0.05)',
                   display: 'flex',
                   flexDirection: 'column',
@@ -269,7 +268,7 @@ export default function MultiImageUpload({
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '6px',
-                    borderTop: '1px solid var(--admin-border)',
+                    borderTop: '1px solid #E8E0D5',
                   }}
                 >
                   {!isPrimary && (
@@ -293,45 +292,11 @@ export default function MultiImageUpload({
                     </button>
                   )}
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <button
-                      type="button"
-                      onClick={() => handleMove(index, 'left')}
-                      disabled={index === 0}
-                      title="Move left"
-                      style={{
-                        background: 'none',
-                        border: '1px solid var(--admin-border)',
-                        borderRadius: '4px',
-                        padding: '2px 8px',
-                        fontSize: '11px',
-                        cursor: index === 0 ? 'not-allowed' : 'pointer',
-                        opacity: index === 0 ? 0.3 : 1,
-                      }}
-                    >
-                      ◀
-                    </button>
-                    <span style={{ fontSize: '10px', color: 'var(--admin-text-muted)' }}>
-                      Order: {index + 1}
+                  {isPrimary && (
+                    <span style={{ fontSize: '10px', textAlign: 'center', color: '#7B5B3A', fontWeight: 600 }}>
+                      Primary Cover
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => handleMove(index, 'right')}
-                      disabled={index === images.length - 1}
-                      title="Move right"
-                      style={{
-                        background: 'none',
-                        border: '1px solid var(--admin-border)',
-                        borderRadius: '4px',
-                        padding: '2px 8px',
-                        fontSize: '11px',
-                        cursor: index === images.length - 1 ? 'not-allowed' : 'pointer',
-                        opacity: index === images.length - 1 ? 0.3 : 1,
-                      }}
-                    >
-                      ▶
-                    </button>
-                  </div>
+                  )}
                 </div>
               </div>
             );
@@ -342,7 +307,7 @@ export default function MultiImageUpload({
             onClick={() => !uploading && fileInputRef.current?.click()}
             style={{
               height: '220px',
-              border: '2px dashed var(--admin-border)',
+              border: '2px dashed #E8E0D5',
               borderRadius: '8px',
               display: 'flex',
               flexDirection: 'column',
@@ -357,18 +322,18 @@ export default function MultiImageUpload({
           >
             {uploading ? (
               <div>
-                <span className="admin-spinner" style={{ margin: '0 auto 8px auto' }} />
-                <span style={{ fontSize: '11px', color: 'var(--admin-text-muted)', display: 'block' }}>
+                <span className="w-5 h-5 border-2 border-[#E8E0D5] border-t-[#7B5B3A] rounded-full animate-spin inline-block mx-auto mb-2" />
+                <span style={{ fontSize: '11px', color: '#7A6F66', display: 'block' }}>
                   {uploadProgress || 'Uploading...'}
                 </span>
               </div>
             ) : (
               <div>
                 <div style={{ fontSize: '24px', marginBottom: '6px' }}>📷</div>
-                <strong style={{ fontSize: '12px', color: 'var(--admin-primary)', display: 'block' }}>
+                <strong style={{ fontSize: '12px', color: '#7B5B3A', display: 'block' }}>
                   + Upload More
                 </strong>
-                <span style={{ fontSize: '10px', color: 'var(--admin-text-muted)' }}>
+                <span style={{ fontSize: '10px', color: '#7A6F66' }}>
                   Select multiple files
                 </span>
               </div>
@@ -379,25 +344,27 @@ export default function MultiImageUpload({
         /* Empty State Dropzone */
         <div
           onClick={() => !uploading && fileInputRef.current?.click()}
-          className={`admin-image-dropzone ${uploading ? 'admin-image-dropzone--uploading' : ''}`}
+          className={`border-2 border-dashed border-[#E8E0D5] rounded-lg text-center cursor-pointer bg-[#FAFAF8] transition-all duration-200 hover:border-[#7B5B3A] hover:bg-[#F5EFE6] ${
+            uploading ? 'cursor-wait bg-[#F5EFE6]' : ''
+          }`}
           style={{ padding: '36px 20px' }}
         >
           {uploading ? (
-            <div className="admin-image-dropzone__loading">
-              <span className="admin-spinner" />
+            <div className="flex flex-col items-center gap-2 text-[#7A6F66] text-sm">
+              <span className="w-5 h-5 border-2 border-[#E8E0D5] border-t-[#7B5B3A] rounded-full animate-spin inline-block" />
               <span>{uploadProgress || 'Uploading images to Cloudinary...'}</span>
             </div>
           ) : (
-            <div className="admin-image-dropzone__content">
+            <div className="flex flex-col items-center gap-2 text-[#7A6F66]">
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                 <circle cx="8.5" cy="8.5" r="1.5" />
                 <polyline points="21 15 16 10 5 21" />
               </svg>
-              <p className="admin-image-dropzone__text" style={{ fontSize: '14px', marginTop: '10px' }}>
+              <p className="text-sm font-medium text-[#2C241E] mt-2.5 m-0">
                 Click to upload multiple product photos or drag & drop
               </p>
-              <p className="admin-image-dropzone__subtext">
+              <p className="text-xs text-[#7A6F66] m-0">
                 Select 1 to 10 photos. You can easily pick the primary cover and reorder them.
               </p>
             </div>

@@ -28,110 +28,85 @@ export default async function AboutPage() {
       <AnnouncementBar announcements={announcements} />
       <Header navigationItems={navigationItems} cartItemCount={0} />
 
-      <main className="container" style={{ paddingTop: '48px', paddingBottom: '96px' }}>
+      <main className="w-full max-w-[1280px] mx-auto px-4 md:px-8 pt-12 pb-24">
         {/* Story Hero */}
-        <div style={{ maxWidth: '800px', margin: '0 auto 64px auto', textAlign: 'center' }}>
-          <span
-            style={{
-              fontSize: '11px',
-              letterSpacing: '0.2em',
-              textTransform: 'uppercase',
-              color: 'var(--color-primary)',
-              fontWeight: 600,
-            }}
-          >
+        <div className="max-w-[800px] mx-auto mb-16 text-center">
+          <span className="text-[11px] tracking-[0.2em] uppercase text-[#7B5B3A] font-semibold">
             OUR ESSENCE
           </span>
-          <h1 className="heading-1" style={{ margin: '12px 0 20px 0', fontSize: '38px' }}>
+          <h1 className="font-display my-4 text-3xl sm:text-4xl lg:text-[38px] font-bold text-[#2C1D13]">
             Beauty in Modesty
           </h1>
-          <p
-            className="body-lg"
-            style={{ color: 'var(--color-text-secondary)', lineHeight: '1.8', fontStyle: 'italic' }}
-          >
+          <p className="text-base sm:text-lg text-[#5C4A3E] leading-relaxed italic">
             &ldquo;Modesty is not about hiding; it is about revealing your inherent grace with confidence, dignity, and effortless luxury.&rdquo;
           </p>
-          <p style={{ marginTop: '12px', fontWeight: 600, color: 'var(--color-primary)' }}>
+          <p className="mt-3 font-semibold text-[#7B5B3A]">
             — Nehala Mufeed, Founder & Creative Director
           </p>
         </div>
 
         {/* Brand Narrative Block */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '48px',
-            alignItems: 'center',
-            marginBottom: '80px',
-          }}
-        >
-          <div style={{ position: 'relative', height: '440px', borderRadius: '12px', overflow: 'hidden', background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-20">
+          <div className="relative h-[340px] sm:h-[440px] rounded-2xl overflow-hidden bg-[#FBF6F0] border border-[#EBDCD0] flex items-center justify-center p-8">
             <Image
               src="/logo-zarish.png"
               alt="ZARISH by Nehala Mufeed"
               width={260}
               height={90}
-              style={{ objectFit: 'contain' }}
+              className="object-contain"
             />
           </div>
 
           <div>
-            <h2 className="heading-2" style={{ marginBottom: '16px' }}>
+            <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#2C1D13] mb-4">
               Designed with Purpose
             </h2>
-            <p className="body-md" style={{ color: 'var(--color-muted)', lineHeight: '1.8', marginBottom: '16px' }}>
-              Born from a passion for timeless modest aesthetics, <strong>ZARISH</strong> bridges traditional grace and modern minimalism. We believe that what you wear should make you feel effortlessly poised, comfortable, and true to your values.
+            <p className="text-sm sm:text-base text-[#8C7B6B] leading-relaxed mb-4">
+              Born from a passion for timeless modest aesthetics, <strong className="text-[#2C1D13]">ZARISH</strong> bridges traditional grace and modern minimalism. We believe that what you wear should make you feel effortlessly poised, comfortable, and true to your values.
             </p>
-            <p className="body-md" style={{ color: 'var(--color-muted)', lineHeight: '1.8', marginBottom: '24px' }}>
+            <p className="text-sm sm:text-base text-[#8C7B6B] leading-relaxed mb-6">
               Every collection is thoughtfully curated — from the selection of breathable Korean and Arabian nida fabrics to delicate cuff embroidery, precision seam lines, and flattering drape silhouettes that move with you throughout your day.
             </p>
 
-            <Link href="/products" className="btn btn--primary">
+            <Link href="/products" className="inline-flex items-center justify-center gap-2 font-medium tracking-wide uppercase rounded-full transition-all whitespace-nowrap cursor-pointer text-sm px-8 py-3 bg-[#3D2B1F] text-white hover:bg-[#7B5B3A] hover:-translate-y-0.5 hover:shadow-md">
               Explore Our Creations <IconArrowRight size={14} />
             </Link>
           </div>
         </div>
 
         {/* 3 Pillars */}
-        <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '64px' }}>
-          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-            <h2 className="heading-2">The ZARISH Pillars</h2>
+        <div className="border-t border-[#E2D5C7] pt-16">
+          <div className="text-center mb-12">
+            <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#2C1D13]">The ZARISH Pillars</h2>
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '32px',
-            }}
-          >
-            <div style={{ padding: '32px 24px', background: 'var(--color-cream)', borderRadius: '8px' }}>
-              <span style={{ fontSize: '28px', color: 'var(--color-primary)', fontWeight: 700 }}>01</span>
-              <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: '20px', margin: '12px 0 8px 0' }}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-8 bg-[#FBF6F0] rounded-2xl border border-[#EBDCD0]">
+              <span className="font-display text-3xl text-[#7B5B3A] font-bold">01</span>
+              <h3 className="font-display text-xl font-semibold text-[#2C1D13] my-3">
                 Uncompromised Fabrics
               </h3>
-              <p className="body-sm" style={{ color: 'var(--color-muted)', lineHeight: '1.6' }}>
+              <p className="text-xs sm:text-sm text-[#8C7B6B] leading-relaxed">
                 We work directly with textile artisans to source premium nida, modal, silk crepes, and lightweight chiffons that withstand everyday wear while maintaining luxurious texture.
               </p>
             </div>
 
-            <div style={{ padding: '32px 24px', background: 'var(--color-cream)', borderRadius: '8px' }}>
-              <span style={{ fontSize: '28px', color: 'var(--color-primary)', fontWeight: 700 }}>02</span>
-              <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: '20px', margin: '12px 0 8px 0' }}>
+            <div className="p-8 bg-[#FBF6F0] rounded-2xl border border-[#EBDCD0]">
+              <span className="font-display text-3xl text-[#7B5B3A] font-bold">02</span>
+              <h3 className="font-display text-xl font-semibold text-[#2C1D13] my-3">
                 Proportion & Sizing
               </h3>
-              <p className="body-sm" style={{ color: 'var(--color-muted)', lineHeight: '1.6' }}>
+              <p className="text-xs sm:text-sm text-[#8C7B6B] leading-relaxed">
                 Every modest silhouette requires thoughtful balance. We provide extensive sizing options and custom-tailoring consultations to celebrate every woman&apos;s height and fit.
               </p>
             </div>
 
-            <div style={{ padding: '32px 24px', background: 'var(--color-cream)', borderRadius: '8px' }}>
-              <span style={{ fontSize: '28px', color: 'var(--color-primary)', fontWeight: 700 }}>03</span>
-              <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: '20px', margin: '12px 0 8px 0' }}>
+            <div className="p-8 bg-[#FBF6F0] rounded-2xl border border-[#EBDCD0]">
+              <span className="font-display text-3xl text-[#7B5B3A] font-bold">03</span>
+              <h3 className="font-display text-xl font-semibold text-[#2C1D13] my-3">
                 Personal Connection
               </h3>
-              <p className="body-sm" style={{ color: 'var(--color-muted)', lineHeight: '1.6' }}>
+              <p className="text-xs sm:text-sm text-[#8C7B6B] leading-relaxed">
                 We treat every customer as part of the ZARISH family, offering one-on-one styling guidance and bespoke assistance via WhatsApp directly from our design team.
               </p>
             </div>

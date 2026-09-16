@@ -47,34 +47,31 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
-      <div className="admin-page-header">
+      <div className="flex items-center justify-between mb-6 max-sm:flex-col max-sm:items-start max-sm:gap-4">
         <div>
-          <h2 className="admin-page-title">Store Overview</h2>
-          <p className="admin-page-subtitle">
+          <h2 className="font-serif text-[26px] text-[#2C241E] m-0 mb-1.5 font-semibold">Store Overview</h2>
+          <p className="text-sm text-[#7A6F66] m-0">
             Welcome to the ZARISH administrative hub. Monitor inventory and manage site content.
           </p>
         </div>
         <div>
-          <Link href="/admin/products/new" className="admin-btn admin-btn--primary">
+          <Link
+            href="/admin/products/new"
+            className="inline-flex items-center justify-center gap-2 px-[18px] py-2.5 text-sm font-medium rounded-md bg-[#7B5B3A] text-white hover:bg-[#63472C] transition-colors"
+          >
             + Add New Product
           </Link>
         </div>
       </div>
 
       {!dbConnected && (
-        <div
-          className="admin-card"
-          style={{
-            borderLeft: '4px solid var(--admin-accent)',
-            backgroundColor: '#FFF8F6',
-          }}
-        >
-          <h3 style={{ color: 'var(--admin-accent)', margin: '0 0 8px 0', fontSize: '16px' }}>
+        <div className="bg-[#FFF8F6] border-l-4 border-[#8B4E5A] border border-[#E8E0D5] rounded-lg p-6 mb-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+          <h3 className="text-[#8B4E5A] m-0 mb-2 text-base font-semibold">
             Database Setup Note: Supabase Schema Migration Ready
           </h3>
-          <p style={{ margin: '0 0 12px 0', fontSize: '14px', lineHeight: '1.6' }}>
+          <p className="m-0 mb-3 text-sm leading-relaxed text-[#2C241E]">
             We have generated the complete SQL schema in{' '}
-            <code>supabase/schema.sql</code>. To ensure all tables (products, categories, sizes, hero slides, etc.) exist in your Supabase project, open your{' '}
+            <code className="bg-black/[0.04] px-1.5 py-0.5 rounded">supabase/schema.sql</code>. To ensure all tables exist in your Supabase project, open your{' '}
             <strong>Supabase Dashboard → SQL Editor</strong>, paste the content of{' '}
             <code>supabase/schema.sql</code>, and click <strong>Run</strong>.
           </p>
@@ -82,78 +79,102 @@ export default async function AdminDashboardPage() {
       )}
 
       {/* Metrics Grid */}
-      <div className="admin-stats-grid">
-        <div className="admin-stat-card">
-          <p className="admin-stat-card__title">Total Products</p>
-          <p className="admin-stat-card__value">{productCount}</p>
+      <div className="grid gap-5 mb-8 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+        <div className="bg-white border border-[#E8E0D5] rounded-lg p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+          <p className="text-xs uppercase tracking-[0.05em] text-[#7A6F66] m-0 mb-2 font-semibold">Total Products</p>
+          <p className="text-[28px] font-bold text-[#7B5B3A] m-0">{productCount}</p>
         </div>
-        <div className="admin-stat-card">
-          <p className="admin-stat-card__title">Active Categories</p>
-          <p className="admin-stat-card__value">{categoryCount}</p>
+        <div className="bg-white border border-[#E8E0D5] rounded-lg p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+          <p className="text-xs uppercase tracking-[0.05em] text-[#7A6F66] m-0 mb-2 font-semibold">Active Categories</p>
+          <p className="text-[28px] font-bold text-[#7B5B3A] m-0">{categoryCount}</p>
         </div>
-        <div className="admin-stat-card">
-          <p className="admin-stat-card__title">Available Sizes</p>
-          <p className="admin-stat-card__value">{sizeCount}</p>
+        <div className="bg-white border border-[#E8E0D5] rounded-lg p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+          <p className="text-xs uppercase tracking-[0.05em] text-[#7A6F66] m-0 mb-2 font-semibold">Available Sizes</p>
+          <p className="text-[28px] font-bold text-[#7B5B3A] m-0">{sizeCount}</p>
         </div>
-        <div className="admin-stat-card">
-          <p className="admin-stat-card__title">Hero Slides</p>
-          <p className="admin-stat-card__value">{heroCount}</p>
+        <div className="bg-white border border-[#E8E0D5] rounded-lg p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+          <p className="text-xs uppercase tracking-[0.05em] text-[#7A6F66] m-0 mb-2 font-semibold">Hero Slides</p>
+          <p className="text-[28px] font-bold text-[#7B5B3A] m-0">{heroCount}</p>
         </div>
-        <div className="admin-stat-card">
-          <p className="admin-stat-card__title">Announcements</p>
-          <p className="admin-stat-card__value">{announcementCount}</p>
+        <div className="bg-white border border-[#E8E0D5] rounded-lg p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+          <p className="text-xs uppercase tracking-[0.05em] text-[#7A6F66] m-0 mb-2 font-semibold">Announcements</p>
+          <p className="text-[28px] font-bold text-[#7B5B3A] m-0">{announcementCount}</p>
         </div>
-        <div className="admin-stat-card">
-          <p className="admin-stat-card__title">Subscribers</p>
-          <p className="admin-stat-card__value">{subscriberCount}</p>
+        <div className="bg-white border border-[#E8E0D5] rounded-lg p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+          <p className="text-xs uppercase tracking-[0.05em] text-[#7A6F66] m-0 mb-2 font-semibold">Subscribers</p>
+          <p className="text-[28px] font-bold text-[#7B5B3A] m-0">{subscriberCount}</p>
         </div>
       </div>
 
       {/* Quick Access Actions */}
-      <div className="admin-card">
-        <h3 className="admin-card__title">Quick Management Actions</h3>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-          <Link href="/admin/products/new" className="admin-btn admin-btn--secondary">
+      <div className="bg-white border border-[#E8E0D5] rounded-lg p-6 mb-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+        <h3 className="text-lg font-semibold m-0 mb-4 text-[#2C241E]">Quick Management Actions</h3>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/admin/products/new"
+            className="inline-flex items-center justify-center gap-2 px-[18px] py-2.5 text-sm font-medium rounded-md border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors"
+          >
             Create Product
           </Link>
-          <Link href="/admin/categories" className="admin-btn admin-btn--secondary">
+          <Link
+            href="/admin/categories"
+            className="inline-flex items-center justify-center gap-2 px-[18px] py-2.5 text-sm font-medium rounded-md border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors"
+          >
             Manage Categories
           </Link>
-          <Link href="/admin/sizes" className="admin-btn admin-btn--secondary">
-            Manage Sizes
+          <Link
+            href="/admin/sizes"
+            className="inline-flex items-center justify-center gap-2 px-[18px] py-2.5 text-sm font-medium rounded-md border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors"
+          >
+            Manage Sizes & Colors
           </Link>
-          <Link href="/admin/hero" className="admin-btn admin-btn--secondary">
+          <Link
+            href="/admin/hero"
+            className="inline-flex items-center justify-center gap-2 px-[18px] py-2.5 text-sm font-medium rounded-md border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors"
+          >
             Update Hero Banner
           </Link>
-          <Link href="/admin/announcements" className="admin-btn admin-btn--secondary">
+          <Link
+            href="/admin/announcements"
+            className="inline-flex items-center justify-center gap-2 px-[18px] py-2.5 text-sm font-medium rounded-md border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors"
+          >
             Edit Announcement Bar
           </Link>
-          <Link href="/admin/settings" className="admin-btn admin-btn--secondary">
+          <Link
+            href="/admin/settings"
+            className="inline-flex items-center justify-center gap-2 px-[18px] py-2.5 text-sm font-medium rounded-md border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors"
+          >
             Store & Social Settings
           </Link>
         </div>
       </div>
 
       {/* System Integration Status */}
-      <div className="admin-card">
-        <h3 className="admin-card__title">Production Integrations</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-          <div style={{ padding: '16px', background: '#FAF8F5', borderRadius: '6px' }}>
-            <h4 style={{ margin: '0 0 6px 0', fontSize: '15px' }}>Supabase Backend</h4>
-            <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: 'var(--admin-text-muted)' }}>
-              Target: <code>https://lkyeuxtwpqlxucppkjjh.supabase.co</code>
+      <div className="bg-white border border-[#E8E0D5] rounded-lg p-6 mb-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+        <h3 className="text-lg font-semibold m-0 mb-4 text-[#2C241E]">Production Integrations</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-4 bg-[#FAF8F5] rounded-md border border-[#E8E0D5]">
+            <h4 className="m-0 mb-1.5 text-[15px] font-semibold text-[#2C241E]">Supabase Backend</h4>
+            <p className="m-0 mb-2 text-[13px] text-[#7A6F66]">
+              Target: <code className="bg-black/[0.04] px-1.5 py-0.5 rounded text-xs">https://lkyeuxtwpqlxucppkjjh.supabase.co</code>
             </p>
-            <span className={`admin-badge ${dbConnected ? 'admin-badge--active' : 'admin-badge--inactive'}`}>
+            <span
+              className={`inline-block px-2 py-0.5 text-[11px] font-semibold rounded uppercase ${
+                dbConnected ? 'bg-[#E8F5E9] text-[#2E7D32]' : 'bg-[#FFEBEE] text-[#D32F2F]'
+              }`}
+            >
               {dbConnected ? 'Connected & Synced' : 'Awaiting Schema Run'}
             </span>
           </div>
 
-          <div style={{ padding: '16px', background: '#FAF8F5', borderRadius: '6px' }}>
-            <h4 style={{ margin: '0 0 6px 0', fontSize: '15px' }}>Cloudinary Media Delivery</h4>
-            <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: 'var(--admin-text-muted)' }}>
-              Cloud: <code>sjo0iipf</code> (High-Performance CDN)
+          <div className="p-4 bg-[#FAF8F5] rounded-md border border-[#E8E0D5]">
+            <h4 className="m-0 mb-1.5 text-[15px] font-semibold text-[#2C241E]">Cloudinary Media Delivery</h4>
+            <p className="m-0 mb-2 text-[13px] text-[#7A6F66]">
+              Cloud: <code className="bg-black/[0.04] px-1.5 py-0.5 rounded text-xs">sjo0iipf</code> (High-Performance CDN)
             </p>
-            <span className="admin-badge admin-badge--active">Ready for Direct Upload</span>
+            <span className="inline-block px-2 py-0.5 text-[11px] font-semibold rounded uppercase bg-[#E8F5E9] text-[#2E7D32]">
+              Ready for Direct Upload
+            </span>
           </div>
         </div>
       </div>

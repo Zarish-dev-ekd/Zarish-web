@@ -56,24 +56,28 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       <AnnouncementBar announcements={announcements} />
       <Header navigationItems={navigationItems} cartItemCount={0} />
 
-      <main className="container" style={{ paddingTop: '40px', paddingBottom: '80px' }}>
+      <main className="w-full max-w-[1280px] mx-auto px-4 md:px-8 pt-10 pb-20">
         {/* Page Heading */}
-        <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-          <h1 className="heading-1" style={{ marginBottom: '8px' }}>
+        <div className="text-center mb-9">
+          <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#2C1D13] mb-2">
             {onSale ? 'Sale & Special Offers' : 'The Collection'}
           </h1>
-          <p className="body-md" style={{ color: 'var(--color-muted)', maxWidth: '600px', margin: '0 auto' }}>
+          <p className="text-sm sm:text-base text-[#8C7B6B] max-w-[600px] mx-auto leading-relaxed">
             Refined modest silhouettes crafted with premium fabrics for effortless grace.
           </p>
         </div>
 
         {/* Filter & Sort Bar */}
-        <div className="catalog-toolbar">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#E2D5C7]">
           {/* Category Filter Pills */}
-          <div className="catalog-filters">
+          <div className="flex items-center gap-2 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <Link
               href="/products"
-              className={`catalog-filter-pill ${!categorySlug && !onSale ? 'catalog-filter-pill--active' : ''}`}
+              className={`px-4 py-2 rounded-full text-xs font-medium border transition-all whitespace-nowrap inline-flex items-center justify-center cursor-pointer ${
+                !categorySlug && !onSale
+                  ? 'bg-[#2C1D13] text-white border-[#2C1D13] shadow-xs'
+                  : 'bg-white text-[#4A3728] border-[#E2D5C7] hover:border-[#2C1D13] hover:bg-[#FAF6F0]'
+              }`}
             >
               All Pieces
             </Link>
@@ -82,7 +86,11 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               <Link
                 key={cat.id}
                 href={`/products?category=${cat.slug}${sort ? `&sort=${sort}` : ''}`}
-                className={`catalog-filter-pill ${categorySlug === cat.slug ? 'catalog-filter-pill--active' : ''}`}
+                className={`px-4 py-2 rounded-full text-xs font-medium border transition-all whitespace-nowrap inline-flex items-center justify-center cursor-pointer ${
+                  categorySlug === cat.slug
+                    ? 'bg-[#2C1D13] text-white border-[#2C1D13] shadow-xs'
+                    : 'bg-white text-[#4A3728] border-[#E2D5C7] hover:border-[#2C1D13] hover:bg-[#FAF6F0]'
+                }`}
               >
                 {cat.name}
               </Link>
@@ -90,24 +98,31 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
             <Link
               href="/products?sale=true"
-              className={`catalog-filter-pill ${onSale ? 'catalog-filter-pill--active' : ''}`}
-              style={{ color: onSale ? '#FFFFFF' : 'var(--color-burgundy)', borderColor: 'var(--color-burgundy)' }}
+              className={`px-4 py-2 rounded-full text-xs font-medium border transition-all whitespace-nowrap inline-flex items-center justify-center cursor-pointer ${
+                onSale
+                  ? 'bg-[#8B4E5A] text-white border-[#8B4E5A] shadow-xs'
+                  : 'bg-white text-[#8B4E5A] border-[#8B4E5A]/50 hover:bg-[#FDF2F4]'
+              }`}
             >
               Sale
             </Link>
           </div>
 
           {/* Sizing & Sort options */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+          <div className="flex items-center gap-4 flex-wrap">
             {sizes.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '13px', color: 'var(--color-muted)' }}>Size:</span>
-                <div style={{ display: 'flex', gap: '4px' }}>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[#8C7B6B]">Size:</span>
+                <div className="flex gap-1.5">
                   {sizes.slice(0, 6).map((s) => (
                     <Link
                       key={s.id}
                       href={`/products?${categorySlug ? `category=${categorySlug}&` : ''}size=${s.slug}${sort ? `&sort=${sort}` : ''}`}
-                      className={`catalog-size-pill ${sizeSlug === s.slug ? 'catalog-size-pill--active' : ''}`}
+                      className={`w-8 h-8 rounded-full text-xs font-semibold border transition-all inline-flex items-center justify-center ${
+                        sizeSlug === s.slug
+                          ? 'bg-[#884A48] text-white border-[#884A48] shadow-xs'
+                          : 'bg-white text-[#2C1D13] border-[#E2D5C7] hover:border-[#884A48] hover:bg-[#FAF6F0]'
+                      }`}
                     >
                       {s.name}
                     </Link>
@@ -119,10 +134,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         </div>
 
         {/* Products Count */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0 28px 0', fontSize: '13px', color: 'var(--color-muted)' }}>
+        <div className="flex justify-between items-center my-6 text-[13px] text-[#8C7B6B]">
           <span>Showing {products.length} {products.length === 1 ? 'piece' : 'pieces'}</span>
           {(categorySlug || sizeSlug || onSale) && (
-            <Link href="/products" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>
+            <Link href="/products" className="text-[#7B5B3A] underline font-medium hover:text-[#2C1D13]">
               Clear all filters
             </Link>
           )}
@@ -130,20 +145,20 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
         {/* Product Grid or Empty State */}
         {products.length > 0 ? (
-          <div className="product-grid">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {products.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
         ) : (
-          <div className="empty-state" style={{ padding: '80px 20px' }}>
-            <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: '22px', marginBottom: '8px' }}>
+          <div className="text-center py-20 px-5">
+            <h3 className="font-display text-xl sm:text-2xl font-semibold text-[#2C1D13] mb-2">
               No garments found matching criteria
             </h3>
-            <p className="empty-state__message" style={{ marginBottom: '24px' }}>
+            <p className="text-sm text-[#8C7B6B] mb-6">
               Try selecting a different filter or view all pieces.
             </p>
-            <Link href="/products" className="btn btn--primary">
+            <Link href="/products" className="inline-flex items-center justify-center gap-2 font-medium tracking-wide uppercase rounded-full transition-all whitespace-nowrap cursor-pointer text-sm px-8 py-3 bg-[#3D2B1F] text-white hover:bg-[#7B5B3A] hover:-translate-y-0.5 hover:shadow-md">
               View All Garments
             </Link>
           </div>

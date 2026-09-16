@@ -12,6 +12,7 @@ import type {
   Category,
   Size,
   Product,
+  ProductColor,
   SiteSettings,
   FooterGroup,
 } from '@/lib/types';
@@ -175,6 +176,43 @@ export async function getLatestProducts(limit = 8): Promise<Product[]> {
   }
 }
 
+export async function getProductsPaginated(
+  offset = 0,
+  limit = 10
+): Promise<{ products: Product[]; total: number; hasMore: boolean }> {
+  try {
+    const supabase = await createClient();
+    const { data, count, error } = await supabase
+      .from('products')
+      .select(
+        `
+        *,
+        category:categories(*),
+        images:product_images(*),
+        variants:product_variants(*, size:sizes(*))
+      `,
+        { count: 'exact' }
+      )
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error || !data) {
+      return { products: [], total: 0, hasMore: false };
+    }
+
+    const total = count ?? data.length;
+    const hasMore = offset + data.length < total;
+    return {
+      products: data as Product[],
+      total,
+      hasMore,
+    };
+  } catch {
+    return { products: [], total: 0, hasMore: false };
+  }
+}
+
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   try {
     const supabase = await createClient();
@@ -307,3 +345,20 @@ export async function searchProducts(searchTerm: string): Promise<Product[]> {
     return [];
   }
 }
+
+export async function getAllColors(): Promise<ProductColor[]> {
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from('colors')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true });
+
+    if (!data) return [];
+    return data as ProductColor[];
+  } catch {
+    return [];
+  }
+}
+

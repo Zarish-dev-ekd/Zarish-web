@@ -43,7 +43,7 @@ export const ROUTES = {
   COLLECTIONS: '/collections',
   CATEGORY: '/category',
   SHOP_BY_SIZE: '/shop-by-size',
-  SEARCH: '/search',
+  SEARCH: '/products',
   ABOUT: '/about',
   BLOG: '/blog',
   OFFERS: '/offers',

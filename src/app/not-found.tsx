@@ -15,22 +15,22 @@ export default function NotFound() {
     <>
       <Header navigationItems={fallbackNav} cartItemCount={0} />
 
-      <main className="container" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '80px 20px' }}>
-        <div style={{ maxWidth: '500px' }}>
-          <span style={{ fontSize: '12px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--color-primary)', fontWeight: 600 }}>
+      <main className="w-full max-w-[1280px] mx-auto min-h-[60vh] flex items-center justify-center text-center px-5 py-20">
+        <div className="max-w-[500px]">
+          <span className="text-xs tracking-[0.2em] uppercase text-[#7B5B3A] font-semibold">
             404 — PAGE NOT FOUND
           </span>
-          <h1 className="heading-1" style={{ margin: '12px 0 16px 0', fontSize: '36px' }}>
+          <h1 className="font-display my-3 text-3xl sm:text-4xl font-bold text-[#2C1D13]">
             A Moment of Stillness
           </h1>
-          <p className="body-md" style={{ color: 'var(--color-muted)', marginBottom: '32px', lineHeight: '1.7' }}>
+          <p className="text-sm sm:text-base text-[#8C7B6B] mb-8 leading-relaxed">
             The garment or page you were looking for seems to have moved or is no longer available.
           </p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-            <Link href="/" className="btn btn--primary">
+          <div className="flex flex-wrap gap-3 justify-center">
+            <Link href="/" className="inline-flex items-center justify-center gap-2 font-medium tracking-wide uppercase rounded-full transition-all whitespace-nowrap cursor-pointer text-sm px-8 py-3 bg-[#3D2B1F] text-white hover:bg-[#7B5B3A] hover:-translate-y-0.5 hover:shadow-md">
               Return to Homepage
             </Link>
-            <Link href="/products" className="btn btn--secondary">
+            <Link href="/products" className="inline-flex items-center justify-center gap-2 font-medium tracking-wide uppercase rounded-full transition-all whitespace-nowrap cursor-pointer text-sm px-8 py-3 bg-transparent text-[#3D2B1F] border-[1.5px] border-[#3D2B1F] hover:bg-[#3D2B1F] hover:text-white">
               Explore Collections
             </Link>
           </div>

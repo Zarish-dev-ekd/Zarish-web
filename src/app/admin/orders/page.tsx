@@ -95,104 +95,103 @@ export default function AdminOrdersPage() {
 
   return (
     <div>
-      <div className="admin-page-header">
+      <div className="flex items-center justify-between mb-6 max-sm:flex-col max-sm:items-start max-sm:gap-4">
         <div>
-          <h2 className="admin-page-title">Customer Orders & Payments</h2>
-          <p className="admin-page-subtitle">
+          <h2 className="font-serif text-[26px] text-[#2C241E] m-0 mb-1.5 font-semibold">Customer Orders & Payments</h2>
+          <p className="text-sm text-[#7A6F66] m-0">
             Track online purchases, Razorpay transactions, shipping fulfilment, and courier dispatches.
           </p>
         </div>
         <button
           type="button"
           onClick={fetchOrders}
-          className="admin-btn admin-btn--secondary"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-md border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors"
         >
           <span>↺ Refresh Orders</span>
         </button>
       </div>
 
       {error && (
-        <div className="admin-card" style={{ background: '#FFEBEE', color: '#D32F2F', padding: '12px 16px', marginBottom: '20px' }}>
+        <div className="bg-[#FFEBEE] text-[#D32F2F] border border-[#FECACA] rounded-lg p-3.5 px-4 mb-5 text-sm">
           {error}
         </div>
       )}
 
       {/* KPI Stats Bar */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-        <div className="admin-card" style={{ padding: '18px 20px', margin: 0 }}>
-          <span style={{ fontSize: '11px', color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div className="bg-white border border-[#E8E0D5] rounded-lg p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+          <span className="text-[11px] text-[#7A6F66] uppercase tracking-[0.05em] font-semibold">
             Total Orders
           </span>
-          <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--admin-text-main)', marginTop: '4px' }}>
+          <div className="text-2xl font-bold text-[#2C241E] mt-1">
             {orders.length}
           </div>
         </div>
 
-        <div className="admin-card" style={{ padding: '18px 20px', margin: 0 }}>
-          <span style={{ fontSize: '11px', color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+        <div className="bg-white border border-[#E8E0D5] rounded-lg p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+          <span className="text-[11px] text-[#7A6F66] uppercase tracking-[0.05em] font-semibold">
             Confirmed Paid Orders
           </span>
-          <div style={{ fontSize: '24px', fontWeight: 700, color: '#2E7D32', marginTop: '4px' }}>
+          <div className="text-2xl font-bold text-[#2E7D32] mt-1">
             {paidCount}
           </div>
         </div>
 
-        <div className="admin-card" style={{ padding: '18px 20px', margin: 0 }}>
-          <span style={{ fontSize: '11px', color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+        <div className="bg-white border border-[#E8E0D5] rounded-lg p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+          <span className="text-[11px] text-[#7A6F66] uppercase tracking-[0.05em] font-semibold">
             Online Revenue (Razorpay)
           </span>
-          <div style={{ fontSize: '24px', fontWeight: 700, color: '#7B5B3A', marginTop: '4px' }}>
+          <div className="text-2xl font-bold text-[#7B5B3A] mt-1">
             {formatPrice(totalRevenue)}
           </div>
         </div>
       </div>
 
       {/* Filter Tabs */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+      <div className="flex gap-2 mb-4 flex-wrap">
         {['all', 'placed', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'].map((st) => (
           <button
             key={st}
             type="button"
             onClick={() => setFilterStatus(st)}
-            className={`admin-btn admin-btn--sm ${
-              filterStatus === st ? 'admin-btn--primary' : 'admin-btn--secondary'
+            className={`capitalize px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+              filterStatus === st
+                ? 'bg-[#7B5B3A] text-white font-semibold'
+                : 'border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0]'
             }`}
-            style={{ textTransform: 'capitalize' }}
           >
             {st} ({st === 'all' ? orders.length : orders.filter((o) => o.order_status === st).length})
           </button>
         ))}
       </div>
 
-      <div className="admin-card">
+      <div className="bg-white border border-[#E8E0D5] rounded-lg p-6 mb-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px 0' }}>
-            <span className="admin-spinner" />
-            <p style={{ marginTop: '12px', color: 'var(--admin-text-muted)' }}>Loading orders...</p>
+          <div className="text-center py-10">
+            <span className="w-5 h-5 border-2 border-[#E8E0D5] border-t-[#7B5B3A] rounded-full animate-spin inline-block" />
+            <p className="mt-3 text-sm text-[#7A6F66]">Loading orders...</p>
           </div>
         ) : filteredOrders.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '50px 0', color: 'var(--admin-text-muted)' }}>
-            <div style={{ fontSize: '32px', marginBottom: '8px' }}>📦</div>
-            <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--admin-text-main)' }}>
+          <div className="text-center py-12 text-[#7A6F66]">
+            <div className="text-3xl mb-2">📦</div>
+            <p className="text-[15px] font-semibold text-[#2C241E]">
               No orders found matching this filter.
             </p>
-            <p style={{ fontSize: '13px' }}>
+            <p className="text-xs mt-1">
               When customers complete checkout via Razorpay or WhatsApp, their orders will show here.
             </p>
           </div>
         ) : (
-          <div className="admin-table-container">
-            <table className="admin-table">
+          <div className="overflow-x-auto border border-[#E8E0D5] rounded-lg">
+            <table className="w-full border-collapse text-left text-sm">
               <thead>
-                <tr>
-                  <th>Order #</th>
-                  <th>Customer & Delivery</th>
-                  <th>Items</th>
-                  <th>Amount</th>
-                  <th>Payment Status</th>
-                  <th>Order Status</th>
-                  <th>Tracking #</th>
+                <tr className="bg-[#FAF8F5]">
+                  <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Order #</th>
+                  <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Customer & Delivery</th>
+                  <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Items</th>
+                  <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Amount</th>
+                  <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Payment Status</th>
+                  <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Order Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -207,46 +206,46 @@ export default function AdminOrdersPage() {
                   });
 
                   return (
-                    <tr key={order.id}>
-                      <td>
-                        <strong style={{ fontFamily: 'monospace', color: 'var(--admin-text-main)' }}>
+                    <tr key={order.id} className="hover:bg-black/[0.01]">
+                      <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle">
+                        <strong className="font-mono text-[#2C241E]">
                           {order.order_number}
                         </strong>
-                        <div style={{ fontSize: '11px', color: 'var(--admin-text-muted)' }}>
+                        <div className="text-[11px] text-[#7A6F66]">
                           {dateStr}
                         </div>
                         {order.razorpay_payment_id && (
-                          <div style={{ fontSize: '10px', color: '#0E7064', fontFamily: 'monospace', marginTop: '2px' }}>
+                          <div className="text-[10px] text-[#0E7064] font-mono mt-0.5">
                             RZP: {order.razorpay_payment_id}
                           </div>
                         )}
                       </td>
 
-                      <td>
+                      <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle">
                         <strong>{order.customer_name}</strong>
-                        <div style={{ fontSize: '12px', color: 'var(--admin-text-muted)' }}>
+                        <div className="text-xs text-[#7A6F66]">
                           {order.customer_email}
                         </div>
                         {order.customer_phone && (
-                          <div style={{ fontSize: '12px', color: 'var(--admin-text-muted)' }}>
+                          <div className="text-xs text-[#7A6F66]">
                             📞 {order.customer_phone}
                           </div>
                         )}
                         {order.shipping_address?.city && (
-                          <div style={{ fontSize: '11px', color: '#6B5744', marginTop: '2px' }}>
+                          <div className="text-[11px] text-[#6B5744] mt-0.5">
                             📍 {order.shipping_address.city}, {order.shipping_address.state}
                           </div>
                         )}
                       </td>
 
-                      <td>
-                        <div style={{ maxWidth: '240px' }}>
+                      <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle">
+                        <div className="max-w-[240px]">
                           {order.items && order.items.length > 0 ? (
                             order.items.map((it) => (
-                              <div key={it.id} style={{ fontSize: '12px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <div key={it.id} className="text-xs mb-1 flex items-center gap-1.5">
                                 {it.image_url && (
                                   /* eslint-disable-next-line @next/next/no-img-element */
-                                  <img src={it.image_url} alt="" style={{ width: '22px', height: '26px', objectFit: 'cover', borderRadius: '3px' }} />
+                                  <img src={it.image_url} alt="" className="w-[22px] h-[26px] object-cover rounded-[3px]" />
                                 )}
                                 <span>
                                   <strong>{it.quantity}x</strong> {it.product_name} ({it.size || 'Std'})
@@ -254,44 +253,41 @@ export default function AdminOrdersPage() {
                               </div>
                             ))
                           ) : (
-                            <span style={{ fontSize: '12px', color: 'var(--admin-text-muted)' }}>Order details</span>
+                            <span className="text-xs text-[#7A6F66]">Order details</span>
                           )}
                         </div>
                       </td>
 
-                      <td>
-                        <div style={{ fontWeight: 700, fontSize: '14px' }}>
+                      <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle">
+                        <div className="font-bold text-sm">
                           {formatPrice(order.total_amount)}
                         </div>
                         {order.coupon_code && (
-                          <div style={{ fontSize: '11px', color: '#047857', fontWeight: 600 }}>
+                          <div className="text-[11px] text-[#047857] font-semibold">
                             🏷️ {order.coupon_code} (-{formatPrice(order.discount_amount || 0)})
                           </div>
                         )}
-                        <span style={{ fontSize: '11px', color: 'var(--admin-text-muted)' }}>
+                        <span className="text-[11px] text-[#7A6F66]">
                           via {order.payment_method}
                         </span>
                       </td>
 
-                      <td>
+                      <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle">
                         <span
-                          className="admin-badge"
-                          style={{
-                            background: isPaid ? '#E8F5E9' : '#FFF3E0',
-                            color: isPaid ? '#2E7D32' : '#E65100',
-                          }}
+                          className={`inline-block px-2 py-0.5 text-[11px] font-semibold rounded uppercase ${
+                            isPaid ? 'bg-[#E8F5E9] text-[#2E7D32]' : 'bg-[#FFF3E0] text-[#E65100]'
+                          }`}
                         >
                           {isPaid ? 'Paid (Razorpay)' : 'Pending'}
                         </span>
                       </td>
 
-                      <td>
+                      <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle">
                         <select
-                          className="admin-select"
+                          className="min-w-[120px] text-xs px-2 py-1 border border-[#E8E0D5] rounded bg-white text-[#2C241E] outline-none"
                           value={order.order_status}
                           disabled={updatingId === order.id}
                           onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
-                          style={{ minWidth: '120px', fontSize: '12px', padding: '4px 8px' }}
                         >
                           <option value="placed">Placed</option>
                           <option value="confirmed">Confirmed</option>
@@ -300,17 +296,6 @@ export default function AdminOrdersPage() {
                           <option value="delivered">Delivered</option>
                           <option value="cancelled">Cancelled</option>
                         </select>
-                      </td>
-
-                      <td>
-                        <input
-                          type="text"
-                          defaultValue={order.tracking_number || ''}
-                          placeholder="AWB / Track ID"
-                          onBlur={(e) => handleUpdateTracking(order.id, e.target.value)}
-                          className="admin-input"
-                          style={{ width: '130px', fontSize: '11px', padding: '4px 8px' }}
-                        />
                       </td>
                     </tr>
                   );

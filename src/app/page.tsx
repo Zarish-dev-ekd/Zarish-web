@@ -26,6 +26,8 @@ import BenefitsStrip from '@/components/home/BenefitsStrip';
 import CategorySection from '@/components/home/CategorySection';
 import ShopBySize from '@/components/home/ShopBySize';
 import JustLaunched from '@/components/home/JustLaunched';
+import InternationalDelivery from '@/components/home/InternationalDelivery';
+import FeaturedProductsGrid from '@/components/home/FeaturedProductsGrid';
 import BrandStory from '@/components/home/BrandStory';
 import Newsletter from '@/components/home/Newsletter';
 import Footer from '@/components/layout/Footer';
@@ -58,7 +60,7 @@ export default async function HomePage() {
     getBenefits(),
     getCategories(),
     getSizes(),
-    getLatestProducts(8),
+    getLatestProducts(4),
   ]);
 
   const navigationItems = dbNavItems.length > 0 ? dbNavItems : fallbackNav;
@@ -71,7 +73,7 @@ export default async function HomePage() {
       {/* B. MAIN NAVIGATION */}
       <Header navigationItems={navigationItems} cartItemCount={0} />
 
-      <main id="main-content">
+      <main id="main-content" className="bg-white">
         {/* C. HERO */}
         <HeroSection hero={heroSlides[0] || null} slides={heroSlides} />
 
@@ -83,8 +85,6 @@ export default async function HomePage() {
           categories={categories}
           sectionTitle="SHOP BY CATEGORY"
           sectionSubtitle="Find your favourites"
-          viewAllText="View All Collections"
-          viewAllUrl="/collections"
         />
 
         {/* F. SHOP BY SIZE */}
@@ -105,7 +105,15 @@ export default async function HomePage() {
           viewAllUrl="/collections/new-arrivals"
         />
 
-        {/* I. BRAND STORY */}
+        {/* H. INTERNATIONAL DELIVERY BANNER */}
+        <InternationalDelivery
+          whatsappNumber={siteSettings?.social_whatsapp || siteSettings?.contact_phone}
+        />
+
+        {/* I. FEATURED PRODUCTS GRID */}
+        <FeaturedProductsGrid />
+
+        {/* J. BRAND STORY */}
         <BrandStory story={null} />
 
         {/* J. NEWSLETTER */}

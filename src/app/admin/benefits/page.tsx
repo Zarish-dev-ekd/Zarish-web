@@ -135,10 +135,10 @@ export default function AdminBenefitsPage() {
 
   return (
     <div>
-      <div className="admin-page-header">
+      <div className="flex items-center justify-between mb-6 max-sm:flex-col max-sm:items-start max-sm:gap-4">
         <div>
-          <h2 className="admin-page-title">Value Propositions (Benefits Strip)</h2>
-          <p className="admin-page-subtitle">
+          <h2 className="font-serif text-[26px] text-[#2C241E] m-0 mb-1.5 font-semibold">Value Propositions (Benefits Strip)</h2>
+          <p className="text-sm text-[#7A6F66] m-0">
             Highlight your brand USPs right beneath the main hero banner.
           </p>
         </div>
@@ -146,7 +146,7 @@ export default function AdminBenefitsPage() {
           <button
             type="button"
             onClick={handleAddStandardBenefits}
-            className="admin-btn admin-btn--secondary"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-md border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors"
             disabled={submitting}
           >
             + Quick Add 3 Standard USPs
@@ -155,27 +155,27 @@ export default function AdminBenefitsPage() {
       </div>
 
       {error && (
-        <div className="admin-card" style={{ background: '#FFEBEE', color: '#D32F2F', padding: '12px 16px' }}>
+        <div className="bg-[#FFEBEE] text-[#D32F2F] p-4 rounded-lg border border-[#FFCDD2] mb-6 text-sm">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="admin-card" style={{ background: '#E8F5E9', color: '#2E7D32', padding: '12px 16px' }}>
+        <div className="bg-[#E8F5E9] text-[#2E7D32] p-4 rounded-lg border border-[#C8E6C9] mb-6 text-sm">
           {success}
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '24px', alignItems: 'start' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-6 items-start">
         {/* Form */}
-        <div className="admin-card">
-          <h3 className="admin-card__title">Add Value Proposition</h3>
+        <div className="bg-white border border-[#E8E0D5] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+          <h3 className="text-lg font-semibold m-0 mb-4 text-[#2C241E]">Add Value Proposition</h3>
           <form onSubmit={handleSubmit}>
-            <div className="admin-form-group">
-              <label className="admin-label">Title *</label>
+            <div className="mb-5">
+              <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Title *</label>
               <input
                 type="text"
-                className="admin-input"
+                className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
                 placeholder="e.g. Premium Quality"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -183,10 +183,10 @@ export default function AdminBenefitsPage() {
               />
             </div>
 
-            <div className="admin-form-group">
-              <label className="admin-label">Description *</label>
+            <div className="mb-5">
+              <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Description *</label>
               <textarea
-                className="admin-textarea"
+                className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
                 rows={3}
                 placeholder="Brief summary of this brand promise..."
                 value={description}
@@ -195,10 +195,10 @@ export default function AdminBenefitsPage() {
               />
             </div>
 
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label className="admin-label">Icon</label>
-                <select className="admin-select" value={icon} onChange={(e) => setIcon(e.target.value)}>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="mb-5">
+                <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Icon</label>
+                <select className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15" value={icon} onChange={(e) => setIcon(e.target.value)}>
                   <option value="shield">Shield (Quality & Trust)</option>
                   <option value="package">Package (Modern Design)</option>
                   <option value="heart">Heart (Tailored / Made for You)</option>
@@ -207,21 +207,22 @@ export default function AdminBenefitsPage() {
                 </select>
               </div>
 
-              <div className="admin-form-group">
-                <label className="admin-label">Display Order</label>
+              <div className="mb-5">
+                <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Display Order</label>
                 <input
                   type="number"
-                  className="admin-input"
+                  className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
                   value={displayOrder}
                   onChange={(e) => setDisplayOrder(e.target.value)}
                 />
               </div>
             </div>
 
-            <div className="admin-form-group">
-              <label className="admin-checkbox-label">
+            <div className="mb-5">
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-[#2C241E]">
                 <input
                   type="checkbox"
+                  className="w-4 h-4 accent-[#7B5B3A] rounded"
                   checked={isActive}
                   onChange={(e) => setIsActive(e.target.checked)}
                 />
@@ -231,9 +232,8 @@ export default function AdminBenefitsPage() {
 
             <button
               type="submit"
-              className="admin-btn admin-btn--primary"
+              className="w-full inline-flex items-center justify-center gap-2 px-[18px] py-2.5 text-sm font-medium rounded-md bg-[#7B5B3A] text-white hover:bg-[#63472C] transition-colors disabled:opacity-50"
               disabled={submitting}
-              style={{ width: '100%' }}
             >
               {submitting ? 'Saving...' : 'Save Proposition'}
             </button>
@@ -241,49 +241,49 @@ export default function AdminBenefitsPage() {
         </div>
 
         {/* Table */}
-        <div className="admin-card">
-          <h3 className="admin-card__title">Current Value Props ({benefits.length})</h3>
+        <div className="bg-white border border-[#E8E0D5] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+          <h3 className="text-lg font-semibold m-0 mb-4 text-[#2C241E]">Current Value Props ({benefits.length})</h3>
 
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '40px 0' }}>
-              <span className="admin-spinner" />
-              <p style={{ marginTop: '12px', color: 'var(--admin-text-muted)' }}>Loading...</p>
+            <div className="text-center py-10">
+              <span className="w-5 h-5 border-2 border-[#E8E0D5] border-t-[#7B5B3A] rounded-full animate-spin inline-block" />
+              <p className="mt-3 text-sm text-[#7A6F66]">Loading...</p>
             </div>
           ) : benefits.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--admin-text-muted)' }}>
+            <div className="text-center py-10 text-[#7A6F66]">
               <p>No benefits added yet.</p>
-              <p style={{ fontSize: '13px' }}>Click &quot;+ Quick Add 3 Standard USPs&quot; to initialize.</p>
+              <p className="text-xs mt-1">Click &quot;+ Quick Add 3 Standard USPs&quot; to initialize.</p>
             </div>
           ) : (
-            <div className="admin-table-container">
-              <table className="admin-table">
-                <thead>
+            <div className="overflow-x-auto border border-[#E8E0D5] rounded-lg">
+              <table className="w-full border-collapse text-left text-sm">
+                <thead className="bg-[#FAF7F2]">
                   <tr>
-                    <th>Title</th>
-                    <th>Description</th>
-                    <th>Order</th>
-                    <th>Status</th>
-                    <th>Action</th>
+                    <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Title</th>
+                    <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Description</th>
+                    <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Order</th>
+                    <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Status</th>
+                    <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Action</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-[#E8E0D5]">
                   {benefits.map((b) => (
-                    <tr key={b.id}>
-                      <td>
+                    <tr key={b.id} className="hover:bg-[#FAF7F2]/50 transition-colors">
+                      <td className="px-4 py-3.5 text-[#2C241E]">
                         <strong>{b.title}</strong>
                       </td>
-                      <td style={{ maxWidth: '240px', fontSize: '13px' }}>{b.description}</td>
-                      <td>{b.display_order}</td>
-                      <td>
-                        <span className={`admin-badge ${b.is_active ? 'admin-badge--active' : 'admin-badge--inactive'}`}>
+                      <td className="px-4 py-3.5 text-[#2C241E] max-w-[240px] text-[13px]">{b.description}</td>
+                      <td className="px-4 py-3.5 text-[#2C241E]">{b.display_order}</td>
+                      <td className="px-4 py-3.5">
+                        <span className={`inline-block px-2 py-0.5 text-[11px] font-semibold rounded uppercase ${b.is_active ? 'bg-[#E8F5E9] text-[#2E7D32]' : 'bg-[#FFEBEE] text-[#D32F2F]'}`}>
                           {b.is_active ? 'Active' : 'Hidden'}
                         </span>
                       </td>
-                      <td>
+                      <td className="px-4 py-3.5">
                         <button
                           type="button"
                           onClick={() => handleDelete(b.id)}
-                          className="admin-btn admin-btn--danger admin-btn--sm"
+                          className="px-2.5 py-1 text-xs font-medium rounded bg-[#FEE2E2] border border-[#FECACA] text-[#D32F2F] hover:bg-[#FCA5A5] transition-colors"
                         >
                           Delete
                         </button>

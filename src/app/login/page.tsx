@@ -9,17 +9,27 @@ import { createClient } from '@/utils/supabase/client';
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/account';
+  const redirectTo = searchParams.get('redirect') || '/admin';
   const urlError = searchParams.get('error');
+  const urlMessage = searchParams.get('message');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<'login' | 'forgot'>('login');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetError, setResetError] = useState<{ title: string; message: string } | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(
+    urlMessage ? decodeURIComponent(urlMessage) : null
+  );
   const [error, setError] = useState<string | null>(
     urlError === 'auth-code-error'
       ? 'Authentication link expired or invalid. Please sign in with your credentials.'
+      : urlError
+      ? decodeURIComponent(urlError)
       : null
   );
 
@@ -61,174 +71,341 @@ function LoginForm() {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) {
+      setResetError({
+        title: 'Email Required',
+        message: 'Please enter your email address to receive a reset link.',
+      });
+      return;
+    }
+
+    setResetLoading(true);
+    setResetError(null);
+    setSuccessMessage(null);
+
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        const msg = data.error || 'This email is not registered in our database.';
+        let title = data.title;
+        if (!title) {
+          const lower = msg.toLowerCase();
+          if (lower.includes('not registered') || lower.includes('not found')) {
+            title = 'Account Not Registered';
+          } else {
+            title = 'Unable to Send Link';
+          }
+        }
+        setResetError({ title, message: msg });
+        return;
+      }
+
+      setResetSent(true);
+      setSuccessMessage(data.message || 'Password reset link sent! Please check your inbox.');
+    } catch (err: any) {
+      console.error('Password reset error:', err);
+      setResetError({
+        title: 'Connection Error',
+        message: err?.message || 'Failed to connect. Please check your network connection.',
+      });
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#FAF6F0] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      {/* Brand Header */}
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center px-4">
-        <Link href="/" className="inline-block mb-6 transition-transform hover:scale-105">
-          <Image
-            src="/logo-zarish.png"
-            alt="ZARISH by Nehala Mufeed"
-            width={140}
-            height={50}
-            className="h-10 sm:h-12 w-auto mx-auto object-contain"
-            priority
-          />
-        </Link>
-        <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#2C1D13] tracking-tight">
-          Welcome to ZARISH
-        </h1>
-        <p className="mt-2 text-xs sm:text-sm text-[#6B5744]">
-          Sign in to access your orders, saved garments, and exclusive modest collections.
-        </p>
-      </div>
-
       {/* Card Container */}
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
         <div className="bg-white py-8 px-6 sm:px-10 shadow-[0_8px_30px_rgba(44,29,19,0.06)] rounded-2xl sm:rounded-3xl border border-[#E2D5C7]/80">
-          {error && (
-            <div
-              className="mb-6 p-3.5 rounded-xl text-xs sm:text-sm bg-[#FFF1F2] border border-[#FECDD3] text-[#9F1239] flex items-start gap-2.5"
-              role="alert"
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="flex-shrink-0 mt-0.5"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-              <span>{error}</span>
-            </div>
-          )}
-
-          <form onSubmit={handleLogin} className="space-y-5">
-            {/* Email Field */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-xs sm:text-sm font-medium text-[#3D2B1F] mb-1.5"
-              >
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com"
-                className="w-full h-11 px-3.5 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-sm text-[#2C1D13] placeholder-[#A89887] focus:outline-none focus:border-[#7B5B3A] focus:bg-white focus:ring-1 focus:ring-[#7B5B3A] transition-all"
+          {/* Brand Logo inside card */}
+          <div className="text-center mb-6">
+            <Link href="/" className="inline-block transition-transform hover:scale-105">
+              <Image
+                src="/logo-zarish.png"
+                alt="ZARISH by Nehala Mufeed"
+                width={140}
+                height={50}
+                className="h-10 sm:h-11 w-auto mx-auto object-contain"
+                priority
               />
-            </div>
+            </Link>
+          </div>
 
-            {/* Password Field */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
+          {viewMode === 'login' ? (
+            /* ── Sign In Form ── */
+            <form onSubmit={handleLogin} className="space-y-5">
+              {/* Sleek Minimalist Login Error */}
+              {error && (
+                <div className="flex items-center justify-between gap-2.5 py-2.5 px-3.5 rounded-lg bg-[#FAF6F0] border-l-[3px] border-[#874B3E] text-left">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#874B3E] shrink-0" />
+                    <span className="text-xs text-[#3D2B1F] font-medium leading-normal">
+                      {error}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setError(null)}
+                    className="text-[#8C7B6B] hover:text-[#2C1D13] text-xs p-1 shrink-0 cursor-pointer"
+                    aria-label="Dismiss"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              {/* Sleek Minimalist Login Success */}
+              {successMessage && (
+                <div className="flex items-center justify-between gap-2.5 py-2.5 px-3.5 rounded-lg bg-[#F2F7F4] border-l-[3px] border-[#0E7064] text-left">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#0E7064] shrink-0" />
+                    <span className="text-xs text-[#0E7064] font-medium leading-normal">
+                      {successMessage}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSuccessMessage(null)}
+                    className="text-[#0E7064]/60 hover:text-[#0E7064] text-xs p-1 shrink-0 cursor-pointer"
+                    aria-label="Dismiss"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              {/* Email Field */}
+              <div>
                 <label
-                  htmlFor="password"
-                  className="block text-xs sm:text-sm font-medium text-[#3D2B1F]"
+                  htmlFor="email"
+                  className="block text-xs sm:text-sm font-medium text-[#3D2B1F] mb-1.5"
                 >
-                  Password
+                  Email Address
                 </label>
-                <Link
-                  href="/login?forgot=true"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (!email) {
-                      setError('Enter your email above and click again to receive a reset link.');
-                    } else {
-                      supabase.auth.resetPasswordForEmail(email, {
-                        redirectTo: `${window.location.origin}/auth/callback?next=/account`,
-                      }).then(({ error: rErr }) => {
-                        if (rErr) setError(rErr.message);
-                        else setError('Password reset email sent! Check your inbox.');
-                      });
-                    }
-                  }}
-                  className="text-[11px] font-medium text-[#7B5B3A] hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <div className="relative">
                 <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
+                  id="email"
+                  type="email"
+                  autoComplete="email"
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full h-11 px-3.5 pr-10 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-sm text-[#2C1D13] placeholder-[#A89887] focus:outline-none focus:border-[#7B5B3A] focus:bg-white focus:ring-1 focus:ring-[#7B5B3A] transition-all"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  className="w-full h-11 px-3.5 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-sm text-[#2C1D13] placeholder-[#A89887] focus:outline-none focus:border-[#7B5B3A] focus:bg-white focus:ring-1 focus:ring-[#7B5B3A] transition-all"
                 />
+              </div>
+
+              {/* Password Field */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label
+                    htmlFor="password"
+                    className="block text-xs sm:text-sm font-medium text-[#3D2B1F]"
+                  >
+                    Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setViewMode('forgot');
+                      setError(null);
+                      setResetError(null);
+                      setSuccessMessage(null);
+                      setResetSent(false);
+                    }}
+                    className="text-[11px] font-medium text-[#7B5B3A] hover:underline cursor-pointer bg-transparent border-none p-0"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full h-11 px-3.5 pr-10 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-sm text-[#2C1D13] placeholder-[#A89887] focus:outline-none focus:border-[#7B5B3A] focus:bg-white focus:ring-1 focus:ring-[#7B5B3A] transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C7B6B] hover:text-[#2C1D13] transition-colors text-xs cursor-pointer"
+                  >
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Remember Me */}
+              <div className="flex items-center justify-between pt-1">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-4 h-4 rounded text-[#7B5B3A] border-[#D9C9B8] focus:ring-[#7B5B3A]"
+                  />
+                  <span className="text-xs text-[#6B5744]">Keep me signed in</span>
+                </label>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-11 sm:h-12 rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-xs sm:text-sm font-bold tracking-[0.14em] uppercase transition-all shadow-[0_4px_16px_rgba(44,29,19,0.18)] hover:shadow-[0_6px_20px_rgba(123,91,58,0.3)] active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {loading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Signing In...</span>
+                  </>
+                ) : (
+                  <span>Sign In</span>
+                )}
+              </button>
+            </form>
+          ) : (
+            /* ── Forgot Password Form ── */
+            <div className="space-y-5">
+              <div className="text-center">
+                <h2 className="text-base sm:text-lg font-bold text-[#2C1D13] font-display tracking-tight">
+                  Reset Password
+                </h2>
+                <p className="text-xs text-[#8C7B6B] mt-1 leading-relaxed">
+                  Enter your email address and we&apos;ll send you a secure link to reset your password.
+                </p>
+              </div>
+
+              {/* Sleek Minimalist Reset Error */}
+              {resetError && (
+                <div className="flex items-center justify-between gap-2.5 py-2.5 px-3.5 rounded-lg bg-[#FAF6F0] border-l-[3px] border-[#874B3E] text-left animate-in fade-in duration-150">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#874B3E] shrink-0" />
+                    <span className="text-xs text-[#3D2B1F] font-medium leading-normal">
+                      {resetError.message}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setResetError(null)}
+                    className="text-[#8C7B6B] hover:text-[#2C1D13] text-xs p-1 shrink-0 cursor-pointer"
+                    aria-label="Dismiss"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              {/* Sleek Minimalist Reset Success */}
+              {successMessage && (
+                <div className="flex items-center justify-between gap-2.5 py-2.5 px-3.5 rounded-lg bg-[#F2F7F4] border-l-[3px] border-[#0E7064] text-left animate-in fade-in duration-150">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#0E7064] shrink-0" />
+                    <span className="text-xs text-[#0E7064] font-medium leading-normal">
+                      {successMessage}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSuccessMessage(null)}
+                    className="text-[#0E7064]/60 hover:text-[#0E7064] text-xs p-1 shrink-0 cursor-pointer"
+                    aria-label="Dismiss"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              {!resetSent ? (
+                <form onSubmit={handleResetPassword} className="space-y-5">
+                  <div>
+                    <label
+                      htmlFor="reset-email"
+                      className="block text-xs sm:text-sm font-medium text-[#3D2B1F] mb-1.5"
+                    >
+                      Email Address
+                    </label>
+                    <input
+                      id="reset-email"
+                      type="email"
+                      autoComplete="email"
+                      required
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (resetError) setResetError(null);
+                      }}
+                      placeholder="name@example.com"
+                      className="w-full h-11 px-3.5 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-sm text-[#2C1D13] placeholder-[#A89887] focus:outline-none focus:border-[#7B5B3A] focus:bg-white focus:ring-1 focus:ring-[#7B5B3A] transition-all"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={resetLoading}
+                    className="w-full h-11 sm:h-12 rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-xs sm:text-sm font-bold tracking-[0.14em] uppercase transition-all shadow-[0_4px_16px_rgba(44,29,19,0.18)] hover:shadow-[0_6px_20px_rgba(123,91,58,0.3)] active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {resetLoading ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Sending Link...</span>
+                      </>
+                    ) : (
+                      <span>Send Reset Link</span>
+                    )}
+                  </button>
+                </form>
+              ) : (
+                <div className="text-center pt-2">
+                  <p className="text-xs text-[#6B5744] mb-4">
+                    Didn&apos;t receive the email? Check your spam folder or try again.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setResetSent(false);
+                      setSuccessMessage(null);
+                      setResetError(null);
+                    }}
+                    className="text-xs font-semibold text-[#7B5B3A] hover:underline cursor-pointer"
+                  >
+                    Send another link
+                  </button>
+                </div>
+              )}
+
+              <div className="pt-2 text-center border-t border-[#E2D5C7]/60">
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C7B6B] hover:text-[#2C1D13] transition-colors text-xs"
+                  onClick={() => {
+                    setViewMode('login');
+                    setError(null);
+                    setResetError(null);
+                    setSuccessMessage(null);
+                    setResetSent(false);
+                  }}
+                  className="text-xs font-semibold text-[#7B5B3A] hover:text-[#2C1D13] transition-colors inline-flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
                 >
-                  {showPassword ? 'Hide' : 'Show'}
+                  <span>← Back to Sign In</span>
                 </button>
               </div>
             </div>
-
-            {/* Remember Me */}
-            <div className="flex items-center justify-between pt-1">
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded text-[#7B5B3A] border-[#D9C9B8] focus:ring-[#7B5B3A]"
-                />
-                <span className="text-xs text-[#6B5744]">Keep me signed in</span>
-              </label>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full h-11 sm:h-12 rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-xs sm:text-sm font-bold tracking-[0.14em] uppercase transition-all shadow-[0_4px_16px_rgba(44,29,19,0.18)] hover:shadow-[0_6px_20px_rgba(123,91,58,0.3)] active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Signing In...</span>
-                </>
-              ) : (
-                <span>Sign In</span>
-              )}
-            </button>
-          </form>
-
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#E2D5C7]" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-3 text-[#A89887] tracking-wider font-medium">
-                New Customer?
-              </span>
-            </div>
-          </div>
-
-          {/* Create Account Link */}
-          <Link
-            href={`/signup${redirectTo !== '/account' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`}
-            className="w-full h-11 sm:h-12 rounded-full border border-[#7B5B3A] text-[#7B5B3A] hover:bg-[#FAF6F0] text-xs sm:text-sm font-semibold tracking-wider transition-all flex items-center justify-center text-center"
-          >
-            Create Your Account
-          </Link>
+          )}
         </div>
 
         {/* Back to Home link */}

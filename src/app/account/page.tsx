@@ -15,7 +15,7 @@ export default function CustomerAccountPage() {
 
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'security'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'profile'>('orders');
 
   // Orders state
   const [orders, setOrders] = useState<Order[]>([]);
@@ -166,16 +166,10 @@ export default function CustomerAccountPage() {
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
-            <Link
-              href="/admin"
-              className="flex-1 sm:flex-initial px-4 py-2.5 rounded-full border border-[#D9C9B8] text-xs font-semibold text-[#6B5744] hover:bg-[#FAF6F0] hover:text-[#2C1D13] transition-all text-center"
-            >
-              Admin Portal
-            </Link>
             <button
               type="button"
               onClick={handleSignOut}
-              className="flex-1 sm:flex-initial px-4 py-2.5 rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-xs font-semibold tracking-wider uppercase transition-all shadow-xs"
+              className="flex-1 sm:flex-initial px-5 py-2.5 rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-xs font-semibold tracking-wider uppercase transition-all shadow-xs"
             >
               Sign Out
             </button>
@@ -205,17 +199,6 @@ export default function CustomerAccountPage() {
             }`}
           >
             Profile & Delivery Address
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('security')}
-            className={`pb-3 text-xs sm:text-sm font-semibold tracking-wider uppercase transition-all border-b-2 ${
-              activeTab === 'security'
-                ? 'border-[#2C1D13] text-[#2C1D13]'
-                : 'border-transparent text-[#8C7B6B] hover:text-[#2C1D13]'
-            }`}
-          >
-            Security & Payments
           </button>
         </div>
 
@@ -359,7 +342,7 @@ export default function CustomerAccountPage() {
 
         {/* Tab 2: Profile */}
         {activeTab === 'profile' && (
-          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#E2D5C7]/80 shadow-xs max-w-2xl">
+          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#E2D5C7]/80 shadow-xs w-full">
             <h3 className="font-display text-xl font-bold text-[#2C1D13] mb-2">
               Default Shipping Address
             </h3>
@@ -369,13 +352,32 @@ export default function CustomerAccountPage() {
 
             {profileMessage && (
               <div
-                className={`mb-6 p-3.5 rounded-xl text-xs sm:text-sm ${
+                className={`mb-6 p-3.5 sm:p-4 rounded-2xl text-xs sm:text-sm flex items-start gap-3 ${
                   profileMessage.includes('Error')
-                    ? 'bg-[#FFF1F2] text-[#9F1239] border border-[#FECDD3]'
-                    : 'bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]'
+                    ? 'bg-[#FDF8F5] text-[#6B2822] border border-[#E8D5CE] shadow-[0_2px_12px_rgba(107,40,34,0.04)]'
+                    : 'bg-[#F2F7F4] text-[#1A533F] border border-[#CBE0D4] shadow-[0_2px_12px_rgba(26,83,63,0.04)]'
                 }`}
               >
-                {profileMessage}
+                <div
+                  className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                    profileMessage.includes('Error')
+                      ? 'bg-[#F4E2DB] text-[#6B2822]'
+                      : 'bg-[#DDEEE4] text-[#1A533F]'
+                  }`}
+                >
+                  {profileMessage.includes('Error') ? (
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                  ) : (
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </div>
+                <span className="leading-relaxed font-medium">{profileMessage}</span>
               </div>
             )}
 
@@ -386,19 +388,6 @@ export default function CustomerAccountPage() {
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full h-11 px-3.5 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-sm text-[#2C1D13] focus:outline-none focus:border-[#7B5B3A] focus:bg-white transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#3D2B1F] mb-1">
-                  Phone Number (for Courier updates)
-                </label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+91 98765 43210"
                   className="w-full h-11 px-3.5 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-sm text-[#2C1D13] focus:outline-none focus:border-[#7B5B3A] focus:bg-white transition-all"
                 />
               </div>
@@ -416,7 +405,7 @@ export default function CustomerAccountPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-[#3D2B1F] mb-1">City</label>
                   <input
@@ -439,76 +428,43 @@ export default function CustomerAccountPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-[#3D2B1F] mb-1">
-                  Postal PIN Code
-                </label>
-                <input
-                  type="text"
-                  value={postalCode}
-                  onChange={(e) => setPostalCode(e.target.value)}
-                  placeholder="e.g. 673001"
-                  className="w-full h-11 px-3.5 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-sm text-[#2C1D13] focus:outline-none focus:border-[#7B5B3A] focus:bg-white transition-all"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-[#3D2B1F] mb-1">
+                    Postal PIN Code
+                  </label>
+                  <input
+                    type="text"
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    placeholder="e.g. 673001"
+                    className="w-full h-11 px-3.5 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-sm text-[#2C1D13] focus:outline-none focus:border-[#7B5B3A] focus:bg-white transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#3D2B1F] mb-1">
+                    Mobile Number (for Courier updates)
+                  </label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+91 98765 43210"
+                    className="w-full h-11 px-3.5 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-sm text-[#2C1D13] focus:outline-none focus:border-[#7B5B3A] focus:bg-white transition-all"
+                  />
+                </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={savingProfile}
-                className="w-full h-11 rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-xs sm:text-sm font-bold tracking-wider uppercase transition-all shadow-xs mt-4"
-              >
-                {savingProfile ? 'Saving Details...' : 'Save Delivery Address'}
-              </button>
+              <div className="flex justify-end pt-2">
+                <button
+                  type="submit"
+                  disabled={savingProfile}
+                  className="w-full sm:w-auto px-8 h-11 rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-xs sm:text-sm font-bold tracking-wider uppercase transition-all shadow-xs"
+                >
+                  {savingProfile ? 'Saving Details...' : 'Save Delivery Address'}
+                </button>
+              </div>
             </form>
-          </div>
-        )}
-
-        {/* Tab 3: Security & Payments */}
-        {activeTab === 'security' && (
-          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#E2D5C7]/80 shadow-xs max-w-2xl space-y-6">
-            <div>
-              <h3 className="font-display text-xl font-bold text-[#2C1D13] mb-1">
-                Payment Security & Gateway
-              </h3>
-              <p className="text-xs sm:text-sm text-[#6B5744]">
-                ZARISH uses bank-grade 256-bit SSL encryption powered by <strong>Razorpay</strong>.
-                We do not store your credit/debit card numbers or UPI PINs on our servers.
-              </p>
-            </div>
-
-            <div className="bg-[#FAF6F0] p-4 rounded-2xl border border-[#E2D5C7] space-y-2 text-xs text-[#6B5744]">
-              <div className="font-bold text-[#2C1D13]">Supported Payment Options via Razorpay:</div>
-              <ul className="list-disc list-inside space-y-1 text-[#6B5744]">
-                <li>UPI (Google Pay, PhonePe, Paytm, BHIM)</li>
-                <li>Credit & Debit Cards (Visa, Mastercard, RuPay, Amex)</li>
-                <li>Net Banking across 50+ major Indian banks</li>
-                <li>Cash on Delivery (on select pin codes)</li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold text-sm text-[#2C1D13] mb-1">Account Password</h4>
-              <p className="text-xs text-[#8C7B6B] mb-3">
-                Need to change or update your account password?
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  if (user?.email) {
-                    supabase.auth
-                      .resetPasswordForEmail(user.email, {
-                        redirectTo: `${window.location.origin}/auth/callback?next=/account`,
-                      })
-                      .then(() => {
-                        alert('Password reset link has been dispatched to your email.');
-                      });
-                  }
-                }}
-                className="px-5 py-2.5 rounded-full border border-[#7B5B3A] text-[#7B5B3A] text-xs font-semibold hover:bg-[#FAF6F0] transition-all"
-              >
-                Send Password Reset Email
-              </button>
-            </div>
           </div>
         )}
       </main>
