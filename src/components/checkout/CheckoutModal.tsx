@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { loadRazorpayScript } from '@/lib/loadRazorpay';
 import { formatPrice } from '@/lib/utils';
+import { INDIAN_STATES } from '@/lib/constants';
 import type { Product } from '@/lib/types';
 
 interface CheckoutModalProps {
@@ -36,7 +37,7 @@ export default function CheckoutModal({
   const [phone, setPhone] = useState('');
   const [addressLine1, setAddressLine1] = useState('');
   const [city, setCity] = useState('');
-  const [stateName, setStateName] = useState('Kerala');
+  const [stateName, setStateName] = useState('');
   const [postalCode, setPostalCode] = useState('');
 
   // Coupon state
@@ -65,7 +66,7 @@ export default function CheckoutModal({
           const addr = user.user_metadata.address;
           setAddressLine1(addr.addressLine1 || '');
           setCity(addr.city || '');
-          setStateName(addr.state || 'Kerala');
+          setStateName(addr.state || '');
           setPostalCode(addr.postalCode || '');
         }
       }
@@ -79,7 +80,9 @@ export default function CheckoutModal({
 
   const subtotal = product.price * quantity;
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
-  const finalPrice = Math.max(1, subtotal - discountAmount);
+  const isKerala = stateName?.trim().toLowerCase() === 'kerala';
+  const deliveryFee = stateName ? (isKerala ? 0 : 50) : 0;
+  const finalPrice = Math.max(1, subtotal - discountAmount + deliveryFee);
 
   const primaryImg =
     product.images?.find((img) => img.role === 'primary')?.secure_url ||
@@ -300,10 +303,10 @@ export default function CheckoutModal({
             ) : (
               <div>
                 <div className="text-sm sm:text-base font-bold text-[#2C1D13]">
-                  {formatPrice(subtotal)}
+                  {formatPrice(finalPrice)}
                 </div>
                 <span className="text-[10px] text-[#0E7064] font-semibold uppercase tracking-wider block">
-                  Free Express Shipping
+                  {stateName ? (isKerala ? 'Free Shipping (Kerala)' : 'Delivery Charge: ₹50') : 'Free in Kerala / ₹50 Other States'}
                 </span>
               </div>
             )}
@@ -398,7 +401,7 @@ export default function CheckoutModal({
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="e.g. Ayesha Rahman"
+                placeholder="Full name"
                 className="w-full h-10 px-3 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-xs sm:text-sm text-[#2C1D13] focus:outline-none focus:border-[#7B5B3A] focus:bg-white"
               />
             </div>
@@ -409,7 +412,7 @@ export default function CheckoutModal({
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com"
+                placeholder="Email address"
                 className="w-full h-10 px-3 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-xs sm:text-sm text-[#2C1D13] focus:outline-none focus:border-[#7B5B3A] focus:bg-white"
               />
             </div>
@@ -422,7 +425,7 @@ export default function CheckoutModal({
               required
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="+91 98765 43210"
+              placeholder="10-digit mobile number"
               className="w-full h-10 px-3 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-xs sm:text-sm text-[#2C1D13] focus:outline-none focus:border-[#7B5B3A] focus:bg-white"
             />
           </div>
@@ -453,14 +456,30 @@ export default function CheckoutModal({
             </div>
             <div>
               <label className="block text-xs font-semibold text-[#3D2B1F] mb-1">State *</label>
-              <input
-                type="text"
-                required
-                value={stateName}
-                onChange={(e) => setStateName(e.target.value)}
-                placeholder="State"
-                className="w-full h-10 px-3 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-xs sm:text-sm text-[#2C1D13] focus:outline-none focus:border-[#7B5B3A] focus:bg-white"
-              />
+              <div className="relative">
+                <select
+                  required
+                  value={stateName}
+                  onChange={(e) => setStateName(e.target.value)}
+                  className={`w-full h-10 appearance-none px-3 pr-8 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-xs sm:text-sm focus:outline-none focus:border-[#7B5B3A] focus:bg-white cursor-pointer ${
+                    !stateName ? 'text-[#8C7B6B]' : 'text-[#2C1D13] font-medium'
+                  }`}
+                >
+                  <option value="" disabled>
+                    Select State
+                  </option>
+                  {INDIAN_STATES.map((s) => (
+                    <option key={s} value={s} className="text-[#2C1D13]">
+                      {s}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-[#8C7B6B]">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
             <div>
               <label className="block text-xs font-semibold text-[#3D2B1F] mb-1">PIN Code *</label>

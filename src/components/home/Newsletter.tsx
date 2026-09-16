@@ -51,47 +51,57 @@ export default function Newsletter({ heading, description, ctaText, isActive }: 
   };
 
   return (
-    <section className="bg-[#FAF6F0] py-6 md:py-10" aria-labelledby="newsletter-heading">
-      <div className="max-w-[480px] mx-auto text-center px-5 md:px-6">
-        <h2 id="newsletter-heading" className="font-display text-xl md:text-2xl font-semibold text-[#2C1D13] mb-2">
-          {heading}
-        </h2>
-        {description && (
-          <p className="text-xs md:text-sm text-[#8C7B6B] mb-5">{description}</p>
-        )}
+    <section className="bg-[#FAF6F0] py-8 md:py-12 border-t border-[#E2D5C7]/60" aria-labelledby="newsletter-heading">
+      <div className="max-w-[1360px] mx-auto px-6 sm:px-8">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 lg:gap-12">
+          {/* Left Side: Content */}
+          <div className="text-left max-w-xl">
+            <h2 id="newsletter-heading" className="font-display text-2xl md:text-3xl font-semibold text-[#2C1D13] mb-2 tracking-wide uppercase">
+              {heading}
+            </h2>
+            {description && (
+              <p className="text-xs md:text-sm text-[#8C7B6B] leading-relaxed">{description}</p>
+            )}
+          </div>
 
-        {status === 'success' ? (
-          <p className="text-sm text-[#7B5B3A] font-semibold">
-            Thank you for subscribing to ZARISH updates!
-          </p>
-        ) : (
-          <form className="flex flex-col sm:flex-row gap-2 max-w-[380px] mx-auto" onSubmit={handleSubmit}>
-            <input
-              type="email"
-              className="flex-1 px-4 py-2 border-[1.5px] border-[#E2D5C7] rounded-full bg-white text-xs text-[#2C1D13] placeholder-[#8C7B6B] focus:border-[#7B5B3A] focus:outline-hidden transition-colors"
-              placeholder="Enter your email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              aria-label="Email address for newsletter"
-              disabled={status === 'loading'}
-            />
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center gap-1.5 font-medium tracking-wide uppercase rounded-full transition-all whitespace-nowrap cursor-pointer text-xs px-6 py-2 bg-[#3D2B1F] text-white hover:bg-[#7B5B3A] hover:-translate-y-0.5 hover:shadow-md disabled:opacity-60"
-              disabled={status === 'loading'}
-            >
-              {status === 'loading' ? 'Subscribing...' : ctaText || 'Subscribe'}
-              <IconArrowRight size={12} />
-            </button>
-          </form>
-        )}
+          {/* Right Side: Input & Button */}
+          <div className="w-full lg:w-auto shrink-0">
+            {status === 'success' ? (
+              <div className="p-3 bg-[#EAE2D7] rounded-full px-6 text-center">
+                <p className="text-sm text-[#2C1D13] font-semibold">
+                  Thank you for subscribing to ZARISH updates!
+                </p>
+              </div>
+            ) : (
+              <form className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:min-w-[420px] max-w-[500px]" onSubmit={handleSubmit}>
+                <input
+                  type="email"
+                  className="flex-1 px-5 py-3 border-[1.5px] border-[#E2D5C7] rounded-full bg-white text-xs md:text-sm text-[#2C1D13] placeholder-[#8C7B6B] focus:border-[#7B5B3A] focus:outline-hidden transition-colors shadow-xs"
+                  placeholder="Enter your email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  aria-label="Email address for newsletter"
+                  disabled={status === 'loading'}
+                />
+                <button
+                  type="submit"
+                  className="inline-flex items-center justify-center gap-2 font-medium tracking-wider uppercase rounded-full transition-all whitespace-nowrap cursor-pointer text-xs px-7 py-3 bg-[#2C1D13] text-white hover:bg-[#7B5B3A] hover:-translate-y-0.5 hover:shadow-md disabled:opacity-60 shrink-0"
+                  disabled={status === 'loading'}
+                >
+                  {status === 'loading' ? 'Subscribing...' : ctaText || 'Subscribe'}
+                  <IconArrowRight size={14} />
+                </button>
+              </form>
+            )}
 
-        {status === 'error' && (
-          <p className="text-[#8B4E5A] text-[11px] mt-1.5">
-            {errorMessage}
-          </p>
-        )}
+            {status === 'error' && (
+              <p className="text-[#8B4E5A] text-xs mt-2 pl-3">
+                {errorMessage}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
     </section>
   );

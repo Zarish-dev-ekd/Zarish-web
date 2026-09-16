@@ -407,41 +407,6 @@ export default function Header({ navigationItems = [], cartItemCount = 0 }: Head
         </div>
 
         <nav className="py-4" aria-label="Mobile navigation">
-          <button
-            type="button"
-            onClick={() => {
-              closeDrawer();
-              setIsSearchModalOpen(true);
-            }}
-            className="flex items-center justify-between w-full px-6 py-3 text-base font-semibold text-[#2C1D13] hover:bg-[#F3ECE2] transition-colors cursor-pointer text-left"
-          >
-            <span className="flex items-center gap-2">
-              <IconSearch size={16} />
-              Search Garments
-            </span>
-            <IconChevronRight size={14} />
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              closeDrawer();
-              openWishlist();
-            }}
-            className="flex items-center justify-between w-full px-6 py-3 text-base font-semibold text-[#2C1D13] hover:bg-[#F3ECE2] transition-colors cursor-pointer text-left"
-          >
-            <span className="flex items-center gap-2">
-              <IconHeart size={16} filled={wishlistCount > 0} />
-              My Wishlist
-            </span>
-            {wishlistCount > 0 ? (
-              <span className="px-2 py-0.5 rounded-full bg-[#8B4E5A] text-white text-xs font-bold leading-none">
-                {wishlistCount}
-              </span>
-            ) : (
-              <IconChevronRight size={14} />
-            )}
-          </button>
 
           {activeNavItems.map((item) => (
             <Link

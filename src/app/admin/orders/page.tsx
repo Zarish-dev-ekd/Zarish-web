@@ -37,7 +37,23 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+
+    // Realtime listener for incoming orders
+    const channel = supabase
+      .channel('admin_orders_feed')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        () => {
+          fetchOrders();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase]);
 
   const handleUpdateStatus = async (orderId: string, newStatus: string) => {
     try {

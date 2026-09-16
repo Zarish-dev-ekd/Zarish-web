@@ -234,7 +234,7 @@ export default function FeaturedProductsGrid() {
             </p>
             <h2
               id="featured-products-heading"
-              className="font-display text-xl sm:text-2xl lg:text-[28px] font-bold text-[#2C1D13] tracking-tight leading-tight"
+              className="font-display text-2xl sm:text-3xl  font-bold text-[#2C1D13] tracking-tight leading-tight uppercase"
             >
               All Products
             </h2>
