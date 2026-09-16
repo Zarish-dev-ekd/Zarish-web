@@ -3,7 +3,7 @@
 import { useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
-import { IconShoppingBag, IconX, IconArrowRight, IconWhatsapp } from '@/components/icons';
+import { IconShoppingBag, IconX, IconArrowRight } from '@/components/icons';
 import { formatPrice, optimizeCloudinaryUrl } from '@/lib/utils';
 
 export default function CartDrawer() {
@@ -35,21 +35,6 @@ export default function CartDrawer() {
       document.body.style.overflow = '';
     };
   }, [isCartOpen]);
-
-  // WhatsApp order text with real cart items
-  const cartSummaryText = encodeURIComponent(
-    `Hello ZARISH! I would like to place an order for the following pieces:\n\n` +
-    items
-      .map(
-        (it, idx) =>
-          `${idx + 1}. ${it.name} (Size: ${it.size || 'Standard'}) x ${it.quantity} - ${formatPrice(
-            it.price * it.quantity
-          )}`
-      )
-      .join('\n') +
-    `\n\nTotal: ${formatPrice(subtotal)}\n\nPlease let me know the dispatch details!`
-  );
-  const whatsappUrl = `https://wa.me/919496053335?text=${cartSummaryText}`;
 
   return (
     <>
@@ -235,22 +220,12 @@ export default function CartDrawer() {
             </p>
 
             <div className="flex flex-col gap-2">
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-full bg-[#128C7E] hover:bg-[#0E7064] text-white text-xs font-bold tracking-wider uppercase transition-all shadow-xs text-center cursor-pointer"
-              >
-                <IconWhatsapp size={16} />
-                <span>Order via WhatsApp</span>
-              </a>
-
               <Link
-                href="/products"
+                href="/checkout"
                 onClick={closeCart}
-                className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-xs font-bold tracking-wider uppercase transition-all shadow-xs text-center cursor-pointer"
+                className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-xs font-bold tracking-wider uppercase transition-all shadow-md text-center cursor-pointer"
               >
-                <span>Continue Shopping</span>
+                <span>Proceed to Checkout</span>
                 <IconArrowRight size={14} />
               </Link>
             </div>

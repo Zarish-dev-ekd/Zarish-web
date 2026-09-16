@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -53,13 +54,18 @@ const FOOTER_COLUMNS = [
 
 export default function Footer({ brandDescription, socialLinks = {} }: FooterProps) {
   const currentYear = new Date().getFullYear();
+  const [openSection, setOpenSection] = useState<string | null>(null);
+
+  const toggleSection = (title: string) => {
+    setOpenSection((prev) => (prev === title ? null : title));
+  };
 
   const whatsappHref = socialLinks.whatsapp
     ? (socialLinks.whatsapp.startsWith('http') ? socialLinks.whatsapp : `https://wa.me/${socialLinks.whatsapp.replace(/[^0-9]/g, '')}`)
     : 'https://wa.me/';
 
   return (
-    <footer className="relative bg-[#FAF6F0] text-[#3D2B1F] border-t border-[#E2D5C7]" role="contentinfo">
+    <footer className="relative bg-[#0D0A08] text-[#E8DDD4] border-t border-[#2A1F16]" role="contentinfo">
       {/* ─── Main Footer Columns ────────────────────────────────────── */}
       <div className="max-w-[1360px] mx-auto px-6 sm:px-8 pt-8 pb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-10 mb-6">
@@ -72,36 +78,22 @@ export default function Footer({ brandDescription, socialLinks = {} }: FooterPro
                   alt="ZARISH by Nehala Mufeed"
                   width={140}
                   height={34}
-                  style={{ height: '30px', width: 'auto' }}
+                  style={{ height: '30px', width: 'auto', filter: 'brightness(0) invert(1)' }}
                 />
               </Link>
 
-              <p className="text-xs text-[#6B5744] leading-relaxed max-w-sm mb-3.5">
+              <p className="text-xs text-[#9E8E7E] leading-relaxed max-w-sm mb-3.5">
                 {brandDescription ||
                   'ZARISH by Nehala Mufeed celebrates modesty as effortless grace. Thoughtfully tailored silhouettes designed for your sacred moments and everyday confidence.'}
               </p>
 
               {/* WhatsApp Styling Concierge Box */}
-              <div className="bg-[#F5EDE3] max-w-sm mb-3.5 flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] font-semibold tracking-wider text-[#2C1D13] uppercase">Need Styling Advice?</p>
-                  <p className="text-[10px] text-[#7B6858]">Chat directly with our design team</p>
-                </div>
-                <a
-                  href={whatsappHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#2C1D13] hover:bg-[#3D2B1F] text-white rounded-full text-[10px] font-medium tracking-wide transition-all shadow-sm shrink-0"
-                >
-                  <IconWhatsapp size={12} />
-                  <span>WhatsApp</span>
-                </a>
-              </div>
+   
             </div>
 
             {/* Social Icons */}
             <div>
-              <p className="text-[9px] font-semibold tracking-widest text-[#7B5B3A] uppercase mb-1.5">
+              <p className="text-[9px] font-semibold tracking-widest text-[#7A6A5A] uppercase mb-1.5">
                 Connect With Us
               </p>
               <div className="flex items-center gap-2">
@@ -110,7 +102,7 @@ export default function Footer({ brandDescription, socialLinks = {} }: FooterPro
                     href={socialLinks.instagram}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-8 h-8 rounded-full border border-[#E2D5C7] bg-[#FAF6F0] flex items-center justify-center text-[#6B5744] hover:text-[#8B4E5A] hover:border-[#8B4E5A] hover:bg-white transition-all shadow-2xs"
+                    className="w-8 h-8 rounded-full border border-[#2E2218] bg-[#1A1209] flex items-center justify-center text-[#9E8E7E] hover:text-[#C9B49A] hover:border-[#C9B49A] transition-all"
                     aria-label="Follow us on Instagram"
                   >
                     <IconInstagram size={14} />
@@ -121,7 +113,7 @@ export default function Footer({ brandDescription, socialLinks = {} }: FooterPro
                     href={socialLinks.facebook}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-8 h-8 rounded-full border border-[#E2D5C7] bg-[#FAF6F0] flex items-center justify-center text-[#6B5744] hover:text-[#7B5B3A] hover:border-[#7B5B3A] hover:bg-white transition-all shadow-2xs"
+                    className="w-8 h-8 rounded-full border border-[#2E2218] bg-[#1A1209] flex items-center justify-center text-[#9E8E7E] hover:text-[#C9B49A] hover:border-[#C9B49A] transition-all"
                     aria-label="Follow us on Facebook"
                   >
                     <IconFacebook size={14} />
@@ -131,7 +123,7 @@ export default function Footer({ brandDescription, socialLinks = {} }: FooterPro
                   href={whatsappHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-full border border-[#E2D5C7] bg-[#FAF6F0] flex items-center justify-center text-[#6B5744] hover:text-[#0E7064] hover:border-[#0E7064] hover:bg-white transition-all shadow-2xs"
+                  className="w-8 h-8 rounded-full border border-[#2E2218] bg-[#1A1209] flex items-center justify-center text-[#9E8E7E] hover:text-[#4CAF86] hover:border-[#4CAF86] transition-all"
                   aria-label="Chat on WhatsApp"
                 >
                   <IconWhatsapp size={14} />
@@ -139,7 +131,7 @@ export default function Footer({ brandDescription, socialLinks = {} }: FooterPro
                 {socialLinks.email && (
                   <a
                     href={`mailto:${socialLinks.email}`}
-                    className="w-8 h-8 rounded-full border border-[#E2D5C7] bg-[#FAF6F0] flex items-center justify-center text-[#6B5744] hover:text-[#7B5B3A] hover:border-[#7B5B3A] hover:bg-white transition-all shadow-2xs"
+                    className="w-8 h-8 rounded-full border border-[#2E2218] bg-[#1A1209] flex items-center justify-center text-[#9E8E7E] hover:text-[#C9B49A] hover:border-[#C9B49A] transition-all"
                     aria-label="Email us"
                   >
                     <IconMail size={14} />
@@ -149,10 +141,60 @@ export default function Footer({ brandDescription, socialLinks = {} }: FooterPro
             </div>
           </div>
 
-          {/* Navigation Columns */}
+          {/* Mobile Accordion (Visible on Mobile only) */}
+          <div className="md:hidden border-t border-[#2E2218] divide-y divide-[#2E2218] mt-2">
+            {FOOTER_COLUMNS.map((column) => {
+              const isOpen = openSection === column.title;
+              return (
+                <div key={column.title} className="py-1">
+                  <button
+                    type="button"
+                    onClick={() => toggleSection(column.title)}
+                    aria-expanded={isOpen}
+                    className="w-full flex items-center justify-between py-3 text-left text-xs font-bold uppercase tracking-[0.16em] text-[#C9B49A] cursor-pointer focus:outline-hidden"
+                  >
+                    <span>{column.title}</span>
+                    <svg
+                      className={`w-4 h-4 text-[#8C7B6B] transition-transform duration-300 ${
+                        isOpen ? 'rotate-180 text-[#C9B49A]' : ''
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  <div
+                    className={`grid transition-all duration-300 ease-in-out overflow-hidden ${
+                      isOpen ? 'grid-rows-[1fr] opacity-100 pb-3' : 'grid-rows-[0fr] opacity-0'
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <ul className="flex flex-col space-y-2.5 pl-1 pt-1">
+                        {column.links.map((link) => (
+                          <li key={link.label}>
+                            <Link
+                              href={link.href}
+                              className="block text-xs text-[#9E8E7E] hover:text-[#C9B49A] transition-colors py-0.5"
+                            >
+                              {link.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Navigation Columns (Hidden on Mobile, visible md and up) */}
           {FOOTER_COLUMNS.map((column) => (
-            <div key={column.title} className="flex flex-col">
-              <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-[#2C1D13] mb-2.5 pb-1 border-b border-[#E2D5C7]/60 inline-block">
+            <div key={column.title} className="hidden md:flex flex-col">
+              <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-[#C9B49A] mb-2.5 pb-1 border-b border-[#2E2218] inline-block">
                 {column.title}
               </h3>
               <ul className="flex flex-col space-y-1.5">
@@ -160,7 +202,7 @@ export default function Footer({ brandDescription, socialLinks = {} }: FooterPro
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="group inline-flex items-center text-xs text-[#6B5744] hover:text-[#7B5B3A] transition-colors"
+                      className="group inline-flex items-center text-xs text-[#7A6A5A] hover:text-[#C9B49A] transition-colors"
                     >
                       <span className="group-hover:translate-x-1 transition-transform duration-200">
                         {link.label}
@@ -174,19 +216,17 @@ export default function Footer({ brandDescription, socialLinks = {} }: FooterPro
         </div>
 
         {/* ─── Bottom Bar ───────────────────────────────────────────── */}
-        <div className="pt-5 border-t border-[#E2D5C7] flex flex-col items-center justify-center gap-1.5 text-center">
-          <p className="text-[11px] text-[#8C7B6B]">
+        <div className="pt-5 border-t border-[#2E2218] flex flex-col items-center justify-center gap-1.5 text-center">
+          <p className="text-[11px] text-[#FFFF]">
             © {currentYear} ZARISH by Nehala Mufeed. All rights reserved.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] font-medium tracking-wider uppercase text-[#7B6858]">
+          <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] font-medium tracking-wider uppercase text-[#FFFF]">
             <span>UPI</span>
-
+            <span>•</span>
             <span>Cards</span>
-    
+            <span>•</span>
             <span>Net Banking</span>
-          
-            <span>COD</span>
           </div>
         </div>
       </div>

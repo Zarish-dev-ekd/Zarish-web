@@ -68,7 +68,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
         {/* Related Garments */}
         {relatedProducts.length > 0 && (
-          <section className="mt-12 sm:mt-20 pt-10 sm:pt-14 border-t border-[#E2D5C7]">
+          <section className=" sm:mt-20 sm:pt-14 border-t border-[#E2D5C7]">
             <div className="text-center mb-8 sm:mb-12">
               <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C1D13] tracking-wide mb-2">
                 YOU MAY ALSO LOVE

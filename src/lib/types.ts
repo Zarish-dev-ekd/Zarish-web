@@ -334,7 +334,7 @@ export interface Order {
   shipping_address: ShippingAddress;
   total_amount: number;
   currency: string;
-  payment_method: 'razorpay' | 'cod' | 'whatsapp';
+  payment_method: 'online' | 'razorpay' | string;
   payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
   razorpay_order_id?: string | null;
   razorpay_payment_id?: string | null;

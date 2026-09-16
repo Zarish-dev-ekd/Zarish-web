@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { formatPrice } from '@/lib/utils';
+import { INDIAN_STATES } from '@/lib/constants';
 import type { Order } from '@/lib/types';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -418,13 +419,29 @@ export default function CustomerAccountPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-[#3D2B1F] mb-1">State</label>
-                  <input
-                    type="text"
-                    value={stateName}
-                    onChange={(e) => setStateName(e.target.value)}
-                    placeholder="e.g. Kerala"
-                    className="w-full h-11 px-3.5 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-sm text-[#2C1D13] focus:outline-none focus:border-[#7B5B3A] focus:bg-white transition-all"
-                  />
+                  <div className="relative">
+                    <select
+                      value={stateName}
+                      onChange={(e) => setStateName(e.target.value)}
+                      className={`w-full h-11 appearance-none px-3.5 pr-9 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-sm focus:outline-none focus:border-[#7B5B3A] focus:bg-white transition-all cursor-pointer ${
+                        !stateName ? 'text-[#8C7B6B]' : 'text-[#2C1D13] font-medium'
+                      }`}
+                    >
+                      <option value="" disabled>
+                        Select State
+                      </option>
+                      {INDIAN_STATES.map((s) => (
+                        <option key={s} value={s} className="text-[#2C1D13]">
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-[#8C7B6B]">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
                 </div>
               </div>
 

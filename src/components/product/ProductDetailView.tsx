@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { formatPrice, getDiscountPercent, optimizeCloudinaryUrl } from '@/lib/utils';
-import { IconArrowRight, IconTruck, IconShield, IconPackage, IconWhatsapp, IconShoppingBag } from '@/components/icons';
+import { IconArrowRight, IconTruck, IconShield, IconPackage, IconShoppingBag } from '@/components/icons';
 import Badge from './Badge';
 import WishlistButton from './WishlistButton';
 import CheckoutModal from '@/components/checkout/CheckoutModal';
@@ -17,6 +18,7 @@ interface ProductDetailViewProps {
 }
 
 export default function ProductDetailView({ product, settings, colors = [] }: ProductDetailViewProps) {
+  const router = useRouter();
   // Checkout modal state
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
@@ -151,6 +153,39 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
     }
   }, [availableSizes, selectedSize]);
 
+  // Determine current variant stock based on selectedColor and selectedSize
+  const currentStock = useMemo(() => {
+    if (product.variants && product.variants.length > 0) {
+      let matched = product.variants.filter((v) => v.is_active);
+
+      if (selectedColor && productColors.length > 0) {
+        matched = matched.filter(
+          (v) => v.color?.toLowerCase() === selectedColor.toLowerCase()
+        );
+      }
+
+      if (selectedSize && availableSizes.length > 0) {
+        matched = matched.filter(
+          (v) => v.size?.name?.toLowerCase() === selectedSize.toLowerCase()
+        );
+      }
+
+      if (matched.length > 0) {
+        return matched.reduce((acc, v) => acc + (v.stock_quantity ?? 0), 0);
+      }
+    }
+    return product.stock_quantity ?? 0;
+  }, [product.variants, product.stock_quantity, selectedColor, selectedSize, productColors.length, availableSizes.length]);
+
+  const isCurrentInStock = currentStock > 0;
+
+  // Auto-adjust quantity if stock changes
+  useEffect(() => {
+    if (isCurrentInStock && quantity > currentStock) {
+      setQuantity(Math.max(1, currentStock));
+    }
+  }, [currentStock, isCurrentInStock, quantity]);
+
   const images = displayedImages;
   const activeImage = images[activeImageIndex];
   const hasDiscount = product.compare_at_price && product.compare_at_price > product.price;
@@ -165,24 +200,6 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
   const handleNextImage = () => {
     setActiveImageIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
   };
-
-  // WhatsApp order link generation
-  const cleanPhone = settings?.social_whatsapp
-    ? settings.social_whatsapp.replace(/[^0-9]/g, '')
-    : '919876543210';
-
-  const orderMessage = encodeURIComponent(
-    `Hello ZARISH by Nehala Mufeed! 👋\n\nI would like to order:\n` +
-    `• Product: *${product.name}*\n` +
-    (selectedColor ? `• Color: *${selectedColor}*\n` : '') +
-    `• Size: *${selectedSize}*\n` +
-    `• Quantity: *${quantity}*\n` +
-    `• Price: *${formatPrice(product.price * quantity)}*\n` +
-    (product.sku ? `• SKU: ${product.sku}\n` : '') +
-    `\nPlease share availability and payment details.`
-  );
-
-  const whatsappUrl = `https://wa.me/${cleanPhone}?text=${orderMessage}`;
 
   const { addToCart } = useCart();
 
@@ -209,6 +226,15 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
     );
   };
 
+  const handleGoToCheckout = () => {
+    const params = new URLSearchParams();
+    params.set('product', product.id);
+    if (selectedSize) params.set('size', selectedSize);
+    if (selectedColor) params.set('color', selectedColor);
+    params.set('quantity', String(quantity));
+    router.push(`/checkout?${params.toString()}`);
+  };
+
   return (
     <div className="w-full pb-20 lg:pb-0">
       {/* Main Grid: Equal width 50/50 split between product image and right side content */}
@@ -222,7 +248,7 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
               <img
                 src={optimizeCloudinaryUrl(activeImage.secure_url, { width: 900 })}
                 alt={activeImage.alt_text || product.name}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02] object-top"
                 width={activeImage.width || 800}
                 height={activeImage.height || 1000}
               />
@@ -354,7 +380,7 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
 
           {/* Short Tagline */}
           {product.short_description && (
-            <p className="text-xs sm:text-sm text-[#6B5744] leading-relaxed mb-5 pb-4 border-b border-[#E2D5C7]">
+            <p className="text-xs text-[#6B5744] leading-relaxed mb-2 pb-2">
               {product.short_description}
             </p>
           )}
@@ -404,7 +430,7 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
 
           {/* Size Selector */}
           {availableSizes.length > 0 && (
-            <div className="mb-5">
+            <div className="mb-2">
               <div className="flex items-center justify-between mb-2">
                 <label className="text-xs sm:text-sm font-medium text-[#3D2B1F]">
                   Select Size: <strong className="font-bold text-[#2C1D13]">{selectedSize}</strong>
@@ -426,29 +452,68 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
                   </button>
                 ))}
               </div>
+
+              {/* Dynamic Stock Indicator below Select Size */}
+              <div className="mt-2.5">
+                {!isCurrentInStock ? (
+                  <span className="text-xs sm:text-sm font-medium text-[#DC2626]">
+                    Out of stock
+                  </span>
+                ) : currentStock < 5 ? (
+                  <span className="text-xs sm:text-sm font-medium text-[#EA580C]">
+                    Only {currentStock} left in stock
+                  </span>
+                ) : (
+                  <span className="text-xs sm:text-sm font-medium text-[#16A34A]">
+                    In stock {currentStock} available
+                  </span>
+                )}
+              </div>
             </div>
           )}
 
-          {/* Quantity Selector */}
+          {/* Dynamic Stock Indicator when no sizes */}
+          {availableSizes.length === 0 && (
+            <div className="mb-4">
+              {!isCurrentInStock ? (
+                <span className="text-xs sm:text-sm font-medium text-[#DC2626]">
+                  Out of stock
+                </span>
+              ) : currentStock < 5 ? (
+                <span className="text-xs sm:text-sm font-medium text-[#EA580C]">
+                  Only {currentStock} left in stock!
+                </span>
+              ) : (
+                <span className="text-xs sm:text-sm font-medium text-[#16A34A]">
+                  In stock ({currentStock} available)
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Quantity */}
           <div className="mb-6">
             <label className="block text-xs sm:text-sm font-medium text-[#3D2B1F] mb-2">
               Quantity:
             </label>
+
             <div className="inline-flex items-center border border-[#E2D5C7] rounded-full bg-white overflow-hidden shadow-xs">
               <button
                 type="button"
+                disabled={!isCurrentInStock || quantity <= 1}
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                 aria-label="Decrease quantity"
-                className="w-9 h-9 flex items-center justify-center text-base text-[#3D2B1F] hover:bg-[#FAF6F0] active:scale-90 transition-all cursor-pointer"
+                className="w-9 h-9 flex items-center justify-center text-base text-[#3D2B1F] hover:bg-[#FAF6F0] active:scale-90 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 −
               </button>
               <span className="w-9 text-center text-sm font-bold text-[#2C1D13]">{quantity}</span>
               <button
                 type="button"
-                onClick={() => setQuantity((q) => q + 1)}
+                disabled={!isCurrentInStock || quantity >= currentStock}
+                onClick={() => setQuantity((q) => Math.min(currentStock, q + 1))}
                 aria-label="Increase quantity"
-                className="w-9 h-9 flex items-center justify-center text-base text-[#3D2B1F] hover:bg-[#FAF6F0] active:scale-90 transition-all cursor-pointer"
+                className="w-9 h-9 flex items-center justify-center text-base text-[#3D2B1F] hover:bg-[#FAF6F0] active:scale-90 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 +
               </button>
@@ -461,52 +526,37 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 type="button"
+                disabled={!isCurrentInStock}
                 onClick={handleAddToCart}
-                className="h-12 flex items-center justify-center gap-2 rounded-xl border-2 border-[#2C1D13] bg-transparent hover:bg-[#2C1D13] text-[#2C1D13] hover:text-white px-5 text-xs sm:text-sm font-bold tracking-[0.14em] uppercase transition-all duration-200 shadow-xs cursor-pointer active:scale-[0.99]"
+                className="h-12 flex items-center justify-center gap-2 rounded-xl border-2 border-[#2C1D13] bg-transparent hover:bg-[#2C1D13] text-[#2C1D13] hover:text-white px-5 text-xs font-bold tracking-[0.14em] uppercase transition-all duration-200 shadow-xs cursor-pointer active:scale-[0.99] disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[#2C1D13] disabled:cursor-not-allowed"
               >
                 <IconShoppingBag size={17} />
-                <span>Add to Bag</span>
+                <span>{isCurrentInStock ? 'Add to Bag' : 'Out of Stock'}</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setIsCheckoutOpen(true)}
-                className="h-12 flex items-center justify-center gap-2 rounded-xl bg-[#2C1D13] hover:bg-[#7B5B3A] text-white px-5 text-xs sm:text-sm font-bold tracking-[0.14em] uppercase shadow-[0_4px_16px_rgba(44,29,19,0.18)] hover:shadow-[0_6px_20px_rgba(123,91,58,0.25)] active:scale-[0.99] transition-all duration-200 cursor-pointer"
+                disabled={!isCurrentInStock}
+                onClick={handleGoToCheckout}
+                className="h-12 flex items-center justify-center gap-2 rounded-xl bg-[#2C1D13] hover:bg-[#7B5B3A] text-white px-5 text-xs font-bold tracking-[0.14em] uppercase shadow-[0_4px_16px_rgba(44,29,19,0.18)] hover:shadow-[0_6px_20px_rgba(123,91,58,0.25)] active:scale-[0.99] transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:hover:bg-[#2C1D13] disabled:cursor-not-allowed"
               >
-                <span>Instant Checkout</span>
-                <IconArrowRight size={16} className="opacity-80" />
+                <span>{isCurrentInStock ? 'Instant Checkout' : 'Unavailable'}</span>
+                {isCurrentInStock }
               </button>
-            </div>
-
-            {/* Secondary Row: Order on WhatsApp + Wishlist */}
-            <div className="flex items-center gap-3">
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 h-12 flex items-center justify-center gap-2 rounded-xl bg-[#128C7E] hover:bg-[#0E7064] text-white px-5 text-xs sm:text-sm font-bold tracking-[0.12em] uppercase shadow-[0_4px_14px_rgba(18,140,126,0.2)] hover:shadow-[0_6px_18px_rgba(18,140,126,0.3)] active:scale-[0.99] transition-all duration-200 whitespace-nowrap"
-              >
-                <IconWhatsapp size={18} className="flex-shrink-0" />
-                <span>Order on WhatsApp</span>
-              </a>
-
-              <div className="h-12 w-12 flex-shrink-0 rounded-xl border border-[#E2D5C7] bg-white flex items-center justify-center hover:border-[#7B5B3A] hover:bg-[#FAF6F0] transition-colors shadow-xs">
-                <WishlistButton product={product} />
-              </div>
             </div>
           </div>
 
           {/* Trust Guarantees */}
           <div className="bg-[#FAF6F0] border border-[#E2D5C7]/80 rounded-2xl p-4 sm:p-5 space-y-3 mb-8">
-            <div className="flex items-center gap-3 text-xs sm:text-sm text-[#6B5744]">
+            <div className="flex items-center gap-3 text-xs  text-[#6B5744]">
               <IconTruck size={18} className="text-[#7B5B3A] flex-shrink-0" />
               <span>Complimentary shipping on orders over ₹2,999</span>
             </div>
-            <div className="flex items-center gap-3 text-xs sm:text-sm text-[#6B5744]">
+            <div className="flex items-center gap-3 text-xs  text-[#6B5744]">
               <IconShield size={18} className="text-[#7B5B3A] flex-shrink-0" />
               <span>100% Genuine Designer Modest Craftsmanship</span>
             </div>
-            <div className="flex items-center gap-3 text-xs sm:text-sm text-[#6B5744]">
+            <div className="flex items-center gap-3 text-xs text-[#6B5744]">
               <IconPackage size={18} className="text-[#7B5B3A] flex-shrink-0" />
               <span>Delivered in signature luxury ZARISH packaging</span>
             </div>
@@ -517,7 +567,7 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
             <div className="flex border-b border-[#E2D5C7] gap-5 sm:gap-8 overflow-x-auto whitespace-nowrap scrollbar-none">
               <button
                 type="button"
-                className={`pb-3 text-xs sm:text-sm font-semibold uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
+                className={`pb-3 text-xs font-semibold uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
                   activeTab === 'details'
                     ? 'border-[#2C1D13] text-[#2C1D13]'
                     : 'border-transparent text-[#8C7B6B] hover:text-[#2C1D13]'
@@ -529,7 +579,7 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
               {product.materials && (
                 <button
                   type="button"
-                  className={`pb-3 text-xs sm:text-sm font-semibold uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
+                  className={`pb-3 text-xs font-semibold uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
                     activeTab === 'materials'
                       ? 'border-[#2C1D13] text-[#2C1D13]'
                       : 'border-transparent text-[#8C7B6B] hover:text-[#2C1D13]'
@@ -541,7 +591,7 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
               )}
               <button
                 type="button"
-                className={`pb-3 text-xs sm:text-sm font-semibold uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
+                className={`pb-3 text-xs font-semibold uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
                   activeTab === 'shipping'
                     ? 'border-[#2C1D13] text-[#2C1D13]'
                     : 'border-transparent text-[#8C7B6B] hover:text-[#2C1D13]'
@@ -552,7 +602,7 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
               </button>
             </div>
 
-            <div className="pt-4 text-xs sm:text-sm text-[#6B5744] leading-relaxed">
+            <div className="pt-4 text-xs text-[#6B5744] leading-relaxed">
               {activeTab === 'details' && (
                 <p>{product.description || 'Crafted with timeless modesty and graceful silhouettes.'}</p>
               )}
@@ -595,8 +645,9 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
         <div className="flex items-center gap-2">
           <button
             type="button"
+            disabled={!isCurrentInStock}
             onClick={handleAddToCart}
-            className="flex items-center justify-center gap-1 rounded-full border border-[#2C1D13] bg-white text-[#2C1D13] hover:bg-[#FAF6F0] py-2.5 px-3 text-xs font-bold tracking-wider uppercase active:scale-95 transition-all cursor-pointer"
+            className="flex items-center justify-center gap-1 rounded-full border border-[#2C1D13] bg-white text-[#2C1D13] hover:bg-[#FAF6F0] py-2.5 px-3 text-xs font-bold tracking-wider uppercase active:scale-95 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             aria-label="Add to Bag"
           >
             <IconShoppingBag size={14} />
@@ -604,21 +655,12 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
           </button>
           <button
             type="button"
-            onClick={() => setIsCheckoutOpen(true)}
-            className="flex items-center justify-center rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white py-2.5 px-3.5 text-xs font-bold tracking-wider uppercase shadow-md active:scale-95 transition-all cursor-pointer"
+            disabled={!isCurrentInStock}
+            onClick={handleGoToCheckout}
+            className="flex-1 flex items-center justify-center rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white py-2.5 px-4 text-xs font-bold tracking-wider uppercase shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <span>Buy Now</span>
+            <span>{isCurrentInStock ? 'Buy Now' : 'Out of Stock'}</span>
           </button>
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-1 rounded-full bg-[#128C7E] hover:bg-[#0E7064] text-white py-2.5 px-3 text-xs font-bold tracking-wider uppercase shadow-md active:scale-95 transition-all"
-            aria-label="Order on WhatsApp"
-          >
-            <IconWhatsapp size={15} />
-            <span>WA</span>
-          </a>
         </div>
       </div>
 

@@ -43,11 +43,27 @@ export default function ShopBySize({
       aria-labelledby="size-heading"
     >
       <div className="max-w-[1280px] mx-auto">
-        {/* ─── Outer Banner Card Matching Reference ───────────────── */}
-        <div className="relative overflow-hidden rounded-[22px] sm:rounded-[28px] md:rounded-[32px] bg-white border border-[#EDE4DC] flex flex-col md:flex-row items-stretch min-h-[200px] md:min-h-[220px]">
+        {/* ─── Outer Banner Card with Full Background Image ───────────────── */}
+        <div className="relative overflow-hidden rounded-[22px] sm:rounded-[28px] md:rounded-[32px] bg-[#FAF7F2] border border-[#EDE4DC] flex flex-col md:flex-row items-stretch min-h-[220px] md:min-h-[230px]">
           
+          {/* ─── Full Background Image ─── */}
+          <div
+            className="absolute inset-0 pointer-events-none select-none overflow-hidden"
+            aria-hidden="true"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/size-banner-decor.jpg"
+              alt="Tailor measuring tape and fabrics background"
+              className="w-full h-full object-cover object-center md:object-right"
+              loading="lazy"
+            />
+            {/* Subtle luminous tint overlay so buttons & shapes stand out crisply */}
+            <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px]" />
+          </div>
+
           {/* ─── 1. LEFT: Dark Brown Curved Shape ─────────────────── */}
-          <div className="relative z-10 bg-[#613B24] text-white rounded-b-[32px] md:rounded-b-none md:rounded-r-[160px] lg:rounded-r-[190px] px-6 sm:px-8 lg:px-10 py-6 md:py-8 flex flex-col justify-center shrink-0 w-full md:w-[280px] lg:w-[320px] xl:w-[340px] text-center md:text-center shadow-sm">
+          <div className="relative z-10 bg-[#613B24] text-white rounded-b-[32px] md:rounded-b-none md:rounded-r-[160px] lg:rounded-r-[190px] px-6 sm:px-8 lg:px-10 py-6 md:py-8 flex flex-col justify-center shrink-0 w-full md:w-[280px] lg:w-[320px] xl:w-[340px] text-center md:text-center shadow-md">
             <h2
               id="size-heading"
               className="font-display text-lg sm:text-xl lg:text-[24px] font-bold tracking-normal uppercase leading-[1.12] text-white"
@@ -58,28 +74,10 @@ export default function ShopBySize({
             <p className="text-[11px] sm:text-xs text-[#EAE0D7] font-normal mt-1.5 leading-relaxed">
               {sectionSubtitle}
             </p>
-
-            {/* Small Underline Accent */}
           </div>
 
-          {/* ─── 2. RIGHT: Decor Image (Measuring Tape & Florals) ─── */}
-          <div
-            className="absolute inset-y-0 right-0 w-[45%] lg:w-[48%] pointer-events-none select-none overflow-hidden hidden md:block"
-            aria-hidden="true"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/size-banner-decor.jpg"
-              alt="Tailor measuring tape and fabrics"
-              className="w-full h-full object-cover object-right"
-              loading="lazy"
-            />
-            {/* Smooth edge fade gradient from white background */}
-            <div className="absolute inset-y-0 left-0 w-24 lg:w-36 bg-gradient-to-r from-white via-white/80 to-transparent" />
-          </div>
-
-          {/* ─── 3. CENTER: Size Pills & Explore Button ────────────── */}
-          <div className="relative z-10 flex-1 flex flex-col items-center justify-center gap-3 sm:gap-4 px-4 py-6 md:py-7 md:pr-10 lg:pr-20">
+          {/* ─── 2. CENTER: Size Pills & Explore Button ────────────── */}
+          <div className="relative z-10 flex-1 flex flex-col items-center justify-center gap-3.5 sm:gap-4 px-4 py-8 md:py-7 md:pr-10 lg:pr-16">
             
             {/* Size Buttons Row */}
             <div
