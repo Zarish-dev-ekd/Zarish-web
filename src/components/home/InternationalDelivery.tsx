@@ -58,10 +58,25 @@ export default function InternationalDelivery({ whatsappNumber }: InternationalD
     >
       <div className="max-w-[1280px] mx-auto">
         <div className={`grid grid-cols-1 ${coupon ? 'lg:grid-cols-2' : ''} gap-4 lg:gap-6 items-stretch`}>
-          
+
           {/* ─── LEFT: International Delivery Box (Equal 50% width) ──── */}
-          <div className="relative overflow-hidden rounded-[18px] sm:rounded-[22px] bg-white border border-[#EBE0D6] flex flex-row items-center justify-between min-h-[160px] sm:min-h-[175px]">
-            
+          <div className="relative overflow-hidden rounded-[18px] sm:rounded-[22px] bg-[#FAF6F0] border border-[#EBE0D6] flex flex-row items-center justify-between min-h-[160px] sm:min-h-[175px]">
+
+            {/* Full Background Image */}
+            <div
+              className="absolute inset-0 pointer-events-none select-none overflow-hidden"
+              aria-hidden="true"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/international-delivery-banner.png"
+                alt="International delivery"
+                className="w-full h-full object-cover object-right"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-transparent sm:from-white/90 sm:via-white/60 sm:to-transparent" />
+            </div>
+
             {/* Fluid lines */}
             <svg
               className="absolute bottom-0 left-0 w-28 sm:w-40 h-14 sm:h-20 pointer-events-none select-none text-[#DDC8BA]/40"
@@ -104,33 +119,19 @@ export default function InternationalDelivery({ whatsappNumber }: InternationalD
                 <span>Chat on WhatsApp</span>
               </a>
             </div>
-
-            {/* Right decorative image arch filling full height on both mobile and desktop */}
-            <div
-              className="relative w-[42%] sm:w-[46%] self-stretch min-h-full overflow-hidden rounded-l-[70px] sm:rounded-l-[110px] pointer-events-none select-none shrink-0"
-              aria-hidden="true"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/international-delivery-banner.png"
-                alt="International delivery"
-                className="absolute inset-0 w-full h-full object-cover object-right"
-                loading="lazy"
-              />
-            </div>
           </div>
 
           {/* ─── RIGHT: Coupon Code Card (Equal 50% width) ───────────── */}
           {coupon && (
             <div className="relative overflow-hidden rounded-[18px] sm:rounded-[22px] bg-gradient-to-br from-[#FAF6F0] via-[#F5ECE1] to-[#F1E5D6] border border-[#E2D4C4] p-5 sm:p-6 flex flex-col justify-between shadow-[0_2px_12px_rgba(44,29,19,0.04)] min-h-[160px]">
-              
+
               {/* Top Row: Eyebrow + Discount Badge */}
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>
                   <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-[#7B5B3A] block mb-0.5">
                     SPECIAL OFFER
                   </span>
-                  <h3 className="font-display text-lg sm:text-xl font-bold text-[#2C1D13] leading-tight">
+                  <h3 className=" text-lg sm:text-xl font-bold text-[#2C1D13] leading-tight">
                     {coupon.discount_type === 'percentage'
                       ? `Get ${coupon.discount_value}% OFF`
                       : `Save ${formatPrice(coupon.discount_value)} FLAT`}

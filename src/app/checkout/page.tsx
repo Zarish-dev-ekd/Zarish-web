@@ -10,6 +10,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { IconArrowRight, IconShield, IconTruck, IconShoppingBag } from '@/components/icons';
 import { INDIAN_STATES } from '@/lib/constants';
+import { loadRazorpayScript } from '@/lib/loadRazorpay';
 import type { Product } from '@/lib/types';
 
 function CheckoutContent() {
@@ -204,7 +205,7 @@ function CheckoutContent() {
         payload.items = cartItems;
       }
 
-      const res = await fetch('/api/checkout/place-order', {
+      const res = await fetch('/api/payment/razorpay/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -213,20 +214,81 @@ function CheckoutContent() {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to complete order.');
+        throw new Error(data.error || 'Failed to initialize payment order.');
       }
 
-      // Clear cart if multi-item
-      if (!isDirect) {
-        clearCart();
+      // 2. Load Razorpay Checkout SDK
+      const isLoaded = await loadRazorpayScript();
+      if (!isLoaded) {
+        throw new Error('Could not load Razorpay payment gateway. Please check your connection.');
       }
 
-      // Redirect to confirmation page
-      router.push(`/order-confirmation/${data.orderNumber}`);
+      // 3. Open Razorpay Checkout Window
+      const options = {
+        key: data.keyId,
+        amount: data.amount,
+        currency: data.currency || 'INR',
+        name: 'ZARISH by Nehala Mufeed',
+        description: `Order #${data.orderNumber}`,
+        image: '/logo-zarish.png',
+        order_id: data.razorpayOrderId,
+        prefill: {
+          name: fullName.trim(),
+          email: email.trim(),
+          contact: phone.trim(),
+        },
+        theme: {
+          color: '#7B5B3A',
+        },
+        handler: async function (response: any) {
+          try {
+            setSubmitting(true);
+            const verifyRes = await fetch('/api/payment/razorpay/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                orderNumber: data.orderNumber,
+              }),
+            });
+
+            const verifyData = await verifyRes.json();
+            if (verifyRes.ok && verifyData.success) {
+              if (!isDirect) {
+                clearCart();
+              }
+              router.push(`/order-confirmation/${data.orderNumber}`);
+            } else {
+              setError(verifyData.error || 'Payment verification failed. Please contact support.');
+              setSubmitting(false);
+            }
+          } catch (vErr: any) {
+            console.error('Payment verification request failed:', vErr);
+            setError(
+              'Could not verify payment with server. If your account was debited, contact support with Order #' +
+                data.orderNumber
+            );
+            setSubmitting(false);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setSubmitting(false);
+          },
+        },
+      };
+
+      const razorpayInstance = new window.Razorpay(options);
+      razorpayInstance.on('payment.failed', function (resp: any) {
+        setError(resp.error?.description || 'Payment was unsuccessful. Please try again.');
+        setSubmitting(false);
+      });
+      razorpayInstance.open();
     } catch (err: any) {
       console.error('Order submission error:', err);
-      setError(err?.message || 'Something went wrong while placing your order.');
-    } finally {
+      setError(err?.message || 'Something went wrong while initiating checkout.');
       setSubmitting(false);
     }
   };
@@ -265,7 +327,7 @@ function CheckoutContent() {
   }
 
   return (
-    <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-14 pb-28 lg:pb-14">
+    <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-14 pb-10 lg:pb-14">
       {/* Page Header */}
       <div className="mb-8 md:mb-10 text-center md:text-left">
         <span className="text-[10px] font-bold tracking-[0.25em] text-[#7B5B3A] uppercase block mb-1">
@@ -576,7 +638,7 @@ function CheckoutContent() {
                   <span className="text-sm font-bold text-[#2C1D13] uppercase tracking-wider">
                     Total Amount
                   </span>
-                  <span className="font-display text-xl sm:text-2xl font-bold text-[#2C1D13]">
+                  <span className="text-xl sm:text-2xl font-bold text-[#2C1D13]">
                     {formatPrice(finalTotal)}
                   </span>
                 </div>
@@ -586,15 +648,12 @@ function CheckoutContent() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full h-14 rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-sm sm:text-base font-bold tracking-[0.14em] uppercase transition-all duration-200 flex items-center justify-center gap-2 shadow-[0_4px_18px_rgba(44,29,19,0.22)] hover:shadow-[0_8px_26px_rgba(123,91,58,0.32)] active:scale-[0.99] cursor-pointer disabled:opacity-60"
+                className="w-full h-10 rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-sm tracking-[0.14em] uppercase transition-all duration-200 flex items-center justify-center gap-2 shadow-[0_4px_18px_rgba(44,29,19,0.22)] hover:shadow-[0_8px_26px_rgba(123,91,58,0.32)] active:scale-[0.99] cursor-pointer disabled:opacity-60"
               >
                 {submitting ? (
-                  <span>Placing Order...</span>
+                  <span>Opening Payment Gateway...</span>
                 ) : (
-                  <>
-                    <span>Place Order</span>
-                 
-                  </>
+                  <span>Pay with Razorpay</span>
                 )}
               </button>
 
@@ -621,7 +680,7 @@ function CheckoutContent() {
             <span className="text-[10px] uppercase font-bold tracking-wider text-[#8C7B6B]">
               Total Amount
             </span>
-            <span className="font-display text-lg sm:text-xl font-bold text-[#2C1D13] leading-tight">
+            <span className="text-lg sm:text-xl font-bold text-[#2C1D13] leading-tight">
               {formatPrice(finalTotal)}
             </span>
           </div>
@@ -631,7 +690,7 @@ function CheckoutContent() {
             disabled={submitting}
             className="flex-1 max-w-[200px] min-h-[50px] h-[50px] rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-xs sm:text-sm font-bold tracking-[0.12em] uppercase transition-all duration-200 flex items-center justify-center shadow-[0_4px_16px_rgba(44,29,19,0.2)] active:scale-95 cursor-pointer disabled:opacity-60"
           >
-            {submitting ? 'Placing Order...' : 'Place Order'}
+            {submitting ? 'Opening Payment Gateway...' : 'Pay with Razorpay'}
           </button>
         </div>
       </form>

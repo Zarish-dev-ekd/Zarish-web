@@ -5,11 +5,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/utils/supabase/client';
+import { isAdminUser } from '@/lib/auth';
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/admin';
+  const redirectParam = searchParams.get('redirect');
   const urlError = searchParams.get('error');
   const urlMessage = searchParams.get('message');
 
@@ -28,6 +29,8 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(
     urlError === 'auth-code-error'
       ? 'Authentication link expired or invalid. Please sign in with your credentials.'
+      : urlError === 'access-denied'
+      ? 'Access restricted. This account does not have administrator privileges.'
       : urlError
       ? decodeURIComponent(urlError)
       : null
@@ -55,9 +58,23 @@ function LoginForm() {
         throw authErr;
       }
 
-      if (data.session) {
-        // Successful login
-        router.push(redirectTo);
+      if (data.session && data.user) {
+        const isAdmin = isAdminUser(data.user);
+
+        // If user specifically requested /admin, verify admin privileges
+        if (redirectParam?.startsWith('/admin') && !isAdmin) {
+          setError('Access restricted. This account does not have administrator privileges.');
+          setLoading(false);
+          return;
+        }
+
+        const destination = redirectParam
+          ? redirectParam
+          : isAdmin
+          ? '/admin'
+          : '/account';
+
+        router.push(destination);
         router.refresh();
       }
     } catch (err: any) {

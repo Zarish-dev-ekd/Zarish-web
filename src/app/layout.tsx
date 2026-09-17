@@ -1,11 +1,48 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
+import { Cinzel, Playfair_Display, Inter, Alex_Brush } from 'next/font/google';
 import './globals.css';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 import PreIntro from '@/components/common/PreIntro';
 import { WishlistProvider } from '@/context/WishlistContext';
 import WishlistDrawer from '@/components/wishlist/WishlistDrawer';
 import { CartProvider } from '@/context/CartContext';
 import CartDrawer from '@/components/cart/CartDrawer';
+
+const cinzel = Cinzel({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-cinzel',
+  display: 'swap',
+});
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+  variable: '--font-playfair',
+  display: 'swap',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const alexBrush = Alex_Brush({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-alex-brush',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'ZARISH by Nehala Mufeed | Premium Modest Fashion',
@@ -38,18 +75,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning className="bg-white">
+    <html
+      lang="en"
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+      className={`${cinzel.variable} ${playfair.variable} ${inter.variable} ${alexBrush.variable} bg-white`}
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{
             __html: `try{if(sessionStorage.getItem('zarish_intro_seen')==='true'){var s=document.createElement('style');s.id='zarish-suppress-intro';s.textContent='#zarish-preintro{display:none!important}';document.head.appendChild(s);}}catch(e){}`,
           }}
-        />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap"
-          rel="stylesheet"
         />
       </head>
       <body suppressHydrationWarning className="bg-white">

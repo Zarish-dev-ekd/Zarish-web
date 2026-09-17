@@ -171,15 +171,7 @@ export default function CheckoutModal({
         throw new Error(data.error || 'Failed to initialize payment order');
       }
 
-      // 2. If running in Simulation Mode (before live keys added):
-      if (data.isSimulated) {
-        // Automatically simulate payment success and proceed
-        router.push(`/order-confirmation/${data.orderNumber}`);
-        onClose();
-        return;
-      }
-
-      // 3. Load Razorpay script and open live gateway
+      // 2. Load Razorpay script and open live gateway
       const isLoaded = await loadRazorpayScript();
       if (!isLoaded) {
         throw new Error('Could not load Razorpay SDK. Please check your internet connection.');
@@ -215,16 +207,17 @@ export default function CheckoutModal({
             });
 
             const verifyData = await verifyRes.json();
-            if (verifyData.success) {
+            if (verifyRes.ok && verifyData.success) {
               router.push(`/order-confirmation/${data.orderNumber}`);
               onClose();
             } else {
-              setError('Payment verification incomplete. Please contact support.');
+              setError(verifyData.error || 'Payment verification failed. Please contact support.');
+              setLoading(false);
             }
           } catch (vErr) {
             console.error('Verify error:', vErr);
-            router.push(`/order-confirmation/${data.orderNumber}`);
-            onClose();
+            setError('Payment verification error. If charged, contact support with Order #' + data.orderNumber);
+            setLoading(false);
           }
         },
         modal: {

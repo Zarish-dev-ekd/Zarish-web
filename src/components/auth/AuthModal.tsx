@@ -116,18 +116,29 @@ export default function AuthModal({
           router.refresh();
         }
       } else {
-        const { data, error: authErr } = await supabase.auth.signUp({
-          email: email.trim(),
-          password,
-          options: {
-            data: {
-              full_name: fullName.trim(),
-            },
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-          },
+        // Create user with email pre-confirmed so no email verification link is required
+        const res = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email.trim(),
+            password,
+            fullName: fullName.trim(),
+          }),
         });
 
-        if (authErr) throw authErr;
+        const signupData = await res.json();
+        if (!res.ok || signupData.error) {
+          throw new Error(signupData.error || 'Failed to create account.');
+        }
+
+        // Immediately sign in the new user
+        const { data: signinData, error: signinErr } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+
+        if (signinErr) throw signinErr;
 
         // Dispatch welcome email via Brevo
         try {
@@ -144,11 +155,9 @@ export default function AuthModal({
           console.error('Welcome email dispatch error:', welcomeErr);
         }
 
-        if (data.session) {
+        if (signinData.session) {
           onClose();
           router.refresh();
-        } else {
-          setSignupSuccess(true);
         }
       }
     } catch (err: any) {
@@ -284,7 +293,7 @@ export default function AuthModal({
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder="e.g. Fatima Zahra"
+                      placeholder="Enter name"
                       className="w-full h-9 sm:h-10 px-3 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-xs sm:text-sm text-[#2C1D13] placeholder-[#A89887] focus:outline-none focus:border-[#7B5B3A] focus:bg-white transition-all"
                     />
                   </div>
@@ -299,7 +308,7 @@ export default function AuthModal({
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@example.com"
+                    placeholder="Enter email"
                     className="w-full h-9 sm:h-10 px-3 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-xs sm:text-sm text-[#2C1D13] placeholder-[#A89887] focus:outline-none focus:border-[#7B5B3A] focus:bg-white transition-all"
                   />
                 </div>

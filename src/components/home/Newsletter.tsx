@@ -90,7 +90,7 @@ export default function Newsletter({ heading, description, ctaText, isActive }: 
                   disabled={status === 'loading'}
                 >
                   {status === 'loading' ? 'Subscribing...' : ctaText || 'Subscribe'}
-                  <IconArrowRight size={14} />
+                 
                 </button>
               </form>
             )}

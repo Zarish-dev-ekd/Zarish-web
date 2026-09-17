@@ -3,6 +3,7 @@
    Safe data loaders for Server Components with error shielding.
    ============================================================ */
 
+import { cache } from 'react';
 import { createClient } from '@/utils/supabase/server';
 import type {
   Announcement,
@@ -213,7 +214,7 @@ export async function getProductsPaginated(
   }
 }
 
-export async function getProductBySlug(slug: string): Promise<Product | null> {
+export const getProductBySlug = cache(async (slug: string): Promise<Product | null> => {
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -233,7 +234,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   } catch {
     return null;
   }
-}
+});
 
 export async function getRelatedProducts(
   categoryId: string | null,

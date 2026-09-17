@@ -93,7 +93,7 @@ export default function CategorySection({
                 onTouchEnd={handleInteractionEnd}
                 onMouseDown={handleInteractionStart}
                 onMouseUp={handleInteractionEnd}
-                className="flex gap-2.5 overflow-x-auto scrollbar-none py-1 px-4 touch-pan-x select-none cursor-grab active:cursor-grabbing [-webkit-overflow-scrolling:touch]"
+                className="flex gap-2.5 overflow-x-auto scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-1 px-4 touch-pan-x select-none cursor-grab active:cursor-grabbing [-webkit-overflow-scrolling:touch]"
               >
                 {mobileLoopCategories.map((category, idx) => (
                   <Link

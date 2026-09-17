@@ -335,7 +335,7 @@ export interface Order {
   total_amount: number;
   currency: string;
   payment_method: 'online' | 'razorpay' | string;
-  payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
+  payment_status: 'pending' | 'paid' | 'PAID' | 'failed' | 'refunded';
   razorpay_order_id?: string | null;
   razorpay_payment_id?: string | null;
   razorpay_signature?: string | null;

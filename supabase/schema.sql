@@ -237,20 +237,19 @@ CREATE POLICY "Public read product_variants" ON public.product_variants FOR SELE
 -- Public INSERT for newsletter subscriptions
 CREATE POLICY "Public insert subscribers" ON public.subscribers FOR INSERT WITH CHECK (true);
 
--- Allow full access for anon/authenticated in dev / admin management
--- (Note: In production with Supabase Auth, restrict this to auth.role() = 'authenticated')
-CREATE POLICY "Admin all site_settings" ON public.site_settings FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Admin all announcements" ON public.announcements FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Admin all navigation_items" ON public.navigation_items FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Admin all hero_slides" ON public.hero_slides FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Admin all benefits" ON public.benefits FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Admin all categories" ON public.categories FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Admin all sizes" ON public.sizes FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Admin all colors" ON public.colors FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Admin all products" ON public.products FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Admin all product_images" ON public.product_images FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Admin all product_variants" ON public.product_variants FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Admin all subscribers" ON public.subscribers FOR ALL USING (true) WITH CHECK (true);
+-- Allow full management access strictly for authenticated admin users
+CREATE POLICY "Admin all site_settings" ON public.site_settings FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin all announcements" ON public.announcements FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin all navigation_items" ON public.navigation_items FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin all hero_slides" ON public.hero_slides FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin all benefits" ON public.benefits FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin all categories" ON public.categories FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin all sizes" ON public.sizes FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin all colors" ON public.colors FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin all products" ON public.products FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin all product_images" ON public.product_images FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin all product_variants" ON public.product_variants FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin all subscribers" ON public.subscribers FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- Insert initial default site settings if none exist
 INSERT INTO public.site_settings (site_name, tagline, meta_title, meta_description)
@@ -325,12 +324,12 @@ ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Public read own orders" ON public.orders FOR SELECT USING (true);
 CREATE POLICY "Public insert orders" ON public.orders FOR INSERT WITH CHECK (true);
-CREATE POLICY "Admin manage orders" ON public.orders FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Admin manage orders" ON public.orders FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 CREATE POLICY "Public read order items" ON public.order_items FOR SELECT USING (true);
 CREATE POLICY "Public insert order items" ON public.order_items FOR INSERT WITH CHECK (true);
-CREATE POLICY "Admin manage order items" ON public.order_items FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Admin manage order items" ON public.order_items FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 CREATE POLICY "Public read active coupons" ON public.coupons FOR SELECT USING (true);
-CREATE POLICY "Admin manage coupons" ON public.coupons FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Admin manage coupons" ON public.coupons FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
