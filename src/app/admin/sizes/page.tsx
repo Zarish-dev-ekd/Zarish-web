@@ -475,7 +475,7 @@ export default function AdminSizesAndColorsPage() {
                   <tbody>
                     {sizes.map((s) => (
                       <tr key={s.id} className="hover:bg-black/[0.01]">
-                        <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle font-semibold text-[#2C241E]">
+                        <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle  text-[#2C241E]">
                           {s.name}
                         </td>
                         <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle text-[#2C241E]">
@@ -641,7 +641,7 @@ export default function AdminSizesAndColorsPage() {
                             title={c.hex_code}
                           />
                         </td>
-                        <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle font-semibold text-[#2C241E]">
+                        <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle  text-[#2C241E]">
                           {c.name}
                         </td>
                         <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle">

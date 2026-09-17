@@ -104,10 +104,10 @@ export default function AdminOrdersPage() {
       : orders.filter((o) => o.order_status.toLowerCase() === filterStatus.toLowerCase());
 
   const totalRevenue = orders
-    .filter((o) => o.payment_status === 'paid')
+    .filter((o) => o.payment_status?.toLowerCase() === 'paid')
     .reduce((acc, o) => acc + Number(o.total_amount), 0);
 
-  const paidCount = orders.filter((o) => o.payment_status === 'paid').length;
+  const paidCount = orders.filter((o) => o.payment_status?.toLowerCase() === 'paid').length;
 
   return (
     <div>
@@ -212,7 +212,7 @@ export default function AdminOrdersPage() {
               </thead>
               <tbody>
                 {filteredOrders.map((order) => {
-                  const isPaid = order.payment_status === 'paid';
+                  const isPaid = order.payment_status?.toLowerCase() === 'paid';
                   const dateStr = new Date(order.created_at).toLocaleDateString('en-IN', {
                     day: 'numeric',
                     month: 'short',

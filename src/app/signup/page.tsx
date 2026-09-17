@@ -71,22 +71,29 @@ function SignupForm() {
     setError(null);
 
     try {
-      const { data, error: authErr } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: {
-          data: {
-            full_name: fullName.trim(),
-          },
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
-            redirectTo
-          )}`,
-        },
+      // Create user with email pre-confirmed so no verification email is required on signup
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+          fullName: fullName.trim(),
+        }),
       });
 
-      if (authErr) {
-        throw authErr;
+      const signupData = await res.json();
+      if (!res.ok || signupData.error) {
+        throw new Error(signupData.error || 'Failed to create your account. Please try again.');
       }
+
+      // Immediately sign in the new user
+      const { data: signinData, error: signinErr } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+      if (signinErr) throw signinErr;
 
       // Dispatch welcome email via Brevo
       try {
@@ -103,13 +110,9 @@ function SignupForm() {
         console.error('Welcome email dispatch error:', welcomeErr);
       }
 
-      if (data.session) {
-        // Auto-confirmed or existing session
+      if (signinData.session) {
         router.push(redirectTo);
         router.refresh();
-      } else {
-        // Confirmation email sent
-        setSignupSuccess(true);
       }
     } catch (err: any) {
       console.error('Sign up error:', err);

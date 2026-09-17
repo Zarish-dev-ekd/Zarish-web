@@ -5,11 +5,30 @@ import { createRazorpayOrder, getRazorpayKeyId } from '@/lib/razorpay';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { items, productId, quantity = 1, size = 'Standard', customer, shippingAddress } = body;
+    const {
+      items,
+      productId,
+      quantity = 1,
+      size = 'Standard',
+      color = null,
+      customer,
+      shippingAddress,
+      couponCode = null,
+      notes = null,
+    } = body;
 
+    // Validate customer contact
     if (!customer?.email || !customer?.fullName) {
       return NextResponse.json(
         { error: 'Customer name and email are required.' },
+        { status: 400 }
+      );
+    }
+
+    // Validate shipping address
+    if (!shippingAddress?.addressLine1 || !shippingAddress?.city || !shippingAddress?.postalCode) {
+      return NextResponse.json(
+        { error: 'Complete shipping address (address, city, pincode) is required.' },
         { status: 400 }
       );
     }
@@ -44,8 +63,10 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Product not found.' }, { status: 404 });
       }
 
+      // Security: Validate price strictly from the database product record
       const unitPrice = Number(product.price);
-      const totalItemPrice = unitPrice * Math.max(1, Number(quantity));
+      const q = Math.max(1, Number(quantity));
+      const totalItemPrice = unitPrice * q;
       calculatedTotal += totalItemPrice;
 
       const primaryImg =
@@ -57,7 +78,7 @@ export async function POST(request: Request) {
         product_id: product.id,
         product_name: product.name,
         size: size || 'Standard',
-        quantity: Math.max(1, Number(quantity)),
+        quantity: q,
         unit_price: unitPrice,
         total_price: totalItemPrice,
         image_url: primaryImg,
@@ -72,6 +93,7 @@ export async function POST(request: Request) {
           .single();
 
         if (prod) {
+          // Security: Validate price strictly from the database product record
           const unitPrice = Number(prod.price);
           const q = Math.max(1, Number(it.quantity || 1));
           const totalItemPrice = unitPrice * q;
@@ -101,12 +123,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid order amount.' }, { status: 400 });
     }
 
-    // Process coupon code if provided
+    // Process coupon code if provided (Strict backend verification)
     let discountAmount = 0;
     let appliedCouponCode: string | null = null;
 
-    if (body.couponCode && typeof body.couponCode === 'string') {
-      const cleanCode = body.couponCode.trim().toUpperCase();
+    if (couponCode && typeof couponCode === 'string') {
+      const cleanCode = couponCode.trim().toUpperCase();
       const { data: coupon } = await supabase
         .from('coupons')
         .select('*')
@@ -125,12 +147,6 @@ export async function POST(request: Request) {
             discountAmount = Math.min(calculatedTotal, Number(coupon.discount_value));
           }
           appliedCouponCode = coupon.code;
-
-          // Increment coupon usage count
-          await supabase
-            .from('coupons')
-            .update({ usage_count: (coupon.usage_count || 0) + 1 })
-            .eq('id', coupon.id);
         }
       }
     }
@@ -145,7 +161,7 @@ export async function POST(request: Request) {
       Math.random() * 899 + 100
     )}`;
 
-    // Create order on Razorpay (Amount in paise: ₹1 = 100 paise)
+    // Create authoritative order on Razorpay servers (Amount in paise: ₹1 = 100 paise)
     const amountInPaise = Math.round(finalPayableTotal * 100);
     const rzpOrder = await createRazorpayOrder({
       amountInPaise,
@@ -154,11 +170,12 @@ export async function POST(request: Request) {
       notes: {
         customerEmail: customer.email,
         customerName: customer.fullName,
+        orderNumber,
         couponCode: appliedCouponCode || 'none',
       },
     });
 
-    // Save order record to Supabase
+    // Save pending order record to Supabase
     const { data: savedOrder, error: orderErr } = await supabase
       .from('orders')
       .insert([
@@ -166,9 +183,9 @@ export async function POST(request: Request) {
           order_number: orderNumber,
           user_id: user?.id || null,
           customer_name: customer.fullName.trim(),
-          customer_email: customer.email.trim(),
+          customer_email: customer.email.trim().toLowerCase(),
           customer_phone: customer.phone || shippingAddress?.phone || null,
-          shipping_address: shippingAddress || {},
+          shipping_address: shippingAddress,
           total_amount: finalPayableTotal,
           currency: 'INR',
           payment_method: 'razorpay',
@@ -177,33 +194,40 @@ export async function POST(request: Request) {
           order_status: 'placed',
           coupon_code: appliedCouponCode,
           discount_amount: discountAmount,
+          notes: notes || null,
         },
       ])
       .select()
       .single();
 
-    if (orderErr) {
+    if (orderErr || !savedOrder) {
       console.error('Error saving order in database:', orderErr);
+      return NextResponse.json(
+        { error: 'Failed to record order in database.' },
+        { status: 500 }
+      );
     }
 
-    // Insert order items if order was saved
-    if (savedOrder?.id) {
+    // Insert order items
+    if (orderItemsToInsert.length > 0) {
       const itemsWithOrderId = orderItemsToInsert.map((item) => ({
         ...item,
         order_id: savedOrder.id,
       }));
-      await supabase.from('order_items').insert(itemsWithOrderId);
+      const { error: itemsErr } = await supabase.from('order_items').insert(itemsWithOrderId);
+      if (itemsErr) {
+        console.error('Error inserting order items:', itemsErr);
+      }
     }
 
     return NextResponse.json({
       success: true,
-      orderId: savedOrder?.id || null,
+      orderId: savedOrder.id,
       orderNumber,
       razorpayOrderId: rzpOrder.id,
       amount: rzpOrder.amount,
       currency: rzpOrder.currency,
       keyId: getRazorpayKeyId(),
-      isSimulated: Boolean(rzpOrder.isSimulated),
       subtotal: calculatedTotal,
       discountAmount,
       finalAmount: finalPayableTotal,

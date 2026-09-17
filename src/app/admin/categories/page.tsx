@@ -389,7 +389,6 @@ export default function AdminCategoriesPage() {
                   <tr className="bg-[#FAF8F5]">
                     <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Image</th>
                     <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Name</th>
-                    <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Slug</th>
                     <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Order</th>
                     <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Status</th>
                     <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">Action</th>
@@ -411,7 +410,7 @@ export default function AdminCategoriesPage() {
                             <span className="text-xs text-[#999]">No img</span>
                           )}
                         </td>
-                        <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle font-semibold text-[#2C241E]">
+                        <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle  text-[#2C241E]">
                           <strong>{cat.name}</strong>
                           {isBeingEdited && (
                             <span className="ml-1.5 text-[10px] bg-[#7B5B3A] text-white px-1.5 py-0.5 rounded">
@@ -419,9 +418,7 @@ export default function AdminCategoriesPage() {
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle text-[#2C241E]">
-                          <code className="text-xs bg-black/[0.04] px-1.5 py-0.5 rounded">/{cat.slug}</code>
-                        </td>
+                      
                         <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle text-[#2C241E]">{cat.display_order}</td>
                         <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle">
                           <span

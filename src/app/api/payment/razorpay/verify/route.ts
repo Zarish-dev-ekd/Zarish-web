@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
-import { verifyRazorpaySignature } from '@/lib/razorpay';
+import { verifyRazorpaySignature, fetchRazorpayPayment } from '@/lib/razorpay';
+import { fulfillPaidOrder } from '@/lib/orderFulfillment';
 
 export async function POST(request: Request) {
   try {
@@ -12,55 +12,78 @@ export async function POST(request: Request) {
       orderNumber,
     } = body;
 
-    if (!razorpay_order_id || !razorpay_payment_id) {
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return NextResponse.json(
-        { error: 'Missing payment identifiers.' },
+        { error: 'Missing required Razorpay payment verification fields.' },
         { status: 400 }
       );
     }
 
-    const isValid = verifyRazorpaySignature({
+    // ── 1. Cryptographic HMAC SHA256 Signature Verification ──
+    const isValidSignature = verifyRazorpaySignature({
       razorpay_order_id,
       razorpay_payment_id,
-      razorpay_signature: razorpay_signature || '',
+      razorpay_signature,
     });
 
-    if (!isValid) {
+    if (!isValidSignature) {
+      console.error('[Payment Verification] Signature verification failed for order:', razorpay_order_id);
       return NextResponse.json(
-        { error: 'Payment signature verification failed.' },
+        { error: 'Invalid payment signature. Verification failed.' },
         { status: 400 }
       );
     }
 
-    // Update order status in Supabase
-    const supabase = await createClient();
+    // ── 2. Authoritative Payment Details Verification from Razorpay API ──
+    const payment = await fetchRazorpayPayment(razorpay_payment_id);
 
-    const { data: updatedOrder, error: updateErr } = await supabase
-      .from('orders')
-      .update({
-        payment_status: 'paid',
-        order_status: 'confirmed',
-        razorpay_payment_id,
-        razorpay_signature,
-        updated_at: new Date().toISOString(),
-      })
-      .or(`order_number.eq.${orderNumber},razorpay_order_id.eq.${razorpay_order_id}`)
-      .select()
-      .maybeSingle();
+    if (payment.order_id !== razorpay_order_id) {
+      console.error('[Payment Verification] Payment order ID mismatch:', {
+        paymentOrderId: payment.order_id,
+        expectedOrderId: razorpay_order_id,
+      });
+      return NextResponse.json(
+        { error: 'Payment does not belong to the given order.' },
+        { status: 400 }
+      );
+    }
 
-    if (updateErr) {
-      console.warn('Could not update order payment status:', updateErr);
+    const validStatuses = ['captured', 'authorized'];
+    if (!validStatuses.includes(payment.status)) {
+      console.error('[Payment Verification] Payment not successful. Status:', payment.status);
+      return NextResponse.json(
+        { error: `Payment was not captured or authorized (Status: ${payment.status}).` },
+        { status: 400 }
+      );
+    }
+
+    // ── 3. Idempotent Order Fulfillment & Update in Supabase ──
+    const fulfillmentResult = await fulfillPaidOrder({
+      orderNumber,
+      razorpayOrderId: razorpay_order_id,
+      razorpayPaymentId: razorpay_payment_id,
+      razorpaySignature: razorpay_signature,
+      paymentAmountInPaise: payment.amount,
+      source: 'verify',
+    });
+
+    if (!fulfillmentResult.success) {
+      return NextResponse.json(
+        { error: fulfillmentResult.error || 'Failed to update order status.' },
+        { status: 400 }
+      );
     }
 
     return NextResponse.json({
       success: true,
       verified: true,
-      orderNumber: updatedOrder?.order_number || orderNumber,
+      orderNumber: fulfillmentResult.orderNumber || orderNumber,
+      alreadyPaid: Boolean(fulfillmentResult.alreadyPaid),
     });
   } catch (err: any) {
-    console.error('Error verifying Razorpay payment:', err);
+    console.error('[Payment Verification] Route error:', err);
     return NextResponse.json(
-      { error: err?.message || 'Verification processing failed' },
+      { error: err?.message || 'Payment verification failed' },
       { status: 500 }
     );
   }

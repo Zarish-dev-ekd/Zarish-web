@@ -20,7 +20,6 @@ export default function HeroSection({ hero, slides }: HeroSectionProps) {
     : [];
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -39,7 +38,7 @@ export default function HeroSection({ hero, slides }: HeroSectionProps) {
 
   // Auto-play timer for multi-banners
   useEffect(() => {
-    if (total <= 1 || isPaused) return;
+    if (total <= 1) return;
 
     timerRef.current = setInterval(() => {
       goToNext();
@@ -48,18 +47,16 @@ export default function HeroSection({ hero, slides }: HeroSectionProps) {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [total, isPaused, goToNext]);
+  }, [total, goToNext]);
 
   // Touch handlers for mobile swipe
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
-    setIsPaused(true);
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStartX.current === null || touchStartY.current === null) {
-      setIsPaused(false);
       return;
     }
 
@@ -78,7 +75,6 @@ export default function HeroSection({ hero, slides }: HeroSectionProps) {
 
     touchStartX.current = null;
     touchStartY.current = null;
-    setIsPaused(false);
   };
 
   if (total === 0) {
@@ -94,8 +90,6 @@ export default function HeroSection({ hero, slides }: HeroSectionProps) {
   return (
     <section
       className="relative w-full overflow-hidden bg-[#FAF6F0] h-[calc(100vh-108px)] sm:h-[calc(100vh-112px)] h-[calc(100dvh-108px)] sm:h-[calc(100dvh-112px)] min-h-[calc(100dvh-108px)] sm:min-h-[calc(100dvh-112px)] flex items-end md:items-center select-none"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       aria-roledescription={total > 1 ? 'carousel' : undefined}
@@ -160,25 +154,6 @@ export default function HeroSection({ hero, slides }: HeroSectionProps) {
       {/* MOBILE HERO VIEW (<= 768px): Clean, Neat & Minimalist Luxury  */}
       {/* ───────────────────────────────────────────────────────────── */}
       <div className="relative z-10 w-full md:hidden flex flex-col justify-end px-5 sm:px-8 pb-5 pt-12 h-full">
-        {/* Floating Calligraphy - Only if provided in DB */}
-        {currentSlide?.overlay_text && (
-          <aside
-            className="absolute top-4 right-4 z-20 pointer-events-none select-none -rotate-3 transition-all duration-500"
-            aria-hidden="true"
-          >
-            <div className="flex flex-col font-script text-xl sm:text-2xl text-[#6B4832] leading-tight text-right">
-              {currentSlide.overlay_text.split('\n').map((line, i) => (
-                <span
-                  key={i}
-                  className={line.includes('♡') || line.includes('You') ? 'text-[#8B4E5A] font-semibold' : ''}
-                >
-                  {line}
-                </span>
-              ))}
-            </div>
-          </aside>
-        )}
-
         {/* Eyebrow - Only if provided in DB */}
         {currentSlide?.eyebrow && (
           <div className="text-[10px] sm:text-xs font-semibold tracking-[0.25em] uppercase text-[#7B5B3A] mb-1.5 flex items-center transition-all duration-500">
@@ -212,7 +187,7 @@ export default function HeroSection({ hero, slides }: HeroSectionProps) {
             className="inline-flex items-center justify-center gap-2 self-start rounded-full bg-[#2C1D13] hover:bg-[#3D2B1F] text-white px-7 py-3 text-xs font-semibold tracking-wider uppercase transition-all duration-300 shadow-[0_4px_16px_rgba(44,29,19,0.22)] w-full sm:w-auto mb-5"
           >
             <span>{currentSlide.cta_text}</span>
-            <IconArrowRight size={14} />
+          
           </Link>
         )}
 
@@ -276,24 +251,10 @@ export default function HeroSection({ hero, slides }: HeroSectionProps) {
               className="inline-flex items-center justify-center gap-2 self-start rounded-full bg-[#3D2B1F] hover:bg-[#5C3D2E] text-white px-8 py-3.5 text-xs md:text-sm font-semibold tracking-wider uppercase transition-all duration-300 shadow-[0_4px_16px_rgba(61,43,31,0.22)] hover:shadow-[0_6px_22px_rgba(61,43,31,0.32)] hover:-translate-y-0.5 w-full sm:w-auto"
             >
               <span>{currentSlide.cta_text}</span>
-              <IconArrowRight size={16} />
+           
             </Link>
           )}
         </div>
-
-        {/* Floating Handwritten Calligraphy Script (Upper Right) - Only if provided in DB */}
-        {currentSlide?.overlay_text && (
-          <aside
-            className="absolute top-5 right-5 sm:top-8 sm:right-8 md:top-14 md:right-10 lg:right-16 z-20 pointer-events-none select-none -rotate-6 transition-all duration-500"
-            aria-hidden="true"
-          >
-            <div className="flex flex-col font-script text-xl sm:text-2xl md:text-3xl lg:text-[40px] text-[#6B4832] leading-tight text-right">
-              {currentSlide.overlay_text.split('\n').map((line, i) => (
-                <span key={i}>{line}</span>
-              ))}
-            </div>
-          </aside>
-        )}
       </div>
 
       {/* Desktop Slide Indicators (Only shown if 2+ banners are active) */}

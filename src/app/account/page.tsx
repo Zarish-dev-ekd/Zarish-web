@@ -233,7 +233,7 @@ export default function CustomerAccountPage() {
             ) : (
               <div className="space-y-6">
                 {orders.map((order) => {
-                  const isPaid = order.payment_status === 'paid';
+                  const isPaid = order.payment_status?.toLowerCase() === 'paid';
                   const dateFormatted = new Date(order.created_at).toLocaleDateString('en-IN', {
                     day: 'numeric',
                     month: 'short',

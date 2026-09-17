@@ -29,7 +29,6 @@ const FOOTER_COLUMNS = [
       { label: 'All Collections', href: '/collections' },
       { label: 'Shop by Size', href: '/shop-by-size' },
       { label: 'Modest Essentials', href: '/collections' },
-      { label: 'Exclusive Offers', href: '/offers' },
     ],
   },
   {

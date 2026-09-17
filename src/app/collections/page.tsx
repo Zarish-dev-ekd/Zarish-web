@@ -34,21 +34,21 @@ export default async function CollectionsPage() {
           <span className="text-[11px] tracking-[0.15em] uppercase text-[#7B5B3A] font-semibold">
             DISCOVER
           </span>
-          <h1 className="font-display my-2 text-3xl sm:text-4xl font-bold text-[#2C1D13]">
+          <h1 className="font-display my-2 text-2xl sm:text-4xl font-bold text-[#2C1D13] uppercase">
             ZARISH Collections
           </h1>
-          <p className="text-sm sm:text-base text-[#8C7B6B] max-w-[580px] mx-auto leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#8C7B6B] max-w-[580px] mx-auto leading-relaxed">
             Curated modest edits designed with rich fabrics, clean tailoring, and everyday versatility.
           </p>
         </div>
 
         {categories.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-6">
             {categories.map((cat) => (
               <Link
                 key={cat.id}
                 href={`/category/${cat.slug}`}
-                className="group relative rounded-2xl overflow-hidden aspect-[3/4] transition-transform duration-300 hover:-translate-y-1 shadow-xs hover:shadow-lg"
+                className="group relative rounded-xl sm:rounded-2xl overflow-hidden aspect-[3/4] transition-transform duration-300 hover:-translate-y-1 shadow-xs hover:shadow-lg"
               >
                 <div className="absolute inset-0 overflow-hidden">
                   {cat.image_url ? (
@@ -58,15 +58,15 @@ export default async function CollectionsPage() {
                     <div className="w-full h-full bg-gradient-to-br from-[#F5EDE4] to-[#EAE0D5]" />
                   )}
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-[#3D2B1F]/70 via-[#3D2B1F]/15 to-transparent z-[1]" />
-                <div className="absolute bottom-0 inset-x-0 p-6 z-[2] text-white">
-                  <h3 className="font-display text-xl sm:text-2xl font-semibold leading-tight mb-2">
+                <div className="absolute inset-0 bg-gradient-to-t from-[#3D2B1F]/75 via-[#3D2B1F]/20 to-transparent z-[1]" />
+                <div className="absolute bottom-0 inset-x-0 p-3 sm:p-6 z-[2] text-white">
+                  <h3 className="font-display text-xs sm:text-sm font-semibold leading-tight mb-1 sm:mb-2">
                     {cat.name}
                   </h3>
-                  <span className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium tracking-wide uppercase text-white transition-all group-hover:gap-3">
+                  <span className="inline-flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-medium tracking-wide uppercase text-white transition-all group-hover:gap-3">
                     <span>{cat.cta_label || 'EXPLORE COLLECTION'}</span>
                     <span className="transition-transform duration-300 group-hover:translate-x-0.5" aria-hidden="true">
-                      <IconArrowRight size={12} />
+                      <IconArrowRight size={11} />
                     </span>
                   </span>
                 </div>

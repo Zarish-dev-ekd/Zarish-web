@@ -34,7 +34,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
 
           {/* Badges */}
-          <div className="absolute top-3 left-3 z-10 flex flex-col gap-1">
+          <div className="absolute z-10 flex flex-col gap-1 bottom-2.5 right-2.5 sm:bottom-auto sm:right-auto sm:top-3 sm:left-3 items-end sm:items-start pointer-events-none">
             {product.is_new_arrival && <Badge variant="new" />}
             {product.is_on_sale && !product.is_new_arrival && <Badge variant="sale" />}
             {product.stock_quantity <= 0 && <Badge variant="out-of-stock" />}

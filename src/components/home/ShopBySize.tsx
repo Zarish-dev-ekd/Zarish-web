@@ -117,7 +117,7 @@ export default function ShopBySize({
                 className="text-xs transition-transform duration-300 group-hover:translate-x-1"
                 aria-hidden="true"
               >
-                →
+                
               </span>
             </Link>
 

@@ -248,7 +248,7 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
               <img
                 src={optimizeCloudinaryUrl(activeImage.secure_url, { width: 900 })}
                 alt={activeImage.alt_text || product.name}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02] object-top"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                 width={activeImage.width || 800}
                 height={activeImage.height || 1000}
               />

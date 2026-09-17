@@ -16,8 +16,7 @@ const FALLBACK_NAV_ITEMS: NavigationItem[] = [
   { id: 'nav-1', label: 'New Arrivals', href: '/collections/new-arrivals', display_order: 1, is_active: true, parent_id: null, open_in_new_tab: false, icon: null, created_at: '', updated_at: '' },
   { id: 'nav-2', label: 'Collections', href: '/collections', display_order: 2, is_active: true, parent_id: null, open_in_new_tab: false, icon: null, created_at: '', updated_at: '' },
   { id: 'nav-3', label: 'Shop by Size', href: '/shop-by-size', display_order: 3, is_active: true, parent_id: null, open_in_new_tab: false, icon: null, created_at: '', updated_at: '' },
-  { id: 'nav-4', label: 'Offers', href: '/offers', display_order: 4, is_active: true, parent_id: null, open_in_new_tab: false, icon: null, created_at: '', updated_at: '' },
-  { id: 'nav-5', label: 'About', href: '/about', display_order: 5, is_active: true, parent_id: null, open_in_new_tab: false, icon: null, created_at: '', updated_at: '' },
+  { id: 'nav-5', label: 'About', href: '/about Us', display_order: 4, is_active: true, parent_id: null, open_in_new_tab: false, icon: null, created_at: '', updated_at: '' },
 ];
 
 interface HeaderProps {

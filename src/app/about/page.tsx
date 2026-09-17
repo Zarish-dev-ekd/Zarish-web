@@ -9,7 +9,6 @@ import {
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { IconArrowRight } from '@/components/icons';
 
 export const metadata: Metadata = {
   title: 'About ZARISH by Nehala Mufeed | The Brand Story',
@@ -37,39 +36,39 @@ export default async function AboutPage() {
           <h1 className="font-display my-4 text-3xl sm:text-4xl lg:text-[38px] font-bold text-[#2C1D13]">
             Beauty in Modesty
           </h1>
-          <p className="text-base sm:text-lg text-[#5C4A3E] leading-relaxed italic">
-            &ldquo;Modesty is not about hiding; it is about revealing your inherent grace with confidence, dignity, and effortless luxury.&rdquo;
+          <p className="text-xs sm:text-sm text-[#5C4A3E]">
+            Modesty is not about hiding; it is about revealing your inherent grace with confidence, dignity, and effortless luxury.
           </p>
-          <p className="mt-3 font-semibold text-[#7B5B3A]">
-            — Nehala Mufeed, Founder & Creative Director
+          <p className="mt-3 text-xs font-semibold text-[#7B5B3A]">
+            Nehala Mufeed, Founder & Creative Director
           </p>
         </div>
 
         {/* Brand Narrative Block */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-20">
-          <div className="relative h-[340px] sm:h-[440px] rounded-2xl overflow-hidden bg-[#FBF6F0] border border-[#EBDCD0] flex items-center justify-center p-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-12 items-center mb-20">
+          <div className="relative w-full h-[320px] sm:h-[360px] md:h-[380px] rounded-2xl overflow-hidden border border-[#EBDCD0]">
             <Image
-              src="/logo-zarish.png"
+              src="/zarish.png"
               alt="ZARISH by Nehala Mufeed"
-              width={260}
-              height={90}
-              className="object-contain"
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover"
             />
           </div>
 
           <div>
-            <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#2C1D13] mb-4">
+            <h2 className="font-display text-xl sm:text-2xl font-bold text-[#2C1D13] mb-3">
               Designed with Purpose
             </h2>
-            <p className="text-sm sm:text-base text-[#8C7B6B] leading-relaxed mb-4">
+            <p className="text-xs sm:text-sm text-[#8C7B6B] leading-relaxed mb-3">
               Born from a passion for timeless modest aesthetics, <strong className="text-[#2C1D13]">ZARISH</strong> bridges traditional grace and modern minimalism. We believe that what you wear should make you feel effortlessly poised, comfortable, and true to your values.
             </p>
-            <p className="text-sm sm:text-base text-[#8C7B6B] leading-relaxed mb-6">
+            <p className="text-xs sm:text-sm text-[#8C7B6B] leading-relaxed mb-5">
               Every collection is thoughtfully curated — from the selection of breathable Korean and Arabian nida fabrics to delicate cuff embroidery, precision seam lines, and flattering drape silhouettes that move with you throughout your day.
             </p>
 
-            <Link href="/products" className="inline-flex items-center justify-center gap-2 font-medium tracking-wide uppercase rounded-full transition-all whitespace-nowrap cursor-pointer text-sm px-8 py-3 bg-[#3D2B1F] text-white hover:bg-[#7B5B3A] hover:-translate-y-0.5 hover:shadow-md">
-              Explore Our Creations <IconArrowRight size={14} />
+            <Link href="/products" className="inline-flex items-center justify-center font-medium tracking-wide uppercase rounded-full transition-all whitespace-nowrap cursor-pointer text-xs sm:text-sm px-6 py-2.5 sm:px-7 sm:py-3 bg-[#3D2B1F] text-white hover:bg-[#7B5B3A] hover:-translate-y-0.5 hover:shadow-md">
+              Explore Our Creations
             </Link>
           </div>
         </div>
@@ -86,7 +85,7 @@ export default async function AboutPage() {
               <h3 className="font-display text-xl font-semibold text-[#2C1D13] my-3">
                 Uncompromised Fabrics
               </h3>
-              <p className="text-xs sm:text-sm text-[#8C7B6B] leading-relaxed">
+              <p className="text-xs text-[#8C7B6B] leading-relaxed">
                 We work directly with textile artisans to source premium nida, modal, silk crepes, and lightweight chiffons that withstand everyday wear while maintaining luxurious texture.
               </p>
             </div>
@@ -96,7 +95,7 @@ export default async function AboutPage() {
               <h3 className="font-display text-xl font-semibold text-[#2C1D13] my-3">
                 Proportion & Sizing
               </h3>
-              <p className="text-xs sm:text-sm text-[#8C7B6B] leading-relaxed">
+              <p className="text-xs text-[#8C7B6B] leading-relaxed">
                 Every modest silhouette requires thoughtful balance. We provide extensive sizing options and custom-tailoring consultations to celebrate every woman&apos;s height and fit.
               </p>
             </div>
@@ -106,7 +105,7 @@ export default async function AboutPage() {
               <h3 className="font-display text-xl font-semibold text-[#2C1D13] my-3">
                 Personal Connection
               </h3>
-              <p className="text-xs sm:text-sm text-[#8C7B6B] leading-relaxed">
+              <p className="text-xs text-[#8C7B6B] leading-relaxed">
                 We treat every customer as part of the ZARISH family, offering one-on-one styling guidance and bespoke assistance via WhatsApp directly from our design team.
               </p>
             </div>
