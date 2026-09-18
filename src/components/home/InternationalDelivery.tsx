@@ -59,8 +59,8 @@ export default function InternationalDelivery({ whatsappNumber }: InternationalD
       <div className="max-w-[1280px] mx-auto">
         <div className={`grid grid-cols-1 ${coupon ? 'lg:grid-cols-2' : ''} gap-4 lg:gap-6 items-stretch`}>
 
-          {/* ─── LEFT: International Delivery Box (Equal 50% width) ──── */}
-          <div className="relative overflow-hidden rounded-[18px] sm:rounded-[22px] bg-[#FAF6F0] border border-[#EBE0D6] flex flex-row items-center justify-between min-h-[160px] sm:min-h-[175px]">
+          {/* ─── LEFT: International Delivery Box (Equal 50% width when coupon exists, full width centered when no coupon) ──── */}
+          <div className={`relative overflow-hidden rounded-[18px] sm:rounded-[22px] bg-[#FAF6F0] border border-[#EBE0D6] flex flex-row items-center ${coupon ? 'justify-between' : 'justify-center'} min-h-[160px] sm:min-h-[175px]`}>
 
             {/* Full Background Image */}
             <div
@@ -71,10 +71,16 @@ export default function InternationalDelivery({ whatsappNumber }: InternationalD
               <img
                 src="/international-delivery-banner.png"
                 alt="International delivery"
-                className="w-full h-full object-cover object-right"
+                className={`w-full h-full object-cover ${coupon ? 'object-right' : 'object-center'}`}
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-transparent sm:from-white/90 sm:via-white/60 sm:to-transparent" />
+              <div
+                className={`absolute inset-0 ${
+                  coupon
+                    ? 'bg-gradient-to-r from-white/95 via-white/80 to-transparent sm:from-white/90 sm:via-white/60 sm:to-transparent'
+                    : 'bg-gradient-to-r from-white/90 via-white/80 to-white/90 sm:from-white/85 sm:via-white/75 sm:to-white/85'
+                }`}
+              />
             </div>
 
             {/* Fluid lines */}
@@ -93,16 +99,26 @@ export default function InternationalDelivery({ whatsappNumber }: InternationalD
             </svg>
 
             {/* Content info & button */}
-            <div className="relative z-10 flex flex-col justify-center items-start text-left flex-1 min-w-0 p-4 sm:p-6">
+            <div className={`relative z-10 flex flex-col justify-center flex-1 min-w-0 p-4 sm:p-6 ${coupon ? 'items-start text-left' : 'items-center text-center'}`}>
               <span className="text-[8.5px] sm:text-[9px] font-bold tracking-[0.2em] uppercase text-[#8C6352] mb-1">
                 BEAUTY HAS NO BORDERS
               </span>
 
               <h2
                 id="international-delivery-heading"
-                className="font-display text-sm sm:text-2xl lg:text-xl xl:text-2xl font-bold text-[#351E17] leading-tight tracking-tight mb-2 sm:mb-3"
+                className={`font-display font-bold text-[#351E17] leading-tight tracking-tight mb-2 sm:mb-3 ${
+                  coupon
+                    ? 'text-sm sm:text-2xl lg:text-xl xl:text-2xl'
+                    : 'text-base sm:text-2xl lg:text-3xl'
+                }`}
               >
-                International<br />Delivery Available
+                {coupon ? (
+                  <>
+                    International<br />Delivery Available
+                  </>
+                ) : (
+                  <span className="sm:whitespace-nowrap">International Delivery Available</span>
+                )}
               </h2>
 
               <a

@@ -573,7 +573,7 @@ function CheckoutContent() {
                 {appliedCoupon ? (
                   <div className="flex items-center justify-between p-2.5 px-3.5 bg-[#E8F5E9] border border-[#C8E6C9] rounded-xl">
                     <span className="text-xs font-mono font-bold text-[#2E7D32]">
-                      ✓ {appliedCoupon.code} applied (-{formatPrice(appliedCoupon.discountAmount)})
+                      ✓ {appliedCoupon.code} applied {formatPrice(appliedCoupon.discountAmount)}
                     </span>
                     <button
                       type="button"
