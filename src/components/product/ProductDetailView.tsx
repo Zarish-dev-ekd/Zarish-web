@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { formatPrice, getDiscountPercent, optimizeCloudinaryUrl } from '@/lib/utils';
@@ -101,6 +101,7 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
   }, [product.images, selectedColor, productColors]);
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   // When color changes, reset active image index
   const handleSelectColor = (colorName: string) => {
@@ -193,13 +194,29 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
     ? getDiscountPercent(product.price, product.compare_at_price!)
     : 0;
 
-  const handlePrevImage = () => {
+  const handlePrevImage = useCallback(() => {
     setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
-  };
+  }, [images.length]);
 
-  const handleNextImage = () => {
+  const handleNextImage = useCallback(() => {
     setActiveImageIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
-  };
+  }, [images.length]);
+
+  // Lock scroll and handle keyboard shortcuts for Lightbox modal
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsLightboxOpen(false);
+      if (e.key === 'ArrowLeft') handlePrevImage();
+      if (e.key === 'ArrowRight') handleNextImage();
+    };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isLightboxOpen, handlePrevImage, handleNextImage]);
 
   const { addToCart } = useCart();
 
@@ -242,18 +259,52 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
         {/* Left Column: Gallery (sticky on desktop, same width as right content) */}
         <div className="w-full flex flex-col gap-3 sm:gap-4 static lg:sticky lg:top-28 z-0">
           {/* Main Showcase Image */}
-          <div className="relative aspect-[4/5] max-h-[520px] w-full bg-[#F5EDE3] rounded-2xl sm:rounded-3xl overflow-hidden shadow-[0_4px_24px_rgba(44,29,19,0.06)] group">
+          <div
+            onClick={() => activeImage && setIsLightboxOpen(true)}
+            className="relative aspect-[3/4] sm:aspect-[4/5] lg:aspect-auto lg:h-[660px] xl:h-[700px] w-full bg-[#F5EDE3] rounded-2xl sm:rounded-3xl overflow-hidden shadow-[0_4px_24px_rgba(44,29,19,0.06)] group cursor-zoom-in select-none"
+            title="Click to view full uncropped photo"
+          >
             {activeImage ? (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
-                src={optimizeCloudinaryUrl(activeImage.secure_url, { width: 900 })}
+                src={optimizeCloudinaryUrl(activeImage.secure_url, { width: 1200 })}
                 alt={activeImage.alt_text || product.name}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]"
                 width={activeImage.width || 800}
                 height={activeImage.height || 1000}
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-tr from-[#F0E4D8] to-[#FAF6F0]" />
+            )}
+
+            {/* Full View / Zoom Pill Button */}
+            {activeImage && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsLightboxOpen(true);
+                }}
+                className="absolute bottom-3 left-3 z-10 px-3 py-1.5 rounded-full bg-white/90 hover:bg-white backdrop-blur-md shadow-sm flex items-center gap-1.5 text-[#2C1D13] text-[11px] font-semibold tracking-wider uppercase transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                aria-label="View full uncropped photo"
+              >
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  <line x1="11" y1="8" x2="11" y2="14" />
+                  <line x1="8" y1="11" x2="14" y2="11" />
+                </svg>
+                <span>Full View</span>
+              </button>
             )}
 
             {/* Badges (Top Left) */}
@@ -673,6 +724,111 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
         selectedColor={selectedColor}
         quantity={quantity}
       />
+
+      {/* Fullscreen High-Res Luxury Lightbox Modal */}
+      {isLightboxOpen && activeImage && (
+        <div
+          className="fixed inset-0 z-[999999] bg-black/92 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 select-none animate-in fade-in duration-200"
+          onClick={() => setIsLightboxOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Product image full view"
+        >
+          {/* Close Button */}
+          <button
+            type="button"
+            onClick={() => setIsLightboxOpen(false)}
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20 w-11 h-11 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center backdrop-blur-md transition-all cursor-pointer"
+            aria-label="Close full view"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+
+          {/* Counter Badge */}
+          {images.length > 1 && (
+            <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-20 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-white text-xs font-semibold tracking-wider">
+              {activeImageIndex + 1} / {images.length}
+            </div>
+          )}
+
+          {/* Prev Button */}
+          {images.length > 1 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePrevImage();
+              }}
+              className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center backdrop-blur-md transition-all active:scale-90 cursor-pointer"
+              aria-label="Previous image"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+          )}
+
+          {/* Next Button */}
+          {images.length > 1 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNextImage();
+              }}
+              className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center backdrop-blur-md transition-all active:scale-90 cursor-pointer"
+              aria-label="Next image"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          )}
+
+          {/* Main Full Image (Completely Uncropped) */}
+          <div
+            className="relative max-w-[92vw] max-h-[88vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={activeImage.secure_url}
+              alt={activeImage.alt_text || product.name}
+              className="max-w-full max-h-[88vh] w-auto h-auto object-contain rounded-lg shadow-2xl transition-all"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
