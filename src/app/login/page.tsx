@@ -55,7 +55,15 @@ function LoginForm() {
       });
 
       if (authErr) {
-        throw authErr;
+        let msg = authErr.message || 'Invalid email or password.';
+        if (msg.toLowerCase().includes('invalid login credentials')) {
+          msg = 'Incorrect email or password. Please check your credentials or click "Forgot password?".';
+        } else if (msg.toLowerCase().includes('email not confirmed')) {
+          msg = 'Your email address has not been confirmed yet. Please check your inbox for the confirmation link.';
+        }
+        setError(msg);
+        setLoading(false);
+        return;
       }
 
       if (data.session && data.user) {
@@ -78,11 +86,7 @@ function LoginForm() {
         router.refresh();
       }
     } catch (err: any) {
-      console.error('Sign in error:', err);
-      let msg = err?.message || 'Invalid email or password.';
-      if (msg.toLowerCase().includes('invalid login credentials')) {
-        msg = 'Incorrect email or password. Please check your credentials or create an account.';
-      }
+      let msg = err?.message || 'An unexpected error occurred during sign in.';
       setError(msg);
       setLoading(false);
     }

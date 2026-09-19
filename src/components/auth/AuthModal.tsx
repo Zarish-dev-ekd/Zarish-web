@@ -109,7 +109,17 @@ export default function AuthModal({
           password,
         });
 
-        if (authErr) throw authErr;
+        if (authErr) {
+          let msg = authErr.message || 'Invalid email or password.';
+          if (msg.toLowerCase().includes('invalid login credentials')) {
+            msg = 'Incorrect email or password. Please verify your credentials or click "Forgot password?".';
+          } else if (msg.toLowerCase().includes('email not confirmed')) {
+            msg = 'Your email address has not been confirmed yet. Please check your inbox.';
+          }
+          setError(msg);
+          setLoading(false);
+          return;
+        }
 
         if (data.session) {
           onClose();
@@ -129,7 +139,9 @@ export default function AuthModal({
 
         const signupData = await res.json();
         if (!res.ok || signupData.error) {
-          throw new Error(signupData.error || 'Failed to create account.');
+          setError(signupData.error || 'Failed to create account.');
+          setLoading(false);
+          return;
         }
 
         // Immediately sign in the new user
@@ -138,7 +150,11 @@ export default function AuthModal({
           password,
         });
 
-        if (signinErr) throw signinErr;
+        if (signinErr) {
+          setError(signinErr.message || 'Account created, but sign-in failed. Please sign in manually.');
+          setLoading(false);
+          return;
+        }
 
         // Dispatch welcome email via Brevo
         try {
@@ -151,8 +167,8 @@ export default function AuthModal({
               provider: 'email',
             }),
           });
-        } catch (welcomeErr) {
-          console.error('Welcome email dispatch error:', welcomeErr);
+        } catch {
+          // Ignore welcome email dispatch failure
         }
 
         if (signinData.session) {
@@ -161,11 +177,7 @@ export default function AuthModal({
         }
       }
     } catch (err: any) {
-      console.error('Auth error:', err);
       let msg = err?.message || 'An error occurred during authentication.';
-      if (msg.toLowerCase().includes('invalid login credentials')) {
-        msg = 'Incorrect email or password. Please try again.';
-      }
       setError(msg);
     } finally {
       setLoading(false);

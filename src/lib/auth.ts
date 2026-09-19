@@ -21,7 +21,7 @@ export function isAdminUser(user: UserLike | null | undefined): boolean {
     process.env.ADMIN_EMAILS ||
     process.env.NEXT_PUBLIC_ADMIN_EMAILS ||
     process.env.ADMIN_NOTIFICATION_EMAIL ||
-    'zarish2025co@gmail.com';
+    'zarish2025co@gmail.com,mrithulmridhu@gmail.com,eethanop@gmail.com';
 
   const adminEmails = rawAdminEmails
     .split(',')
