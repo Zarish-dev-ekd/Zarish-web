@@ -28,7 +28,7 @@ const FOOTER_COLUMNS = [
       { label: 'New Arrivals', href: '/collections/new-arrivals' },
       { label: 'All Collections', href: '/collections' },
       { label: 'Shop by Size', href: '/shop-by-size' },
-      { label: 'Modest Essentials', href: '/collections' },
+      { label: 'Featured Modest Wear', href: '/products' },
     ],
   },
   {
@@ -36,17 +36,17 @@ const FOOTER_COLUMNS = [
     links: [
       { label: 'Our Story & Philosophy', href: '/about' },
       { label: 'By Nehala Mufeed', href: '/about' },
-      { label: 'Quality & Craftsmanship', href: '/about' },
       { label: 'Size & Silhouette Guide', href: '/shop-by-size' },
+      { label: 'Contact Customer Care', href: '/contact' },
     ],
   },
   {
-    title: 'Client Experience',
+    title: 'Client Care & Policies',
     links: [
-      { label: 'Bespoke Consultation', href: '/about' },
-      { label: 'Shipping & Delivery', href: '/about' },
-      { label: 'Exchange & Order Assistance', href: '/about' },
-      { label: 'Account & Orders', href: '/account' },
+      { label: 'Shipping & Delivery', href: '/shipping-policy' },
+      { label: 'Refunds & Returns (24-48h)', href: '/refund-policy' },
+      { label: 'Privacy Policy', href: '/privacy-policy' },
+      { label: 'Terms & Conditions', href: '/terms-and-conditions' },
     ],
   },
 ];
@@ -215,12 +215,36 @@ export default function Footer({ brandDescription, socialLinks = {} }: FooterPro
         </div>
 
         {/* ─── Bottom Bar ───────────────────────────────────────────── */}
-        <div className="pt-5 border-t border-[#2E2218] flex flex-col items-center justify-center gap-1.5 text-center">
-          <p className="text-[11px] text-[#FFFF]">
+        <div className="pt-5 border-t border-[#2E2218] flex flex-col items-center justify-center gap-2 text-center">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[11px] text-[#A69584]">
+            <Link href="/privacy-policy" className="hover:text-[#E8DDD4] transition-colors">
+              Privacy Policy
+            </Link>
+            <span>•</span>
+            <Link href="/terms-and-conditions" className="hover:text-[#E8DDD4] transition-colors">
+              Terms &amp; Conditions
+            </Link>
+            <span>•</span>
+            <Link href="/refund-policy" className="hover:text-[#E8DDD4] transition-colors">
+              Refund &amp; Cancellation Policy
+            </Link>
+            <span>•</span>
+            <Link href="/shipping-policy" className="hover:text-[#E8DDD4] transition-colors">
+              Shipping &amp; Delivery
+            </Link>
+            <span>•</span>
+            <Link href="/contact" className="hover:text-[#E8DDD4] transition-colors">
+              Contact Us
+            </Link>
+          </div>
+
+          <p className="text-[11px] text-[#8C7B6B]">
             © {currentYear} ZARISH by Nehala Mufeed. All rights reserved.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] font-medium tracking-wider uppercase text-[#FFFF]">
+          <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] font-medium tracking-wider uppercase text-[#7A6A5A]">
+            <span>100% Secure Payments</span>
+            <span>•</span>
             <span>UPI</span>
             <span>•</span>
             <span>Cards</span>
