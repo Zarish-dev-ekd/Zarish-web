@@ -465,7 +465,7 @@ export default function AdminNewProductPage() {
       router.push('/admin/products');
     } catch (err: any) {
       console.error('Error creating product:', err);
-      setError(err?.message || 'Failed to save product to Supabase');
+      setError(err?.message || 'Failed to create product. Please try again.');
       setSubmitting(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }

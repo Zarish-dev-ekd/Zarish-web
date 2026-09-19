@@ -352,7 +352,7 @@ export default function MultiImageUpload({
           {uploading ? (
             <div className="flex flex-col items-center gap-2 text-[#7A6F66] text-sm">
               <span className="w-5 h-5 border-2 border-[#E8E0D5] border-t-[#7B5B3A] rounded-full animate-spin inline-block" />
-              <span>{uploadProgress || 'Uploading images to Cloudinary...'}</span>
+              <span>{uploadProgress || 'Uploading & optimizing images...'}</span>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2 text-[#7A6F66]">

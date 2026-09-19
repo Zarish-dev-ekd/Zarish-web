@@ -246,7 +246,7 @@ export default function CheckoutModal({
               Secure Checkout
             </span>
             <h3 className="font-display text-lg sm:text-xl font-bold text-[#2C1D13]">
-              Express Order with Razorpay
+              Express Checkout
             </h3>
           </div>
           <button
@@ -490,7 +490,7 @@ export default function CheckoutModal({
           {/* Trust badges */}
           <div className="flex items-center justify-between pt-3 text-[11px] text-[#8C7B6B]">
             <span>🔒 256-Bit SSL Encrypted</span>
-            <span>⚡ UPI, Cards & Netbanking via Razorpay</span>
+            <span>⚡ UPI, Cards & Net Banking</span>
           </div>
 
           <button
@@ -501,10 +501,10 @@ export default function CheckoutModal({
             {loading ? (
               <>
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span>Opening Razorpay Gateway...</span>
+                <span>Connecting to Secure Gateway...</span>
               </>
             ) : (
-              <span>Proceed to Pay {formatPrice(finalPrice)}</span>
+              <span>Pay Now • {formatPrice(finalPrice)}</span>
             )}
           </button>
         </form>

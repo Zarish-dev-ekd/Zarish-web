@@ -553,7 +553,7 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
       router.push('/admin/products');
     } catch (err: any) {
       console.error('Error saving product changes:', err);
-      setError(err?.message || 'Failed to update product in Supabase');
+      setError(err?.message || 'Failed to save product changes. Please try again.');
       setSubmitting(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }

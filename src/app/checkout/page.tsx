@@ -644,16 +644,26 @@ function CheckoutContent() {
                 </div>
               </div>
 
+              {/* Trust Badge */}
+              <div className="flex items-center justify-center gap-2 mb-3 text-[11px] font-medium text-[#7B5B3A]">
+                <span>🔒 256-Bit SSL Encrypted</span>
+                <span>•</span>
+                <span>Cards, UPI, NetBanking</span>
+              </div>
+
               {/* Submit Button */}
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full h-10 rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-sm tracking-[0.14em] uppercase transition-all duration-200 flex items-center justify-center gap-2 shadow-[0_4px_18px_rgba(44,29,19,0.22)] hover:shadow-[0_8px_26px_rgba(123,91,58,0.32)] active:scale-[0.99] cursor-pointer disabled:opacity-60"
+                className="w-full min-h-[50px] h-[50px] rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-sm font-semibold tracking-[0.12em] uppercase transition-all duration-200 flex items-center justify-center gap-2 shadow-[0_4px_18px_rgba(44,29,19,0.22)] hover:shadow-[0_8px_26px_rgba(123,91,58,0.32)] active:scale-[0.99] cursor-pointer disabled:opacity-60"
               >
                 {submitting ? (
-                  <span>Opening Payment Gateway...</span>
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Connecting to Secure Gateway...</span>
+                  </>
                 ) : (
-                  <span>Pay with Razorpay</span>
+                  <span>Pay Now • {formatPrice(finalTotal)}</span>
                 )}
               </button>
 
@@ -688,9 +698,16 @@ function CheckoutContent() {
           <button
             type="submit"
             disabled={submitting}
-            className="flex-1 max-w-[200px] min-h-[50px] h-[50px] rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-xs sm:text-sm font-bold tracking-[0.12em] uppercase transition-all duration-200 flex items-center justify-center shadow-[0_4px_16px_rgba(44,29,19,0.2)] active:scale-95 cursor-pointer disabled:opacity-60"
+            className="flex-1 max-w-[210px] min-h-[50px] h-[50px] rounded-full bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-xs sm:text-sm font-bold tracking-[0.12em] uppercase transition-all duration-200 flex items-center justify-center gap-1.5 shadow-[0_4px_16px_rgba(44,29,19,0.2)] active:scale-95 cursor-pointer disabled:opacity-60"
           >
-            {submitting ? 'Opening Payment Gateway...' : 'Pay with Razorpay'}
+            {submitting ? (
+              <>
+                <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>Processing...</span>
+              </>
+            ) : (
+              <span>Pay Securely</span>
+            )}
           </button>
         </div>
       </form>

@@ -14,22 +14,6 @@ const STANDARD_SIZES = [
   { name: 'FREE SIZE', slug: 'free-size', display_order: 7 },
 ];
 
-const SQL_SCHEMA_SNIPPET = `-- Run this in your Supabase SQL Editor:
-CREATE TABLE IF NOT EXISTS public.colors (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  hex_code TEXT NOT NULL DEFAULT '#000000',
-  slug TEXT NOT NULL UNIQUE,
-  display_order INTEGER DEFAULT 0,
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW()),
-  updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
-);
-
-ALTER TABLE public.colors ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Public read colors" ON public.colors FOR SELECT USING (true);
-CREATE POLICY "Admin all colors" ON public.colors FOR ALL USING (true) WITH CHECK (true);`;
-
 export default function AdminSizesAndColorsPage() {
   const [activeTab, setActiveTab] = useState<'sizes' | 'colors'>('sizes');
 
@@ -49,8 +33,7 @@ export default function AdminSizesAndColorsPage() {
   const [colorSlug, setColorSlug] = useState('');
   const [colorDisplayOrder, setColorDisplayOrder] = useState('0');
   const [colorIsActive, setColorIsActive] = useState(true);
-  const [colorTableMissing, setColorTableMissing] = useState(false);
-  const [copiedSql, setCopiedSql] = useState(false);
+
 
   // Common UI State
   const [submitting, setSubmitting] = useState(false);
@@ -87,16 +70,7 @@ export default function AdminSizesAndColorsPage() {
         .select('*')
         .order('display_order', { ascending: true });
 
-      if (error) {
-        if (error.code === 'PGRST205' || error.message?.includes('colors') || error.message?.includes('schema cache')) {
-          setColorTableMissing(true);
-        } else {
-          throw error;
-        }
-        return;
-      }
-
-      setColorTableMissing(false);
+      if (error) throw error;
       setColors(data || []);
     } catch (err: any) {
       console.error('Error fetching colors:', err);
@@ -216,11 +190,7 @@ export default function AdminSizesAndColorsPage() {
       ]);
 
       if (insertErr) {
-        if (insertErr.code === 'PGRST205' || insertErr.message?.includes('colors')) {
-          setColorTableMissing(true);
-          throw new Error('Database table "colors" is not yet created in Supabase. Please see instructions below.');
-        }
-        throw insertErr;
+        throw new Error('Unable to save color at this moment. Please try again.');
       }
 
       setSuccess('Color saved successfully');
@@ -243,16 +213,10 @@ export default function AdminSizesAndColorsPage() {
       const { error: delErr } = await supabase.from('colors').delete().eq('id', id);
       if (delErr) throw delErr;
       setColors(colors.filter((c) => c.id !== id));
-      setSuccess('Color deleted from database');
+      setSuccess('Color removed successfully');
     } catch (err: any) {
       setError(err?.message || 'Failed to delete color');
     }
-  };
-
-  const handleCopySql = () => {
-    navigator.clipboard.writeText(SQL_SCHEMA_SNIPPET);
-    setCopiedSql(true);
-    setTimeout(() => setCopiedSql(false), 2500);
   };
 
   return (
@@ -347,40 +311,7 @@ export default function AdminSizesAndColorsPage() {
         </div>
       )}
 
-      {/* Table Missing Helper Alert */}
-      {activeTab === 'colors' && colorTableMissing && (
-        <div className="bg-[#FFF8E1] border border-[#FFE082] rounded-lg p-4 px-5 mb-6">
-          <div className="flex items-start justify-between gap-4 max-sm:flex-col">
-            <div>
-              <h4 className="m-0 mb-1.5 text-[#B78103] text-[15px] font-semibold">
-                Database Setup Required: Table &quot;colors&quot;
-              </h4>
-              <p className="m-0 mb-3 text-[13px] text-[#664D03] leading-relaxed">
-                The <code className="bg-black/[0.06] px-1.5 py-0.5 rounded text-xs">colors</code> table is not yet created in your Supabase database. Run this SQL in your Supabase SQL Editor:
-              </p>
-              <pre className="bg-[#2B2118] text-[#FAF6F0] p-3.5 px-4 rounded-md text-xs overflow-x-auto font-mono">
-                {SQL_SCHEMA_SNIPPET}
-              </pre>
-            </div>
-            <div className="flex flex-col gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={handleCopySql}
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-[#7B5B3A] text-white hover:bg-[#63472C] transition-colors"
-              >
-                {copiedSql ? '✓ Copied SQL!' : 'Copy SQL'}
-              </button>
-              <button
-                type="button"
-                onClick={fetchColors}
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors"
-              >
-                ↻ Refresh Table
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* ─── TAB CONTENT: SIZES ─── */}
       {activeTab === 'sizes' && (

@@ -289,7 +289,7 @@ export default function AdminCategoriesPage() {
 
             <div className="mb-5">
               <ImageUpload
-                label="Cover Image (Cloudinary)"
+                label="Cover Image"
                 value={imageUrl}
                 onChange={(url) => setImageUrl(url)}
                 folder="zarish/categories"
