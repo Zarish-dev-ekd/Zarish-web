@@ -14,6 +14,7 @@ import { WishlistProvider } from '@/context/WishlistContext';
 import WishlistDrawer from '@/components/wishlist/WishlistDrawer';
 import { CartProvider } from '@/context/CartContext';
 import CartDrawer from '@/components/cart/CartDrawer';
+import Chatbot from '@/components/common/Chatbot';
 
 const cinzel = Cinzel({
   subsets: ['latin'],
@@ -94,6 +95,7 @@ export default function RootLayout({
             <PreIntro />
             <WishlistDrawer />
             <CartDrawer />
+            <Chatbot />
             {children}
           </WishlistProvider>
         </CartProvider>
