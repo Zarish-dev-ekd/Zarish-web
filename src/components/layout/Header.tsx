@@ -137,14 +137,18 @@ export default function Header({ navigationItems = [], cartItemCount = 0 }: Head
           </button>
 
           {/* Logo */}
-          <Link href="/" className="shrink-0 max-md:flex max-md:justify-center" aria-label="ZARISH - Home">
+          <Link
+            href="/"
+            className="shrink-0 flex items-center justify-center max-md:justify-center py-1"
+            aria-label="ZARISH - Home"
+          >
             <Image
               src="/logo-zarish.png"
               alt="ZARISH by Nehala Mufeed"
-              width={160}
-              height={40}
+              width={220}
+              height={56}
               priority
-              className="h-9 w-auto max-md:h-7"
+              className="h-10 sm:h-11 md:h-12 w-auto max-w-[190px] sm:max-w-none object-contain transition-all"
             />
           </Link>
 
@@ -391,13 +395,13 @@ export default function Header({ navigationItems = [], cartItemCount = 0 }: Head
         aria-modal="true"
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2D5C7]">
-          <Link href="/" className="shrink-0" onClick={closeDrawer}>
+          <Link href="/" className="shrink-0" onClick={closeDrawer} aria-label="ZARISH - Home">
             <Image
               src="/logo-zarish.png"
               alt="ZARISH by Nehala Mufeed"
-              width={120}
-              height={32}
-              className="h-7 w-auto"
+              width={160}
+              height={40}
+              className="h-8 sm:h-9 w-auto object-contain"
             />
           </Link>
           <button className="w-8 h-8 flex items-center justify-center text-[#2C1D13] [&>svg]:w-5 [&>svg]:h-5" onClick={closeDrawer} aria-label="Close navigation menu">
