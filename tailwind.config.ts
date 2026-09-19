@@ -35,9 +35,12 @@ const config: Config = {
         'zarish-border-light': '#EDE4DA',
       },
       fontFamily: {
-        display: ['Cinzel', 'Playfair Display', 'Georgia', 'serif'],
-        body: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        script: ['Alex Brush', 'cursive'],
+        display: ['var(--font-cinzel)', 'Cinzel', 'Playfair Display', 'Georgia', 'serif'],
+        playfair: ['var(--font-playfair)', 'Playfair Display', 'Georgia', 'serif'],
+        serif: ['var(--font-playfair)', 'Playfair Display', 'Georgia', 'serif'],
+        sans: ['var(--font-inter)', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+        body: ['var(--font-inter)', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+        script: ['var(--font-alex-brush)', 'Alex Brush', 'cursive'],
       },
       letterSpacing: {
         luxury: '0.25em',

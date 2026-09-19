@@ -413,21 +413,21 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
           )}
 
           {/* Title */}
-          <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-serif text-[#2C1D13] mb-2 leading-tight">
+          <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-serif font-medium text-[#2C1D13] mb-2 leading-tight tracking-[-0.01em]">
             {product.name}
           </h1>
 
           {/* Pricing */}
           <div className="flex items-baseline gap-3 mb-1 flex-wrap">
-            <span className="font-display text-2xl sm:text-3xl font-bold text-[#2C1D13]">
+            <span className="font-sans text-2xl sm:text-3xl font-bold tracking-tight text-[#2C1D13]">
               {formatPrice(product.price)}
             </span>
             {hasDiscount && (
               <>
-                <span className="text-base sm:text-lg text-[#8C7B6B] line-through font-normal">
+                <span className="font-sans text-base sm:text-lg text-[#8C7B6B] line-through font-normal">
                   {formatPrice(product.compare_at_price!)}
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#8B4E5A] text-white">
+                <span className="font-sans px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#8B4E5A] text-white">
                   {discountPercent}% OFF
                 </span>
               </>
@@ -494,25 +494,48 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
                 </label>
               </div>
               <div className="flex flex-wrap gap-2">
-                {availableSizes.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => setSelectedSize(s.name)}
-                    className={`min-w-[44px] h-10 px-3.5 rounded-xl text-xs sm:text-sm font-semibold transition-all border cursor-pointer relative ${
-                      selectedSize === s.name
-                        ? 'bg-[#2C1D13] text-white border-[#2C1D13] shadow-sm'
-                        : s.inStock
-                        ? 'bg-white text-[#3D2B1F] border-[#E2D5C7] hover:border-[#7B5B3A] active:scale-95'
-                        : 'bg-[#F9F7F4] text-[#A3978A] border-[#E8E2DA] hover:border-[#D5CDC3]'
-                    }`}
-                    title={s.inStock ? `${s.name} (In stock)` : `${s.name} (Out of stock)`}
-                  >
-                    <span className={!s.inStock ? 'line-through decoration-[#8C7B6B]' : ''}>
-                      {s.name}
-                    </span>
-                  </button>
-                ))}
+                {availableSizes.map((s) => {
+                  const isSelected = selectedSize === s.name;
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setSelectedSize(s.name)}
+                      className={`min-w-[48px] h-10 px-3.5 rounded-xl text-xs sm:text-sm font-medium transition-all border cursor-pointer relative overflow-hidden flex items-center justify-center select-none ${
+                        isSelected
+                          ? s.inStock
+                            ? 'bg-[#2C1D13] text-white border-[#2C1D13] shadow-xs'
+                            : 'bg-[#FAF6F0] text-[#2C1D13] border-2 border-[#2C1D13]'
+                          : s.inStock
+                          ? 'bg-white text-[#3D2B1F] border-[#E2D5C7] hover:border-[#7B5B3A] active:scale-95'
+                          : 'bg-white text-[#6B5E55] border-[#D6CEC5] hover:border-[#B8AEA3]'
+                      }`}
+                      title={s.inStock ? `${s.name} (In stock)` : `${s.name} (Out of stock)`}
+                    >
+                      <span className="relative z-10">{s.name}</span>
+                      {!s.inStock && (
+                        <svg
+                          className={`absolute inset-0 w-full h-full pointer-events-none ${
+                            isSelected ? 'stroke-[#A89C91]' : 'stroke-[#D4CCC4]'
+                          }`}
+                          preserveAspectRatio="none"
+                          viewBox="0 0 100 100"
+                          aria-hidden="true"
+                        >
+                          <line
+                            x1="0"
+                            y1="100"
+                            x2="100"
+                            y2="0"
+                            stroke="currentColor"
+                            strokeWidth="0.75"
+                            vectorEffect="non-scaling-stroke"
+                          />
+                        </svg>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Dynamic Stock Indicator below Select Size */}
