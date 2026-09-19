@@ -15,6 +15,12 @@ export default function ProductCard({ product }: ProductCardProps) {
     ? getDiscountPercent(product.price, product.compare_at_price!)
     : 0;
 
+  const totalStock =
+    product.variants && product.variants.length > 0
+      ? product.variants.reduce((sum, v) => sum + (v.stock_quantity ?? 0), 0)
+      : (product.stock_quantity ?? 0);
+  const isOutOfStock = totalStock <= 0;
+
   return (
     <article className="group relative rounded-xl overflow-hidden transition-all duration-300 bg-white hover:-translate-y-1 hover:shadow-lg cursor-pointer border border-[#F0EBE5]">
       <Link href={`/products/${product.slug}`} aria-label={product.name} className="block">
@@ -37,7 +43,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <div className="absolute z-10 flex flex-col gap-1 bottom-2.5 right-2.5 sm:bottom-auto sm:right-auto sm:top-3 sm:left-3 items-end sm:items-start pointer-events-none">
             {product.is_new_arrival && <Badge variant="new" />}
             {product.is_on_sale && !product.is_new_arrival && <Badge variant="sale" />}
-            {product.stock_quantity <= 0 && <Badge variant="out-of-stock" />}
+            {isOutOfStock && <Badge variant="out-of-stock" />}
           </div>
 
           {/* Wishlist */}

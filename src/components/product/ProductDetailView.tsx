@@ -124,13 +124,19 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
 
     const sizeMap = new Map<string, { id: string; name: string; stock: number; inStock: boolean }>();
     variants.forEach((v) => {
-      if (v.size && !sizeMap.has(v.size.name)) {
-        sizeMap.set(v.size.name, {
-          id: v.size.id,
-          name: v.size.name,
-          stock: v.stock_quantity ?? 0,
-          inStock: (v.stock_quantity ?? 0) > 0,
-        });
+      if (v.size) {
+        const existing = sizeMap.get(v.size.name);
+        if (existing) {
+          existing.stock += v.stock_quantity ?? 0;
+          existing.inStock = existing.stock > 0;
+        } else {
+          sizeMap.set(v.size.name, {
+            id: v.size.id,
+            name: v.size.name,
+            stock: v.stock_quantity ?? 0,
+            inStock: (v.stock_quantity ?? 0) > 0,
+          });
+        }
       }
     });
 
@@ -493,13 +499,18 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
                     key={s.id}
                     type="button"
                     onClick={() => setSelectedSize(s.name)}
-                    className={`min-w-[44px] h-10 px-3.5 rounded-xl text-xs sm:text-sm font-semibold transition-all border cursor-pointer ${
+                    className={`min-w-[44px] h-10 px-3.5 rounded-xl text-xs sm:text-sm font-semibold transition-all border cursor-pointer relative ${
                       selectedSize === s.name
                         ? 'bg-[#2C1D13] text-white border-[#2C1D13] shadow-sm'
-                        : 'bg-white text-[#3D2B1F] border-[#E2D5C7] hover:border-[#7B5B3A] active:scale-95'
+                        : s.inStock
+                        ? 'bg-white text-[#3D2B1F] border-[#E2D5C7] hover:border-[#7B5B3A] active:scale-95'
+                        : 'bg-[#F9F7F4] text-[#A3978A] border-[#E8E2DA] hover:border-[#D5CDC3]'
                     }`}
+                    title={s.inStock ? `${s.name} (In stock)` : `${s.name} (Out of stock)`}
                   >
-                    {s.name}
+                    <span className={!s.inStock ? 'line-through decoration-[#8C7B6B]' : ''}>
+                      {s.name}
+                    </span>
                   </button>
                 ))}
               </div>
