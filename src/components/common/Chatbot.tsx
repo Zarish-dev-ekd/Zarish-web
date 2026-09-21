@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { IconMessageCircle, IconX, IconSend, IconWhatsapp } from '@/components/icons';
 import { createClient } from '@/utils/supabase/client';
 
@@ -50,6 +51,9 @@ const QUICK_QUESTIONS = [
 ];
 
 export default function Chatbot() {
+  const pathname = usePathname();
+  const isPdpOrCheckout = pathname?.startsWith('/products/') || pathname === '/checkout';
+
   const [isOpen, setIsOpen] = useState(false);
   const [hasUnread, setHasUnread] = useState(true);
   const [whatsappUrl, setWhatsappUrl] = useState(OFFICIAL_WHATSAPP_URL);
@@ -285,11 +289,15 @@ export default function Chatbot() {
             setIsOpen(true);
             setHasUnread(false);
           }}
-          className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[9999] w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-[#FAF4EE] to-[#FFFFFF] border border-[#E5D7CA] text-[#2C1D13] shadow-[0_8px_24px_rgba(44,29,19,0.16)] hover:shadow-[0_12px_32px_rgba(44,29,19,0.24)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center cursor-pointer group select-none"
+          className={`fixed z-[9999] w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-[#FAF4EE] to-[#FFFFFF] border border-[#E5D7CA] text-[#2C1D13] shadow-[0_8px_24px_rgba(44,29,19,0.16)] hover:shadow-[0_12px_32px_rgba(44,29,19,0.24)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center cursor-pointer group select-none ${
+            isPdpOrCheckout
+              ? 'bottom-[calc(4.85rem+env(safe-area-inset-bottom))] right-3 sm:bottom-6 sm:right-6'
+              : 'bottom-5 right-4 sm:bottom-6 sm:right-6'
+          }`}
           aria-label="Open ZARISH chat assistance"
         >
           <div className="relative flex items-center justify-center">
-            <IconMessageCircle size={22} className="text-[#2C1D13] group-hover:scale-110 transition-transform" />
+            <IconMessageCircle size={20} className="text-[#2C1D13] group-hover:scale-110 transition-transform" />
             {hasUnread && (
               <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-[#8B4E5A] ring-2 ring-white animate-pulse" />
             )}
@@ -300,7 +308,11 @@ export default function Chatbot() {
       {/* ─── 2. MINI CHATBOT POPUP WINDOW ─── */}
       {isOpen && (
         <div
-          className="fixed bottom-5 right-3 sm:bottom-6 sm:right-6 z-[9999] w-[calc(100vw-24px)] sm:w-[380px] max-h-[580px] sm:max-h-[620px] rounded-[24px] sm:rounded-[28px] overflow-hidden bg-[#FAF6F0] border border-[#E5D7CA] shadow-[0_20px_50px_rgba(44,29,19,0.22)] flex flex-col transition-all duration-300 animate-in fade-in slide-in-from-bottom-3"
+          className={`fixed z-[9999] w-[calc(100vw-24px)] sm:w-[380px] max-h-[580px] sm:max-h-[620px] rounded-[24px] sm:rounded-[28px] overflow-hidden bg-[#FAF6F0] border border-[#E5D7CA] shadow-[0_20px_50px_rgba(44,29,19,0.22)] flex flex-col transition-all duration-300 animate-in fade-in slide-in-from-bottom-3 right-3 sm:right-6 ${
+            isPdpOrCheckout
+              ? 'bottom-[calc(4.85rem+env(safe-area-inset-bottom))] sm:bottom-6'
+              : 'bottom-5 sm:bottom-6'
+          }`}
           role="dialog"
           aria-modal="true"
           aria-label="ZARISH Concierge Chat"
