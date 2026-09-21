@@ -8,7 +8,7 @@ interface PreIntroProps {
 }
 
 export default function PreIntro({
-  subtitle = 'HAUTE COUTURE MODEST FASHION',
+  subtitle = 'Made for moments worth remembering.',
 }: PreIntroProps) {
   const { markSeen } = useIntroSeen('zarish_intro_seen', 'session');
   const [phase, setPhase] = useState(0);
@@ -144,7 +144,7 @@ export default function PreIntro({
             transform: phase >= 3 ? 'translateY(0)' : 'translateY(6px)',
           }}
         >
-          <p className="text-[10px] sm:text-xs font-semibold tracking-[0.32em] uppercase text-[#7B5B3A]">
+          <p className="text-[9.5px] sm:text-xs font-semibold tracking-[0.20em] sm:tracking-[0.28em] uppercase text-[#7B5B3A] whitespace-nowrap">
             {subtitle}
           </p>
         </div>
