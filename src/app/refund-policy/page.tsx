@@ -6,8 +6,8 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 
 export const metadata: Metadata = {
-  title: 'Refund & Cancellation Policy | ZARISH by Nehala Mufeed',
-  description: 'Detailed Refund, Return, and Cancellation Policy of ZARISH. Learn about our 24-48 hour unboxing verification guidelines.',
+  title: 'Refund & Return Policy | ZARISH by Nehala Mufeed',
+  description: 'Detailed Refund and Return Policy of ZARISH. Learn about our 24-48 hour unboxing verification guidelines.',
 };
 
 export default async function RefundPolicyPage() {
@@ -29,7 +29,7 @@ export default async function RefundPolicyPage() {
               Customer Assurance &amp; Guidelines
             </span>
             <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C1D13]">
-              Refund, Return &amp; Cancellation Policy
+              Refund &amp; Return Policy
             </h1>
             <p className="text-xs text-[#8C7B6B] mt-2">
               Last updated: September 2026 • Valid for all online purchases on zarish.in
@@ -43,32 +43,18 @@ export default async function RefundPolicyPage() {
                 Mandatory Unboxing Video Requirement
               </h2>
               <p className="text-[#6B5744] leading-relaxed mb-3">
-                Refunds and replacements are applicable <strong>only for damaged or defective products</strong> received by the customer.
+                Refunds are applicable <strong>only for damaged or defective products</strong> received by the customer.
               </p>
               <p className="text-[#6B5744] leading-relaxed">
-                To claim a replacement or refund, you must contact our official WhatsApp support (<strong className="text-[#2C1D13]">+91 9562292945</strong>) within <strong>24 to 48 hours of delivery</strong> with a <strong>complete, uncut unboxing video</strong> (recorded continuously from start to end without pauses or cuts, showing the sealed courier package being opened and the defect clearly inspected). Requests raised after 48 hours of delivery cannot be entertained.
+                To claim a refund, you must contact our official WhatsApp support (<strong className="text-[#2C1D13]">+91 9562292945</strong>) within <strong>24 to 48 hours of delivery</strong> with a <strong>complete, uncut unboxing video</strong> (recorded continuously from start to end without pauses or cuts, showing the sealed courier package being opened and the defect clearly inspected). Requests raised after 48 hours of delivery cannot be entertained.
               </p>
             </div>
 
             <section>
               <h2 className="font-display text-lg font-bold text-[#2C1D13] mb-2.5">
-                1. Order Cancellation Policy
+                1. Return &amp; Refund Criteria
               </h2>
-              <ul className="list-disc pl-5 space-y-2 text-[#6B5744]">
-                <li>
-                  <strong>Before Dispatch:</strong> You may request an order cancellation within <strong>12 hours</strong> of placing your order by contacting us on WhatsApp or email. If the package has not yet been processed by our dispatch team, a 100% full refund will be initiated immediately.
-                </li>
-                <li>
-                  <strong>After Dispatch:</strong> Once an order is handed over to our logistics courier partners, it cannot be cancelled or intercepted in transit.
-                </li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="font-display text-lg font-bold text-[#2C1D13] mb-2.5">
-                2. Return &amp; Replacement Criteria
-              </h2>
-              <p className="mb-2">A return or replacement is accepted strictly under the following conditions:</p>
+              <p className="mb-2">A return or refund is accepted strictly under the following conditions:</p>
               <ul className="list-disc pl-5 space-y-1.5 text-[#6B5744]">
                 <li>The item received has physical transit damage, tears, or factory manufacturing defects.</li>
                 <li>An incorrect product, size, or color was delivered compared to your confirmed order details.</li>
@@ -78,7 +64,7 @@ export default async function RefundPolicyPage() {
 
             <section>
               <h2 className="font-display text-lg font-bold text-[#2C1D13] mb-2.5">
-                3. Non-Returnable Items
+                2. Non-Returnable Items
               </h2>
               <p className="mb-2">In accordance with modest fashion hygiene standards and custom artistry:</p>
               <ul className="list-disc pl-5 space-y-1.5 text-[#6B5744]">
@@ -91,7 +77,7 @@ export default async function RefundPolicyPage() {
 
             <section>
               <h2 className="font-display text-lg font-bold text-[#2C1D13] mb-2.5">
-                4. Refund Processing Timeline
+                3. Refund Processing Timeline
               </h2>
               <p>
                 Once your unboxing verification is approved by our quality control team:
@@ -101,17 +87,14 @@ export default async function RefundPolicyPage() {
                   <strong>Approval:</strong> Our team reviews your video and notifies you within 24 business hours.
                 </li>
                 <li>
-                  <strong>Replacement:</strong> If preferred, an express replacement of the same garment is dispatched at zero extra cost.
-                </li>
-                <li>
-                  <strong>Bank Credit:</strong> If a monetary refund is issued, it is processed back to the <strong>original payment method</strong> (credit card, debit card, UPI, or net banking) via our payment gateway partner <strong>Razorpay</strong>. The credit typically reflects in your bank statement within <strong>5 to 7 business days</strong> depending on your issuing bank.
+                  <strong>Bank Credit:</strong> The monetary refund is processed back to the <strong>original payment method</strong> (credit card, debit card, UPI, or net banking) via our payment gateway partner <strong>Razorpay</strong>. The credit typically reflects in your bank statement within <strong>5 to 7 business days</strong> depending on your issuing bank.
                 </li>
               </ul>
             </section>
 
             <section className="bg-[#FAF8F5] p-5 sm:p-6 rounded-2xl border border-[#E2D5C7]">
               <h2 className="font-display text-base font-bold text-[#2C1D13] mb-2">
-                5. How to Initiate a Return / Refund Request
+                4. How to Initiate a Refund Request
               </h2>
               <p className="text-xs text-[#6B5744] mb-3">
                 Send your order reference number and unboxing video directly to our support team:

@@ -226,7 +226,7 @@ export default function Footer({ brandDescription, socialLinks = {} }: FooterPro
             </Link>
             <span>•</span>
             <Link href="/refund-policy" className="hover:text-[#E8DDD4] transition-colors">
-              Refund &amp; Cancellation Policy
+              Refund &amp; Return Policy
             </Link>
             <span>•</span>
             <Link href="/shipping-policy" className="hover:text-[#E8DDD4] transition-colors">

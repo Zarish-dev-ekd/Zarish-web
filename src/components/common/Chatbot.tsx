@@ -119,10 +119,10 @@ export default function Chatbot() {
         q.includes('exchange')
       ) {
         const refundWaUrl = `https://wa.me/${OFFICIAL_WHATSAPP_NUMBER}?text=${encodeURIComponent(
-          'Hi ZARISH, I have an issue with my order and I am sharing my complete unboxing video (start to end, no cuts) for verification.'
+          'Hi ZARISH, I received a damaged product and I am sharing my complete unboxing video (start to end, no cuts) for verification.'
         )}`;
         return {
-          text: `Refunds & replacements are applicable only for damaged or defective products.\n\nPlease contact us on WhatsApp within 24–48 hours of delivery with a complete unboxing video (no cuts, from start to end) for verification.\n\n⚠️ Requests raised after 24–48 hours will not be accepted.`,
+          text: `Refunds are applicable only for damaged or defective products.\n\nPlease contact us on WhatsApp within 24–48 hours of delivery with a complete unboxing video (no cuts, from start to end) for verification.\n\n⚠️ Requests raised after 24–48 hours will not be accepted.`,
           action: {
             label: 'Chat on WhatsApp (9562292945)',
             href: refundWaUrl,
@@ -319,7 +319,21 @@ export default function Chatbot() {
         >
           {/* Header */}
           <div className="bg-[#2C1D13] text-[#FAF6F0] px-4 py-3.5 flex items-center justify-between border-b border-[#3D2B1F] select-none">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
+              {messages.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setMessages([])}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/15 hover:bg-white/25 text-[#EBDCD0] hover:text-white transition-colors cursor-pointer mr-0.5 active:scale-90 text-[11px] font-medium"
+                  aria-label="Back to main topics"
+                  title="Back to topics"
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                  </svg>
+                  <span>Back</span>
+                </button>
+              )}
               <div className="w-8 h-8 rounded-full bg-[#3D2B1F] border border-[#7B5B3A]/40 flex items-center justify-center font-display text-sm font-bold text-[#EBDCD0]">
                 Z
               </div>
@@ -418,6 +432,23 @@ export default function Chatbot() {
                 </span>
               </div>
             ))}
+
+            {/* Back button chip when viewing responses */}
+            {messages.length > 0 && !isTyping && (
+              <div className="pt-1 flex items-center justify-start">
+                <button
+                  type="button"
+                  onClick={() => setMessages([])}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#7B5B3A] hover:text-[#2C1D13] bg-white hover:bg-[#FAF4EE] border border-[#E2D5C7] hover:border-[#7B5B3A] rounded-full px-3.5 py-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                  title="Back to topics"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                  </svg>
+                  <span>Back to Topics</span>
+                </button>
+              </div>
+            )}
 
             {/* Typing Indicator */}
             {isTyping && (
