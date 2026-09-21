@@ -133,8 +133,8 @@ export default function Chatbot() {
         return {
           text: `You can track your order status live anytime using your Order Number. If you recently placed an order, tracking updates were also sent to your WhatsApp & email.`,
           action: {
-            label: 'Track Order in Account',
-            href: '/account',
+            label: 'Track Order Live',
+            href: '/track-order',
             isExternal: false,
           },
         };

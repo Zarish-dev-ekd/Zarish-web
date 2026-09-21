@@ -73,7 +73,7 @@ export default function AnnouncementBar({ announcements = [] }: AnnouncementBarP
         {/* Right Navigation / Support Links */}
         <div className="hidden sm:flex items-center gap-3 shrink-0 text-[#F5EDE3]/80">
           <Link
-            href="/account"
+            href="/track-order"
             className="hover:text-white transition-colors"
           >
             Track Order

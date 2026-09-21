@@ -244,7 +244,7 @@ export default function Header({ navigationItems = [], cartItemCount = 0 }: Head
 
                       {/* Track Order */}
                       <Link
-                        href="/account"
+                        href="/track-order"
                         onClick={() => setAccountMenuOpen(false)}
                         className="group flex items-center justify-between px-3 py-2.5 rounded-xl text-xs text-[#2C1D13] hover:text-[#7B5B3A] hover:bg-[#FAF6F0] transition-all font-medium"
                       >
@@ -306,13 +306,9 @@ export default function Header({ navigationItems = [], cartItemCount = 0 }: Head
                       </div>
 
                       {/* Track Order Button */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setAccountMenuOpen(false);
-                          setAuthModalMode('signin');
-                          setIsAuthModalOpen(true);
-                        }}
+                      <Link
+                        href="/track-order"
+                        onClick={() => setAccountMenuOpen(false)}
                         className="group w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs text-[#2C1D13] hover:text-[#7B5B3A] hover:bg-[#FAF6F0] transition-all font-medium cursor-pointer"
                       >
                         <div className="flex items-center gap-2.5">
@@ -322,7 +318,7 @@ export default function Header({ navigationItems = [], cartItemCount = 0 }: Head
                           <span>Track Order</span>
                         </div>
                         <IconChevronRight size={13} className="text-[#B8A89A] group-hover:text-[#7B5B3A] group-hover:translate-x-0.5 transition-all" />
-                      </button>
+                      </Link>
 
                       {/* View Profile Button */}
                       <button
@@ -435,7 +431,7 @@ export default function Header({ navigationItems = [], cartItemCount = 0 }: Head
                 My Account & Orders
                 <IconChevronRight size={14} />
               </Link>
-              <Link href="/account" className="flex items-center justify-between px-6 py-3 text-base text-[#2C1D13] hover:bg-[#F3ECE2] transition-colors" onClick={closeDrawer}>
+              <Link href="/track-order" className="flex items-center justify-between px-6 py-3 text-base text-[#2C1D13] hover:bg-[#F3ECE2] transition-colors" onClick={closeDrawer}>
                 Track Order
                 <IconChevronRight size={14} />
               </Link>
@@ -476,18 +472,14 @@ export default function Header({ navigationItems = [], cartItemCount = 0 }: Head
                 Create Account
                 <IconChevronRight size={14} />
               </button>
-              <button
-                type="button"
+              <Link
+                href="/track-order"
                 className="flex items-center justify-between w-full px-6 py-3 text-base text-[#2C1D13] hover:bg-[#F3ECE2] transition-colors cursor-pointer text-left"
-                onClick={() => {
-                  closeDrawer();
-                  setAuthModalMode('signin');
-                  setIsAuthModalOpen(true);
-                }}
+                onClick={closeDrawer}
               >
                 Track Order
                 <IconChevronRight size={14} />
-              </button>
+              </Link>
             </>
           )}
         </nav>

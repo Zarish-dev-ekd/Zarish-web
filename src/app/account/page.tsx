@@ -327,11 +327,20 @@ export default function CustomerAccountPage() {
                             </span>
                           )}
                         </div>
-                        {order.tracking_number && (
-                          <div className="font-mono text-[11px] bg-[#FAF6F0] px-2.5 py-1 rounded-md border border-[#E2D5C7]">
-                            Tracking: {order.tracking_number}
-                          </div>
-                        )}
+                        <div className="flex items-center gap-3">
+                          {order.tracking_number && (
+                            <div className="font-mono text-[11px] bg-[#FAF6F0] px-2.5 py-1 rounded-md border border-[#E2D5C7]">
+                              Tracking: {order.tracking_number}
+                            </div>
+                          )}
+                          <Link
+                            href={`/track-order?orderNumber=${encodeURIComponent(order.order_number)}`}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-[#7B5B3A] hover:text-[#2C1D13] hover:underline"
+                          >
+                            <span>Track Shipment</span>
+                            <span>→</span>
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   );

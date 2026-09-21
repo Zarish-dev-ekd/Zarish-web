@@ -299,19 +299,58 @@ export default function AdminOrdersPage() {
                       </td>
 
                       <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle">
-                        <select
-                          className="min-w-[120px] text-xs px-2 py-1 border border-[#E8E0D5] rounded bg-white text-[#2C241E] outline-none"
-                          value={order.order_status}
-                          disabled={updatingId === order.id}
-                          onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
-                        >
-                          <option value="placed">Placed</option>
-                          <option value="confirmed">Confirmed</option>
-                          <option value="processing">Processing</option>
-                          <option value="shipped">Shipped</option>
-                          <option value="delivered">Delivered</option>
-                          <option value="cancelled">Cancelled</option>
-                        </select>
+                        <div className="flex flex-col gap-1.5 min-w-[150px]">
+                          <select
+                            className="w-full text-xs px-2.5 py-1.5 border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] font-medium outline-none focus:border-[#7B5B3A] transition-colors"
+                            value={order.order_status}
+                            disabled={updatingId === order.id}
+                            onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
+                          >
+                            <option value="placed">Placed</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="processing">Processing (Handcrafting)</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                          </select>
+
+                          {/* Tracking Number Input */}
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="text"
+                              placeholder="Courier / AWB #"
+                              defaultValue={order.tracking_number || ''}
+                              className="w-full text-[11px] px-2 py-1 border border-[#E8E0D5] rounded bg-[#FAF8F5] text-[#2C241E] outline-none focus:bg-white focus:border-[#7B5B3A] transition-colors"
+                              title="Press Enter or click away to save tracking number"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleUpdateTracking(order.id, (e.target as HTMLInputElement).value);
+                                }
+                              }}
+                              onBlur={(e) => {
+                                if (e.target.value !== (order.tracking_number || '')) {
+                                  handleUpdateTracking(order.id, e.target.value);
+                                }
+                              }}
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between text-[10px]">
+                            {order.tracking_number ? (
+                              <span className="text-[#0E7064] font-medium">✓ Saved</span>
+                            ) : (
+                              <span className="text-[#8C7B6B]">No tracking</span>
+                            )}
+                            <a
+                              href={`/track-order?orderNumber=${encodeURIComponent(order.order_number)}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-[#7B5B3A] hover:underline font-medium"
+                            >
+                              View Live →
+                            </a>
+                          </div>
+                        </div>
                       </td>
                     </tr>
                   );
