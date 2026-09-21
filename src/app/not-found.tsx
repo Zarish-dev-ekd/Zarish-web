@@ -4,10 +4,11 @@ import Footer from '@/components/layout/Footer';
 
 export default function NotFound() {
   const fallbackNav = [
-    { id: 'nav-1', label: 'New Arrivals', href: '/collections/new-arrivals', display_order: 1, is_active: true, parent_id: null, open_in_new_tab: false, icon: null, created_at: '', updated_at: '' },
-    { id: 'nav-2', label: 'Collections', href: '/collections', display_order: 2, is_active: true, parent_id: null, open_in_new_tab: false, icon: null, created_at: '', updated_at: '' },
-    { id: 'nav-3', label: 'Shop by Size', href: '/shop-by-size', display_order: 3, is_active: true, parent_id: null, open_in_new_tab: false, icon: null, created_at: '', updated_at: '' },
-    { id: 'nav-5', label: 'About', href: '/about', display_order: 4, is_active: true, parent_id: null, open_in_new_tab: false, icon: null, created_at: '', updated_at: '' },
+    { id: 'nav-shop', label: 'Shop All', href: '/products', display_order: 1, is_active: true, parent_id: null, open_in_new_tab: false, icon: null, created_at: '', updated_at: '' },
+    { id: 'nav-1', label: 'New Arrivals', href: '/collections/new-arrivals', display_order: 2, is_active: true, parent_id: null, open_in_new_tab: false, icon: null, created_at: '', updated_at: '' },
+    { id: 'nav-2', label: 'Collections', href: '/collections', display_order: 3, is_active: true, parent_id: null, open_in_new_tab: false, icon: null, created_at: '', updated_at: '' },
+    { id: 'nav-3', label: 'Shop by Size', href: '/shop-by-size', display_order: 4, is_active: true, parent_id: null, open_in_new_tab: false, icon: null, created_at: '', updated_at: '' },
+    { id: 'nav-5', label: 'About Us', href: '/about', display_order: 5, is_active: true, parent_id: null, open_in_new_tab: false, icon: null, created_at: '', updated_at: '' },
   ];
 
   return (

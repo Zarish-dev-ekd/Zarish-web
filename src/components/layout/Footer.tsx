@@ -238,8 +238,20 @@ export default function Footer({ brandDescription, socialLinks = {} }: FooterPro
             </Link>
           </div>
 
-          <p className="text-[11px] text-[#8C7B6B]">
-            © {currentYear} ZARISH by Nehala Mufeed. All rights reserved.
+          <p className="text-[11px] text-[#8C7B6B] flex items-center justify-center gap-2 flex-wrap">
+            <span>© {currentYear} ZARISH by Nehala Mufeed. All rights reserved.</span>
+            <span>•</span>
+            <span>
+              Developed by{' '}
+              <a
+                href="https://www.halivetech.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#C9B49A] hover:text-[#FFFFFF] underline underline-offset-2 transition-colors font-medium"
+              >
+                Halive Technologies Pvt Ltd
+              </a>
+            </span>
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] font-medium tracking-wider uppercase text-[#7A6A5A]">

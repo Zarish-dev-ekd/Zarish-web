@@ -12,6 +12,7 @@ import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ProductCard from '@/components/product/ProductCard';
+import ProductSortSelect from '@/components/product/ProductSortSelect';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -51,29 +52,67 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     getNavigationItems(),
   ]);
 
+  const activeCategory = categories.find((c) => c.slug === categorySlug);
+  const activeSize = sizes.find((s) => s.slug === sizeSlug);
+
+  // Helper to build URLs preserving or toggling parameters
+  const buildUrl = (overrides: {
+    category?: string | null;
+    size?: string | null;
+    sort?: string | null;
+    sale?: boolean | null;
+  }) => {
+    const params = new URLSearchParams();
+
+    const cat = overrides.category !== undefined ? overrides.category : categorySlug;
+    const sz = overrides.size !== undefined ? overrides.size : sizeSlug;
+    const st = overrides.sort !== undefined ? overrides.sort : sort;
+    const sl = overrides.sale !== undefined ? overrides.sale : onSale;
+
+    if (cat) params.set('category', cat);
+    if (sz) params.set('size', sz);
+    if (sl) params.set('sale', 'true');
+    if (st && st !== 'newest') params.set('sort', st);
+
+    const str = params.toString();
+    return str ? `/products?${str}` : '/products';
+  };
+
+  const hasActiveFilters = Boolean(categorySlug || sizeSlug || onSale || (sort && sort !== 'newest'));
+
   return (
     <>
       <AnnouncementBar announcements={announcements} />
       <Header navigationItems={navigationItems} cartItemCount={0} />
 
-      <main className="w-full max-w-[1280px] mx-auto px-4 md:px-8 pt-10 pb-20">
-        {/* Page Heading */}
-        <div className="text-center mb-9">
-          <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#2C1D13] mb-2">
-            {onSale ? 'Sale & Special Offers' : 'The Collection'}
+      <main className="w-full max-w-[1280px] mx-auto px-4 md:px-8 pt-8 pb-20">
+        {/* Page Editorial Heading */}
+        <div className="text-center mb-8 md:mb-10">
+          <span className="text-[11px] tracking-[0.2em] uppercase text-[#7B5B3A] font-semibold">
+            {onSale ? 'SPECIAL OFFERS' : activeCategory ? 'CURATED COLLECTION' : 'EXPLORE SHOP'}
+          </span>
+          <h1 className="font-display text-2xl sm:text-4xl font-bold text-[#2C1D13] mt-1.5 mb-2">
+            {onSale
+              ? 'Sale & Special Offers'
+              : activeCategory
+              ? activeCategory.name
+              : 'The Full Collection'}
           </h1>
-          <p className="text-sm sm:text-base text-[#8C7B6B] max-w-[600px] mx-auto leading-relaxed">
-            Refined modest silhouettes crafted with premium fabrics for effortless grace.
+          <p className="text-xs sm:text-sm text-[#8C7B6B] max-w-[580px] mx-auto leading-relaxed">
+            {activeCategory?.description ||
+              (onSale
+                ? 'Discover limited-edition deals and timeless seasonal pieces at special pricing.'
+                : 'Refined modest silhouettes crafted with premium fabrics for everyday elegance.')}
           </p>
         </div>
 
-        {/* Filter & Sort Bar */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#E2D5C7]">
-          {/* Category Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {/* ── FILTER & SORT CONTROLS ── */}
+        <div className="space-y-4 pb-6 border-b border-[#E2D5C7]">
+          {/* 1. Category Filter Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <Link
-              href="/products"
-              className={`px-4 py-2 rounded-full text-xs font-medium border transition-all whitespace-nowrap inline-flex items-center justify-center cursor-pointer ${
+              href={buildUrl({ category: null, sale: false })}
+              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase border transition-all whitespace-nowrap inline-flex items-center justify-center cursor-pointer ${
                 !categorySlug && !onSale
                   ? 'bg-[#2C1D13] text-white border-[#2C1D13] shadow-xs'
                   : 'bg-white text-[#4A3728] border-[#E2D5C7] hover:border-[#2C1D13] hover:bg-[#FAF6F0]'
@@ -85,9 +124,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             {categories.map((cat) => (
               <Link
                 key={cat.id}
-                href={`/products?category=${cat.slug}${sort ? `&sort=${sort}` : ''}`}
-                className={`px-4 py-2 rounded-full text-xs font-medium border transition-all whitespace-nowrap inline-flex items-center justify-center cursor-pointer ${
-                  categorySlug === cat.slug
+                href={buildUrl({ category: cat.slug, sale: false })}
+                className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase border transition-all whitespace-nowrap inline-flex items-center justify-center cursor-pointer ${
+                  categorySlug === cat.slug && !onSale
                     ? 'bg-[#2C1D13] text-white border-[#2C1D13] shadow-xs'
                     : 'bg-white text-[#4A3728] border-[#E2D5C7] hover:border-[#2C1D13] hover:bg-[#FAF6F0]'
                 }`}
@@ -97,69 +136,133 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             ))}
 
             <Link
-              href="/products?sale=true"
-              className={`px-4 py-2 rounded-full text-xs font-medium border transition-all whitespace-nowrap inline-flex items-center justify-center cursor-pointer ${
+              href={buildUrl({ category: null, sale: true })}
+              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase border transition-all whitespace-nowrap inline-flex items-center justify-center cursor-pointer ${
                 onSale
                   ? 'bg-[#8B4E5A] text-white border-[#8B4E5A] shadow-xs'
-                  : 'bg-white text-[#8B4E5A] border-[#8B4E5A]/50 hover:bg-[#FDF2F4]'
+                  : 'bg-white text-[#8B4E5A] border-[#8B4E5A]/40 hover:bg-[#FDF2F4]'
               }`}
             >
               Sale
             </Link>
           </div>
 
-          {/* Sizing & Sort options */}
-          <div className="flex items-center gap-4 flex-wrap">
-            {sizes.length > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-[#8C7B6B]">Size:</span>
-                <div className="flex gap-1.5">
-                  {sizes.slice(0, 6).map((s) => (
+          {/* 2. Secondary Bar: Sizes + Sort Dropdown */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+            {/* Size Filter Pills */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-medium text-[#7B5B3A] uppercase tracking-wider">Size:</span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {sizes.map((s) => {
+                  const isSelected = sizeSlug === s.slug;
+                  return (
                     <Link
                       key={s.id}
-                      href={`/products?${categorySlug ? `category=${categorySlug}&` : ''}size=${s.slug}${sort ? `&sort=${sort}` : ''}`}
-                      className={`w-8 h-8 rounded-full text-xs font-semibold border transition-all inline-flex items-center justify-center ${
-                        sizeSlug === s.slug
+                      href={buildUrl({ size: isSelected ? null : s.slug })}
+                      title={isSelected ? `Unselect size ${s.name}` : `Filter by size ${s.name}`}
+                      className={`min-w-[32px] h-8 px-2 rounded-full text-xs font-semibold border transition-all inline-flex items-center justify-center cursor-pointer ${
+                        isSelected
                           ? 'bg-[#884A48] text-white border-[#884A48] shadow-xs'
                           : 'bg-white text-[#2C1D13] border-[#E2D5C7] hover:border-[#884A48] hover:bg-[#FAF6F0]'
                       }`}
                     >
                       {s.name}
                     </Link>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
-            )}
+            </div>
+
+            {/* Sort Selector */}
+            <div className="flex items-center self-start sm:self-auto gap-2">
+              <ProductSortSelect currentSort={sort} />
+            </div>
           </div>
         </div>
 
-        {/* Products Count */}
-        <div className="flex justify-between items-center my-6 text-[13px] text-[#8C7B6B]">
-          <span>Showing {products.length} {products.length === 1 ? 'piece' : 'pieces'}</span>
-          {(categorySlug || sizeSlug || onSale) && (
-            <Link href="/products" className="text-[#7B5B3A] underline font-medium hover:text-[#2C1D13]">
+        {/* ── ACTIVE FILTER CHIPS & PRODUCT COUNT ── */}
+        <div className="flex flex-wrap items-center justify-between gap-3 my-5 text-xs text-[#8C7B6B]">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-medium text-[#2C1D13]">
+              Showing {products.length} {products.length === 1 ? 'garment' : 'garments'}
+            </span>
+
+            {/* Active Filter Badges */}
+            {activeCategory && (
+              <Link
+                href={buildUrl({ category: null })}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FAF6F0] border border-[#E2D5C7] text-[#2C1D13] hover:border-[#884A48] hover:text-[#884A48] transition-colors"
+                title="Remove category filter"
+              >
+                <span>Category: <strong>{activeCategory.name}</strong></span>
+                <span className="text-xs font-bold">✕</span>
+              </Link>
+            )}
+
+            {onSale && (
+              <Link
+                href={buildUrl({ sale: false })}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FDF2F4] border border-[#8B4E5A]/40 text-[#8B4E5A] hover:border-[#8B4E5A] transition-colors"
+                title="Remove sale filter"
+              >
+                <span><strong>On Sale</strong></span>
+                <span className="text-xs font-bold">✕</span>
+              </Link>
+            )}
+
+            {activeSize && (
+              <Link
+                href={buildUrl({ size: null })}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FAF6F0] border border-[#E2D5C7] text-[#2C1D13] hover:border-[#884A48] hover:text-[#884A48] transition-colors"
+                title="Remove size filter"
+              >
+                <span>Size: <strong>{activeSize.name}</strong></span>
+                <span className="text-xs font-bold">✕</span>
+              </Link>
+            )}
+
+            {sort && sort !== 'newest' && (
+              <Link
+                href={buildUrl({ sort: 'newest' })}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FAF6F0] border border-[#E2D5C7] text-[#2C1D13] hover:border-[#884A48] hover:text-[#884A48] transition-colors"
+                title="Reset sorting to newest"
+              >
+                <span>Sort: <strong>{sort === 'price-low' ? 'Price: Low to High' : 'Price: High to Low'}</strong></span>
+                <span className="text-xs font-bold">✕</span>
+              </Link>
+            )}
+          </div>
+
+          {hasActiveFilters && (
+            <Link
+              href="/products"
+              className="text-[#7B5B3A] underline underline-offset-2 font-medium hover:text-[#2C1D13] transition-colors"
+            >
               Clear all filters
             </Link>
           )}
         </div>
 
-        {/* Product Grid or Empty State */}
+        {/* ── GARMENT GRID OR EMPTY STATE ── */}
         {products.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-6">
             {products.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 px-5">
+          <div className="text-center py-20 px-5 bg-[#FAF8F5] rounded-2xl border border-[#EADBCE] my-8">
             <h3 className="font-display text-xl sm:text-2xl font-semibold text-[#2C1D13] mb-2">
               No garments found matching criteria
             </h3>
-            <p className="text-sm text-[#8C7B6B] mb-6">
-              Try selecting a different filter or view all pieces.
+            <p className="text-sm text-[#8C7B6B] mb-6 max-w-[420px] mx-auto">
+              We couldn&apos;t find any pieces with the selected category or size combination.
             </p>
-            <Link href="/products" className="inline-flex items-center justify-center gap-2 font-medium tracking-wide uppercase rounded-full transition-all whitespace-nowrap cursor-pointer text-sm px-8 py-3 bg-[#3D2B1F] text-white hover:bg-[#7B5B3A] hover:-translate-y-0.5 hover:shadow-md">
-              View All Garments
+            <Link
+              href="/products"
+              className="inline-flex items-center justify-center gap-2 font-medium tracking-wider uppercase rounded-full transition-all whitespace-nowrap cursor-pointer text-xs px-8 py-3.5 bg-[#2C1D13] text-white hover:bg-[#7B5B3A] shadow-md hover:-translate-y-0.5"
+            >
+              View All Garments &rarr;
             </Link>
           </div>
         )}

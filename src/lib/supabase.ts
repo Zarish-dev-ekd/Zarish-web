@@ -177,6 +177,32 @@ export async function getLatestProducts(limit = 8): Promise<Product[]> {
   }
 }
 
+export async function getNewArrivalProducts(limit = 24): Promise<Product[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        category:categories(*),
+        images:product_images(*),
+        variants:product_variants(*, size:sizes(*))
+      `)
+      .eq('is_active', true)
+      .eq('is_new_arrival', true)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error || !data || data.length === 0) {
+      // Fallback: If no products specifically marked, return latest arrivals
+      return getLatestProducts(limit);
+    }
+    return data as Product[];
+  } catch {
+    return [];
+  }
+}
+
 export async function getProductsPaginated(
   offset = 0,
   limit = 10

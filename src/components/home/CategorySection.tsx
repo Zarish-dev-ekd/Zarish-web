@@ -18,6 +18,8 @@ export default function CategorySection({
   categories,
   sectionTitle,
   sectionSubtitle,
+  viewAllText = 'Shop All',
+  viewAllUrl = '/products',
 }: CategorySectionProps) {
   const activeCategories = categories
     .filter((c) => c.is_active)
@@ -74,13 +76,27 @@ export default function CategorySection({
   return (
     <section className="py-10 md:py-16" aria-labelledby="category-heading">
       <div className="w-full max-w-[1280px] mx-auto px-4 md:px-8">
-        <div className="text-center mb-8 md:mb-10">
-          <h2 id="category-heading" className="font-display text-2xl md:text-3xl font-semibold tracking-wide text-[#2C1D13] mb-2">
-            <span>{sectionTitle}</span>
-          </h2>
-          {sectionSubtitle && (
-            <p className="font-display italic text-sm md:text-base text-[#8C7B6B]">{sectionSubtitle}</p>
-          )}
+        {/* Header with Title on Left and Shop All Button on Right */}
+        <div className="flex items-end justify-between mb-6 md:mb-10 px-1">
+          <div>
+            <h2 id="category-heading" className="font-display text-xl sm:text-2xl md:text-3xl font-semibold tracking-wide text-[#2C1D13]">
+              <span>{sectionTitle}</span>
+            </h2>
+            {sectionSubtitle && (
+              <p className="font-display italic text-xs sm:text-sm md:text-base text-[#8C7B6B] mt-0.5 sm:mt-1">
+                {sectionSubtitle}
+              </p>
+            )}
+          </div>
+
+          <Link
+            href={viewAllUrl}
+            className="group shrink-0 inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full border border-[#2C1D13]/25 hover:border-[#2C1D13] bg-[#FAF8F5] hover:bg-[#2C1D13] text-xs sm:text-sm font-semibold tracking-wider uppercase text-[#2C1D13] hover:text-white transition-all shadow-xs -mb-0.5 cursor-pointer"
+            aria-label="Shop All Categories"
+          >
+            <span>{viewAllText}</span>
+            <IconArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1" />
+          </Link>
         </div>
 
         {activeCategories.length > 0 ? (
@@ -98,7 +114,7 @@ export default function CategorySection({
                 {mobileLoopCategories.map((category, idx) => (
                   <Link
                     key={`${category.id}-mob-${idx}`}
-                    href={`/category/${category.slug}`}
+                    href={`/products?category=${category.slug}`}
                     className="group/card relative rounded-2xl overflow-hidden aspect-[3/4] transition-transform duration-300 w-[calc((100vw-36px)/2.35)] min-w-[138px] max-w-[185px] shrink-0"
                     aria-label={`Explore ${category.name}`}
                   >
@@ -135,7 +151,7 @@ export default function CategorySection({
               {activeCategories.map((category) => (
                 <Link
                   key={category.id}
-                  href={`/category/${category.slug}`}
+                  href={`/products?category=${category.slug}`}
                   className="group relative rounded-2xl overflow-hidden aspect-[3/4] transition-transform duration-300 hover:-translate-y-1 md:w-[170px] lg:w-[195px] xl:w-[210px] shrink-0"
                   aria-label={`Explore ${category.name}`}
                 >
