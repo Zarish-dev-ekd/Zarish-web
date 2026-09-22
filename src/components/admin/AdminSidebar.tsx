@@ -16,6 +16,7 @@ const adminNav = [
   { label: 'Brand Story', href: '/admin/brand-story', icon: 'heart' },
   { label: 'Announcements', href: '/admin/announcements', icon: 'truck' },
   { label: 'Benefits', href: '/admin/benefits', icon: 'shield' },
+  { label: 'Store Policies', href: '/admin/policies', icon: 'file' },
   { label: 'Settings', href: '/admin/settings', icon: 'settings' },
 ];
 

@@ -1,0 +1,44 @@
+{
+  "refund-policy": {
+    "eyebrow": "Customer Assurance & Guidelines",
+    "title": "Refund & Return Policy",
+    "last_updated": "Last updated: September 2026 • Valid for all online purchases on zarish.in",
+    "highlight_box": {
+      "title": "Mandatory Unboxing Video Requirement",
+      "main_rule": "Refunds are applicable only for damaged or defective products received by the customer.",
+      "detail": "To claim a refund, you must contact our official WhatsApp support (+91 9562292945) within 24 to 48 hours of delivery with a complete, uncut unboxing video (recorded continuously from start to end without pauses or cuts, showing the sealed courier package being opened and the defect clearly inspected). Requests raised after 48 hours of delivery cannot be entertained."
+    },
+    "section1": {
+      "heading": "1. Return & Refund Criteria",
+      "intro": "A return or refund is accepted strictly under the following conditions:",
+      "points": [
+        "The item received has physical transit damage, tears, or factory manufacturing defects.",
+        "An incorrect product, size, or color was delivered compared to your confirmed order details.",
+        "The garment must remain unwashed, unworn, unironed, with all original brand tags, embroidery guards, and packaging intact."
+      ]
+    },
+    "section2": {
+      "heading": "2. Non-Returnable Items",
+      "intro": "In accordance with modest fashion hygiene standards and custom artistry:",
+      "points": [
+        "Custom-tailored, bespoke altered, or personalized garments made to custom measurements.",
+        "Hijabs, under-caps, and inner slips once removed from sealed packaging.",
+        "Items bought during clearance sales or archive warehouse discount events.",
+        "Products without an authentic, continuous unboxing video."
+      ]
+    },
+    "section3": {
+      "heading": "3. Refund Processing Timeline",
+      "intro": "Once your unboxing verification is approved by our quality control team:",
+      "approval_text": "Approval: Our team reviews your video and notifies you within 24 business hours.",
+      "bank_credit_text": "Bank Credit: The monetary refund is processed back to the original payment method (credit card, debit card, UPI, or net banking) via our payment gateway partner Razorpay. The credit typically reflects in your bank statement within 5 to 7 business days depending on your issuing bank."
+    },
+    "section4": {
+      "heading": "4. How to Initiate a Refund Request",
+      "intro": "Send your order reference number and unboxing video directly to our support team:",
+      "whatsapp": "+91 9562292945",
+      "email": "zarish2025co@gmail.com",
+      "hours": "Monday – Saturday, 9:30 AM – 7:00 PM IST"
+    }
+  }
+}

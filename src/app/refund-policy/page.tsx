@@ -1,21 +1,74 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getSiteSettings, getAnnouncements, getNavigationItems } from '@/lib/supabase';
+import { getPolicy } from '@/lib/policies';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 
 export const metadata: Metadata = {
   title: 'Refund & Return Policy | ZARISH by Nehala Mufeed',
-  description: 'Detailed Refund and Return Policy of ZARISH. Learn about our 24-48 hour unboxing verification guidelines.',
+  description: 'Detailed Refund and Return Policy of ZARISH. Learn about our unboxing verification and timeline.',
 };
 
+export const revalidate = 0; // Fresh policy on load
+
 export default async function RefundPolicyPage() {
-  const [settings, announcements, navigationItems] = await Promise.all([
+  const [settings, announcements, navigationItems, policy] = await Promise.all([
     getSiteSettings(),
     getAnnouncements(),
     getNavigationItems(),
+    getPolicy('refund-policy'),
   ]);
+
+  const eyebrow = policy?.eyebrow || 'Customer Assurance & Guidelines';
+  const title = policy?.title || 'Refund & Return Policy';
+  const lastUpdated =
+    policy?.last_updated || 'Last updated: September 2026 • Valid for all online purchases on zarish.in';
+
+  const highlightBox = policy?.highlight_box || {
+    title: 'Mandatory Unboxing Video Requirement',
+    main_rule: 'Refunds are applicable only for damaged or defective products received by the customer.',
+    detail:
+      'To claim a refund, you must contact our official WhatsApp support (+91 9562292945) within 24 to 48 hours of delivery with a complete, uncut unboxing video (recorded continuously from start to end without pauses or cuts, showing the sealed courier package being opened and the defect clearly inspected). Requests raised after 48 hours of delivery cannot be entertained.',
+  };
+
+  const section1 = policy?.section1 || {
+    heading: '1. Return & Refund Criteria',
+    intro: 'A return or refund is accepted strictly under the following conditions:',
+    points: [
+      'The item received has physical transit damage, tears, or factory manufacturing defects.',
+      'An incorrect product, size, or color was delivered compared to your confirmed order details.',
+      'The garment must remain unwashed, unworn, unironed, with all original brand tags, embroidery guards, and packaging intact.',
+    ],
+  };
+
+  const section2 = policy?.section2 || {
+    heading: '2. Non-Returnable Items',
+    intro: 'In accordance with modest fashion hygiene standards and custom artistry:',
+    points: [
+      'Custom-tailored, bespoke altered, or personalized garments made to custom measurements.',
+      'Hijabs, under-caps, and inner slips once removed from sealed packaging.',
+      'Items bought during clearance sales or archive warehouse discount events.',
+      'Products without an authentic, continuous unboxing video.',
+    ],
+  };
+
+  const section3 = policy?.section3 || {
+    heading: '3. Refund Processing Timeline',
+    intro: 'Once your unboxing verification is approved by our quality control team:',
+    approval_text: 'Approval: Our team reviews your video and notifies you within 24 business hours.',
+    bank_credit_text:
+      'Bank Credit: The monetary refund is processed back to the original payment method (credit card, debit card, UPI, or net banking) via our payment gateway partner Razorpay. The credit typically reflects in your bank statement within 5 to 7 business days depending on your issuing bank.',
+  };
+
+  const section4 = policy?.section4 || {
+    heading: '4. How to Initiate a Refund Request',
+    intro: 'Send your order reference number and unboxing video directly to our support team:',
+    whatsapp: settings?.social_whatsapp || '+91 9562292945',
+    email: settings?.contact_email || 'zarish2025co@gmail.com',
+    hours: 'Monday – Saturday, 9:30 AM – 7:00 PM IST',
+  };
 
   return (
     <div className="min-h-screen bg-[#FAF6F0] flex flex-col">
@@ -26,85 +79,124 @@ export default async function RefundPolicyPage() {
         <div className="bg-white rounded-3xl p-6 sm:p-12 border border-[#E2D5C7]/80 shadow-[0_4px_24px_rgba(44,29,19,0.04)]">
           <div className="border-b border-[#F2ECE4] pb-6 mb-8 text-center sm:text-left">
             <span className="text-[11px] font-bold tracking-[0.2em] text-[#7B5B3A] uppercase block mb-2">
-              Customer Assurance &amp; Guidelines
+              {eyebrow}
             </span>
             <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C1D13]">
-              Refund &amp; Return Policy
+              {title}
             </h1>
-            <p className="text-xs text-[#8C7B6B] mt-2">
-              Last updated: September 2026 • Valid for all online purchases on zarish.in
-            </p>
+            <p className="text-xs text-[#8C7B6B] mt-2">{lastUpdated}</p>
           </div>
 
           <div className="space-y-8 text-xs sm:text-sm text-[#5C4A3E] leading-relaxed">
             {/* Essential Policy Highlight Box */}
-            <div className="p-5 sm:p-6 bg-[#FAF7F2] border-l-4 border-[#7B5B3A] border border-[#E8E0D5] rounded-2xl">
-              <h2 className="font-display text-base font-bold text-[#2C1D13] mb-2">
-                Mandatory Unboxing Video Requirement
-              </h2>
-              <p className="text-[#6B5744] leading-relaxed mb-3">
-                Refunds are applicable <strong>only for damaged or defective products</strong> received by the customer.
-              </p>
-              <p className="text-[#6B5744] leading-relaxed">
-                To claim a refund, you must contact our official WhatsApp support (<strong className="text-[#2C1D13]">+91 9562292945</strong>) within <strong>24 to 48 hours of delivery</strong> with a <strong>complete, uncut unboxing video</strong> (recorded continuously from start to end without pauses or cuts, showing the sealed courier package being opened and the defect clearly inspected). Requests raised after 48 hours of delivery cannot be entertained.
-              </p>
-            </div>
-
-            <section>
-              <h2 className="font-display text-lg font-bold text-[#2C1D13] mb-2.5">
-                1. Return &amp; Refund Criteria
-              </h2>
-              <p className="mb-2">A return or refund is accepted strictly under the following conditions:</p>
-              <ul className="list-disc pl-5 space-y-1.5 text-[#6B5744]">
-                <li>The item received has physical transit damage, tears, or factory manufacturing defects.</li>
-                <li>An incorrect product, size, or color was delivered compared to your confirmed order details.</li>
-                <li>The garment must remain unwashed, unworn, unironed, with all original brand tags, embroidery guards, and packaging intact.</li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="font-display text-lg font-bold text-[#2C1D13] mb-2.5">
-                2. Non-Returnable Items
-              </h2>
-              <p className="mb-2">In accordance with modest fashion hygiene standards and custom artistry:</p>
-              <ul className="list-disc pl-5 space-y-1.5 text-[#6B5744]">
-                <li>Custom-tailored, bespoke altered, or personalized garments made to custom measurements.</li>
-                <li>Hijabs, under-caps, and inner slips once removed from sealed packaging.</li>
-                <li>Items bought during clearance sales or archive warehouse discount events.</li>
-                <li>Products without an authentic, continuous unboxing video.</li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="font-display text-lg font-bold text-[#2C1D13] mb-2.5">
-                3. Refund Processing Timeline
-              </h2>
-              <p>
-                Once your unboxing verification is approved by our quality control team:
-              </p>
-              <ul className="list-disc pl-5 space-y-2 text-[#6B5744] mt-2">
-                <li>
-                  <strong>Approval:</strong> Our team reviews your video and notifies you within 24 business hours.
-                </li>
-                <li>
-                  <strong>Bank Credit:</strong> The monetary refund is processed back to the <strong>original payment method</strong> (credit card, debit card, UPI, or net banking) via our payment gateway partner <strong>Razorpay</strong>. The credit typically reflects in your bank statement within <strong>5 to 7 business days</strong> depending on your issuing bank.
-                </li>
-              </ul>
-            </section>
-
-            <section className="bg-[#FAF8F5] p-5 sm:p-6 rounded-2xl border border-[#E2D5C7]">
-              <h2 className="font-display text-base font-bold text-[#2C1D13] mb-2">
-                4. How to Initiate a Refund Request
-              </h2>
-              <p className="text-xs text-[#6B5744] mb-3">
-                Send your order reference number and unboxing video directly to our support team:
-              </p>
-              <div className="space-y-1 text-xs font-medium text-[#2C1D13]">
-                <p><strong>Official WhatsApp:</strong> <a href="https://wa.me/919562292945" target="_blank" rel="noopener noreferrer" className="text-[#7B5B3A] underline font-bold">+91 9562292945</a> (Fastest response)</p>
-                <p><strong>Support Email:</strong> <a href="mailto:zarish2025co@gmail.com" className="text-[#7B5B3A] underline">zarish2025co@gmail.com</a></p>
-                <p><strong>Support Hours:</strong> Monday – Saturday, 9:30 AM – 7:00 PM IST</p>
+            {highlightBox && (
+              <div className="p-5 sm:p-6 bg-[#FAF7F2] border-l-4 border-[#7B5B3A] border border-[#E8E0D5] rounded-2xl">
+                <h2 className="font-display text-base font-bold text-[#2C1D13] mb-2">
+                  {highlightBox.title}
+                </h2>
+                {highlightBox.main_rule && (
+                  <p className="text-[#6B5744] leading-relaxed mb-3">
+                    <strong>{highlightBox.main_rule}</strong>
+                  </p>
+                )}
+                {highlightBox.detail && (
+                  <p className="text-[#6B5744] leading-relaxed">{highlightBox.detail}</p>
+                )}
               </div>
-            </section>
+            )}
+
+            {/* Section 1: Return & Refund Criteria */}
+            {section1 && (
+              <section>
+                <h2 className="font-display text-lg font-bold text-[#2C1D13] mb-2.5">
+                  {section1.heading}
+                </h2>
+                {section1.intro && <p className="mb-2">{section1.intro}</p>}
+                {section1.points && section1.points.length > 0 && (
+                  <ul className="list-disc pl-5 space-y-1.5 text-[#6B5744]">
+                    {section1.points.map((pt: string, i: number) => (
+                      <li key={i}>{pt}</li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            )}
+
+            {/* Section 2: Non-Returnable Items */}
+            {section2 && (
+              <section>
+                <h2 className="font-display text-lg font-bold text-[#2C1D13] mb-2.5">
+                  {section2.heading}
+                </h2>
+                {section2.intro && <p className="mb-2">{section2.intro}</p>}
+                {section2.points && section2.points.length > 0 && (
+                  <ul className="list-disc pl-5 space-y-1.5 text-[#6B5744]">
+                    {section2.points.map((pt: string, i: number) => (
+                      <li key={i}>{pt}</li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            )}
+
+            {/* Section 3: Refund Processing Timeline */}
+            {section3 && (
+              <section>
+                <h2 className="font-display text-lg font-bold text-[#2C1D13] mb-2.5">
+                  {section3.heading}
+                </h2>
+                {section3.intro && <p>{section3.intro}</p>}
+                <ul className="list-disc pl-5 space-y-2 text-[#6B5744] mt-2">
+                  {section3.approval_text && (
+                    <li>{section3.approval_text}</li>
+                  )}
+                  {section3.bank_credit_text && (
+                    <li>{section3.bank_credit_text}</li>
+                  )}
+                </ul>
+              </section>
+            )}
+
+            {/* Section 4: Contact & Initiation */}
+            {section4 && (
+              <section className="bg-[#FAF8F5] p-5 sm:p-6 rounded-2xl border border-[#E2D5C7]">
+                <h2 className="font-display text-base font-bold text-[#2C1D13] mb-2">
+                  {section4.heading}
+                </h2>
+                {section4.intro && (
+                  <p className="text-xs text-[#6B5744] mb-3">{section4.intro}</p>
+                )}
+                <div className="space-y-1 text-xs font-medium text-[#2C1D13]">
+                  {section4.whatsapp && (
+                    <p>
+                      <strong>Official WhatsApp:</strong>{' '}
+                      <a
+                        href={`https://wa.me/${section4.whatsapp.replace(/[^0-9]/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#7B5B3A] underline font-bold"
+                      >
+                        {section4.whatsapp}
+                      </a>{' '}
+                      (Fastest response)
+                    </p>
+                  )}
+                  {section4.email && (
+                    <p>
+                      <strong>Support Email:</strong>{' '}
+                      <a href={`mailto:${section4.email}`} className="text-[#7B5B3A] underline">
+                        {section4.email}
+                      </a>
+                    </p>
+                  )}
+                  {section4.hours && (
+                    <p>
+                      <strong>Support Hours:</strong> {section4.hours}
+                    </p>
+                  )}
+                </div>
+              </section>
+            )}
           </div>
 
           <div className="mt-10 pt-6 border-t border-[#F2ECE4] text-center">
@@ -120,7 +212,10 @@ export default async function RefundPolicyPage() {
 
       <Footer
         footerGroups={[]}
-        brandDescription={settings?.meta_description}
+        brandDescription={
+          settings?.meta_description ||
+          'Elegant modest fashion crafted with love. Premium quality pieces for your everyday and special moments.'
+        }
         socialLinks={{
           instagram: settings?.social_instagram || undefined,
           facebook: settings?.social_facebook || undefined,
