@@ -16,7 +16,10 @@ import type {
   ProductColor,
   SiteSettings,
   FooterGroup,
+  BrandStoryData,
 } from '@/lib/types';
+import fs from 'fs';
+import path from 'path';
 
 export async function getSiteSettings(): Promise<SiteSettings | null> {
   try {
@@ -388,4 +391,55 @@ export async function getAllColors(): Promise<ProductColor[]> {
     return [];
   }
 }
+
+export async function getBrandStory(): Promise<BrandStoryData | null> {
+  // 1. Try Supabase database first
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('brand_story')
+      .select('*')
+      .limit(1)
+      .maybeSingle();
+
+    if (!error && data) {
+      return data as BrandStoryData;
+    }
+  } catch {
+    // Ignore error, fallback to local storage
+  }
+
+  // 2. Fallback to local data file
+  try {
+    const dataFile = path.join(process.cwd(), 'src', 'data', 'brand-story.json');
+    if (fs.existsSync(dataFile)) {
+      const raw = fs.readFileSync(dataFile, 'utf-8');
+      return JSON.parse(raw) as BrandStoryData;
+    }
+  } catch {
+    // Ignore
+  }
+
+  // 3. Built-in default
+  return {
+    id: 'brand-story-default',
+    heading: 'Dear Zarish Family,',
+    eyebrow: 'A NOTE FROM OUR FOUNDER',
+    paragraphs: [
+      'Zarish started as a small dream my husband and I shared. While building it, we were also learning to be parents, and our little girl was growing alongside us. There were days we wished we could give her more of our time, but she quietly waited, adjusted, and grew with us. Looking back, I realise she didn’t just grow up alongside Zarish—she grew up with it.',
+      'I’m forever grateful to my husband for being my strength through every high and low, believing in me when I doubted myself, and always encouraging me to keep going. And to our Zarish family, thank you for being part of this journey. Every order, kind message, share, recommendation, and every person who believed in us has meant more than you know.',
+      'We started Zarish with a dream, and today, we carry it with gratitude. Every order reminds us that something we built with love has found a place in someone else’s life. As we continue to grow, we’re grateful to have you with us. Thank you for being a part of our Zarish story.',
+    ],
+    sign_off: 'With love,',
+    founder_name: 'Nehala Mufeed',
+    founder_role: 'Founder, Zarish',
+    image_url: '/zarish-brand-card.webp',
+    image_alt: 'ZARISH by Nehala Mufeed',
+    cta_text: 'Shop now',
+    cta_url: '/products',
+    is_active: true,
+    updated_at: new Date().toISOString(),
+  };
+}
+
 

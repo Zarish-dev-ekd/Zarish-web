@@ -198,6 +198,25 @@ CREATE TABLE IF NOT EXISTS public.subscribers (
   created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
 );
 
+-- 11b. Brand Story Table
+CREATE TABLE IF NOT EXISTS public.brand_story (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  eyebrow TEXT DEFAULT 'A NOTE FROM OUR FOUNDER',
+  heading TEXT DEFAULT 'Dear Zarish Family,',
+  title TEXT DEFAULT 'Dear Zarish Family,',
+  paragraphs JSONB DEFAULT '["Zarish started as a small dream my husband and I shared. While building it, we were also learning to be parents, and our little girl was growing alongside us. There were days we wished we could give her more of our time, but she quietly waited, adjusted, and grew with us. Looking back, I realise she didn’t just grow up alongside Zarish—she grew up with it.", "I’m forever grateful to my husband for being my strength through every high and low, believing in me when I doubted myself, and always encouraging me to keep going. And to our Zarish family, thank you for being part of this journey. Every order, kind message, share, recommendation, and every person who believed in us has meant more than you know.", "We started Zarish with a dream, and today, we carry it with gratitude. Every order reminds us that something we built with love has found a place in someone else’s life. As we continue to grow, we’re grateful to have you with us. Thank you for being a part of our Zarish story."]'::jsonb,
+  description TEXT,
+  sign_off TEXT DEFAULT 'With love,',
+  founder_name TEXT DEFAULT 'Nehala Mufeed',
+  founder_role TEXT DEFAULT 'Founder, Zarish',
+  image_url TEXT DEFAULT '/zarish-brand-card.webp',
+  image_alt TEXT DEFAULT 'ZARISH by Nehala Mufeed',
+  cta_text TEXT DEFAULT 'Shop now',
+  cta_url TEXT DEFAULT '/products',
+  is_active BOOLEAN DEFAULT true,
+  updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
+);
+
 -- Indexes for optimal performance
 CREATE INDEX IF NOT EXISTS idx_products_category ON public.products(category_id);
 CREATE INDEX IF NOT EXISTS idx_products_slug ON public.products(slug);
@@ -220,6 +239,7 @@ ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.product_images ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.product_variants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.subscribers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.brand_story ENABLE ROW LEVEL SECURITY;
 
 -- Public READ policies (anyone can read active content for storefront)
 CREATE POLICY "Public read site_settings" ON public.site_settings FOR SELECT USING (true);
@@ -233,6 +253,7 @@ CREATE POLICY "Public read colors" ON public.colors FOR SELECT USING (true);
 CREATE POLICY "Public read products" ON public.products FOR SELECT USING (true);
 CREATE POLICY "Public read product_images" ON public.product_images FOR SELECT USING (true);
 CREATE POLICY "Public read product_variants" ON public.product_variants FOR SELECT USING (true);
+CREATE POLICY "Public read brand_story" ON public.brand_story FOR SELECT USING (true);
 
 -- Public INSERT for newsletter subscriptions
 CREATE POLICY "Public insert subscribers" ON public.subscribers FOR INSERT WITH CHECK (true);
@@ -250,6 +271,7 @@ CREATE POLICY "Admin all products" ON public.products FOR ALL TO authenticated U
 CREATE POLICY "Admin all product_images" ON public.product_images FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Admin all product_variants" ON public.product_variants FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Admin all subscribers" ON public.subscribers FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin all brand_story" ON public.brand_story FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- Insert initial default site settings if none exist
 INSERT INTO public.site_settings (site_name, tagline, meta_title, meta_description)

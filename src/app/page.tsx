@@ -15,6 +15,7 @@ import {
   getSizes,
   getLatestProducts,
   getSiteSettings,
+  getBrandStory,
 } from '@/lib/supabase';
 import type { NavigationItem } from '@/lib/types';
 
@@ -51,6 +52,7 @@ export default async function HomePage() {
     categories,
     sizes,
     newArrivals,
+    brandStory,
   ] = await Promise.all([
     getSiteSettings(),
     getAnnouncements(),
@@ -60,6 +62,7 @@ export default async function HomePage() {
     getCategories(),
     getSizes(),
     getLatestProducts(4),
+    getBrandStory(),
   ]);
 
   const navigationItems = dbNavItems.length > 0 ? dbNavItems : fallbackNav;
@@ -115,7 +118,7 @@ export default async function HomePage() {
         <FeaturedProductsGrid />
 
         {/* J. BRAND STORY */}
-        <BrandStory story={null} />
+        <BrandStory story={brandStory} />
 
         {/* J. NEWSLETTER */}
         <Newsletter

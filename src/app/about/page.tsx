@@ -5,6 +5,7 @@ import {
   getSiteSettings,
   getAnnouncements,
   getNavigationItems,
+  getBrandStory,
 } from '@/lib/supabase';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import Header from '@/components/layout/Header';
@@ -16,10 +17,11 @@ export const metadata: Metadata = {
 };
 
 export default async function AboutPage() {
-  const [settings, announcements, navigationItems] = await Promise.all([
+  const [settings, announcements, navigationItems, brandStory] = await Promise.all([
     getSiteSettings(),
     getAnnouncements(),
     getNavigationItems(),
+    getBrandStory(),
   ]);
 
   return (
@@ -45,73 +47,65 @@ export default async function AboutPage() {
         </div>
 
         {/* Founder Letter & Brand Card Block (matching reference) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-center mb-24">
-          <div className="w-full flex justify-center">
-            <div className="relative w-full max-w-[500px] aspect-square rounded-2xl overflow-hidden shadow-[0_12px_40px_rgba(44,29,19,0.12)] border border-[#3A0F17]/20">
-              <Image
-                src="/zarish-brand-card.webp"
-                alt="ZARISH by Nehala Mufeed"
-                fill
-                sizes="(max-width: 768px) 100vw, 500px"
-                className="object-cover"
-                priority
-              />
+        {brandStory?.is_active !== false && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-center mb-24">
+            <div className="w-full flex justify-center">
+              <div className="relative w-full max-w-[500px] aspect-square rounded-2xl overflow-hidden shadow-[0_12px_40px_rgba(44,29,19,0.12)] border border-[#3A0F17]/20">
+                <Image
+                  src={brandStory?.image_url || '/zarish-brand-card.webp'}
+                  alt={brandStory?.image_alt || 'ZARISH by Nehala Mufeed'}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 500px"
+                  className="object-cover"
+                  priority
+                />
+              </div>
+            </div>
+
+            <div className="w-full max-w-[560px]">
+              <span className="text-[11px] tracking-[0.22em] uppercase text-[#7B5B3A] font-semibold block mb-3">
+                {brandStory?.eyebrow || 'A NOTE FROM OUR FOUNDER'}
+              </span>
+              <h2 className="font-display text-2xl sm:text-3xl lg:text-[34px] font-bold text-[#2C1D13] tracking-tight mb-5">
+                {brandStory?.heading || brandStory?.title || 'Dear Zarish Family,'}
+              </h2>
+
+              <div className="space-y-4 text-xs sm:text-[14px] lg:text-[15px] leading-relaxed sm:leading-[1.8] text-[#5C4A3E]">
+                {(brandStory?.paragraphs && brandStory.paragraphs.length > 0
+                  ? brandStory.paragraphs
+                  : [
+                      'Zarish started as a small dream my husband and I shared. While building it, we were also learning to be parents, and our little girl was growing alongside us. There were days we wished we could give her more of our time, but she quietly waited, adjusted, and grew with us. Looking back, I realise she didn’t just grow up alongside Zarish—she grew up with it.',
+                      'I’m forever grateful to my husband for being my strength through every high and low, believing in me when I doubted myself, and always encouraging me to keep going. And to our Zarish family, thank you for being part of this journey. Every order, kind message, share, recommendation, and every person who believed in us has meant more than you know.',
+                      'We started Zarish with a dream, and today, we carry it with gratitude. Every order reminds us that something we built with love has found a place in someone else’s life. As we continue to grow, we’re grateful to have you with us. Thank you for being a part of our Zarish story.',
+                    ]
+                ).map((para, idx) => (
+                  <p key={idx}>{para}</p>
+                ))}
+              </div>
+
+              <div className="mt-6 pt-3 border-t border-[#F0E6DC]">
+                <p className="font-serif italic text-sm text-[#7B5B3A]">
+                  {brandStory?.sign_off || 'With love,'}
+                </p>
+                <p className="font-display text-lg sm:text-xl font-bold text-[#2C1D13] mt-0.5">
+                  {brandStory?.founder_name || 'Nehala Mufeed'}
+                </p>
+                <p className="text-[11px] sm:text-xs uppercase tracking-[0.22em] text-[#8C7B6B] font-semibold mt-0.5">
+                  {brandStory?.founder_role || 'Founder, Zarish'}
+                </p>
+              </div>
+
+              <div className="mt-8">
+                <Link
+                  href={brandStory?.cta_url || '/products'}
+                  className="inline-flex items-center justify-center px-8 py-3.5 bg-[#2C1D13] text-white text-xs sm:text-sm font-medium tracking-wider uppercase rounded-xl hover:bg-[#7B5B3A] transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                >
+                  {brandStory?.cta_text || 'Shop now'}
+                </Link>
+              </div>
             </div>
           </div>
-
-          <div className="w-full max-w-[560px]">
-            <span className="text-[11px] tracking-[0.22em] uppercase text-[#7B5B3A] font-semibold block mb-3">
-              A NOTE FROM OUR FOUNDER
-            </span>
-            <h2 className="font-display text-2xl sm:text-3xl lg:text-[34px] font-bold text-[#2C1D13] tracking-tight mb-5">
-              Dear Zarish Family,
-            </h2>
-
-            <div className="space-y-4 text-xs sm:text-[14px] lg:text-[15px] leading-relaxed sm:leading-[1.8] text-[#5C4A3E]">
-              <p>
-                Zarish started as a small dream my husband and I shared. While building it, we were
-                also learning to be parents, and our little girl was growing alongside us. There
-                were days we wished we could give her more of our time, but she quietly waited,
-                adjusted, and grew with us. Looking back, I realise she didn’t just grow up alongside
-                Zarish—she grew up with it.
-              </p>
-
-              <p>
-                I’m forever grateful to my husband for being my strength through every high and low,
-                believing in me when I doubted myself, and always encouraging me to keep going. And
-                to our Zarish family, thank you for being part of this journey. Every order, kind
-                message, share, recommendation, and every person who believed in us has meant more
-                than you know.
-              </p>
-
-              <p>
-                We started Zarish with a dream, and today, we carry it with gratitude. Every order
-                reminds us that something we built with love has found a place in someone else’s
-                life. As we continue to grow, we’re grateful to have you with us. Thank you for
-                being a part of our Zarish story.
-              </p>
-            </div>
-
-            <div className="mt-6 pt-3 border-t border-[#F0E6DC]">
-              <p className="font-serif italic text-sm text-[#7B5B3A]">With love,</p>
-              <p className="font-display text-lg sm:text-xl font-bold text-[#2C1D13] mt-0.5">
-                Nehala Mufeed
-              </p>
-              <p className="text-[11px] sm:text-xs uppercase tracking-[0.22em] text-[#8C7B6B] font-semibold mt-0.5">
-                Founder, Zarish
-              </p>
-            </div>
-
-            <div className="mt-8">
-              <Link
-                href="/products"
-                className="inline-flex items-center justify-center px-8 py-3.5 bg-[#2C1D13] text-white text-xs sm:text-sm font-medium tracking-wider uppercase rounded-xl hover:bg-[#7B5B3A] transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
-              >
-                Shop now
-              </Link>
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* Brand Narrative Block */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-12 items-center mb-20 pt-8 border-t border-[#EBDCD0]">

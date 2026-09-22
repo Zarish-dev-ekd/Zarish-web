@@ -13,6 +13,7 @@ const adminNav = [
   { label: 'Categories', href: '/admin/categories', icon: 'package' },
   { label: 'Size & Color', href: '/admin/sizes', icon: 'size' },
   { label: 'Hero Banner', href: '/admin/hero', icon: 'image' },
+  { label: 'Brand Story', href: '/admin/brand-story', icon: 'heart' },
   { label: 'Announcements', href: '/admin/announcements', icon: 'truck' },
   { label: 'Benefits', href: '/admin/benefits', icon: 'shield' },
   { label: 'Settings', href: '/admin/settings', icon: 'settings' },

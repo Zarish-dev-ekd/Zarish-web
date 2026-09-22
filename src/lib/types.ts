@@ -214,16 +214,21 @@ export interface BlogPost {
 
 // ─── Brand Story ─────────────────────────────────────────────
 export interface BrandStoryData {
-  id: string;
-  eyebrow: string;
-  title: string;
-  description: string;
+  id?: string;
+  eyebrow?: string;
+  heading?: string;
+  title?: string;
+  description?: string;
+  paragraphs?: string[];
+  sign_off?: string;
+  founder_name?: string;
+  founder_role?: string;
   image_url: string;
   image_alt: string;
   cta_text: string;
   cta_url: string;
   is_active: boolean;
-  updated_at: string;
+  updated_at?: string;
 }
 
 // ─── Newsletter Config ──────────────────────────────────────
