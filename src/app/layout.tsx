@@ -10,6 +10,7 @@ export const viewport: Viewport = {
 };
 
 import PreIntro from '@/components/common/PreIntro';
+import NavigationProgress from '@/components/common/NavigationProgress';
 import { WishlistProvider } from '@/context/WishlistContext';
 import WishlistDrawer from '@/components/wishlist/WishlistDrawer';
 import { CartProvider } from '@/context/CartContext';
@@ -25,8 +26,7 @@ const cinzel = Cinzel({
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  style: ['normal', 'italic'],
+  weight: 'variable',
   variable: '--font-playfair',
   display: 'swap',
 });
@@ -90,6 +90,7 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning className="bg-white">
+        <NavigationProgress />
         <CartProvider>
           <WishlistProvider>
             <PreIntro />

@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import type { NavigationItem } from '@/lib/types';
 import { IconSearch, IconUser, IconHeart, IconShoppingBag, IconMenu, IconX, IconChevronRight, IconTruck } from '@/components/icons';
@@ -27,6 +27,7 @@ interface HeaderProps {
 
 export default function Header({ navigationItems = [], cartItemCount = 0 }: HeaderProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const supabase = createClient();
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -155,16 +156,26 @@ export default function Header({ navigationItems = [], cartItemCount = 0 }: Head
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8" aria-label="Main navigation">
-            {activeNavItems.map((item) => (
-              <Link
-                key={item.id}
-                href={item.href}
-                className="relative py-2 text-[11px] tracking-wide  text-[#2C1D13] hover:text-[#7B5B3A] transition-colors after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1px] after:bg-[#7B5B3A] hover:after:w-full after:transition-all after:duration-300 uppercase"
-                {...(item.open_in_new_tab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {activeNavItems.map((item) => {
+              const isActive = item.href === '/'
+                ? pathname === '/'
+                : pathname === item.href || pathname.startsWith(item.href + '/');
+              return (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className={`relative py-2 text-[11px] tracking-wide transition-colors uppercase after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:bg-[#7B5B3A] after:transition-all after:duration-300 ${
+                    isActive
+                      ? 'text-[#2C1D13] font-semibold after:w-full'
+                      : 'text-[#2C1D13] hover:text-[#7B5B3A] after:w-0 hover:after:w-full'
+                  }`}
+                  aria-current={isActive ? 'page' : undefined}
+                  {...(item.open_in_new_tab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Action Icons */}
@@ -408,17 +419,27 @@ export default function Header({ navigationItems = [], cartItemCount = 0 }: Head
 
         <nav className="py-4" aria-label="Mobile navigation">
 
-          {activeNavItems.map((item) => (
-            <Link
-              key={item.id}
-              href={item.href}
-              className="flex items-center justify-between px-6 py-3 text-base text-[#2C1D13] hover:bg-[#F3ECE2] transition-colors"
-              onClick={closeDrawer}
-            >
-              {item.label}
-              <IconChevronRight size={14} />
-            </Link>
-          ))}
+          {activeNavItems.map((item) => {
+              const isActive = item.href === '/'
+                ? pathname === '/'
+                : pathname === item.href || pathname.startsWith(item.href + '/');
+              return (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className={`flex items-center justify-between px-6 py-3 text-base transition-colors ${
+                    isActive
+                      ? 'text-[#7B5B3A] font-semibold bg-[#FAF4EE] border-l-2 border-[#7B5B3A]'
+                      : 'text-[#2C1D13] hover:bg-[#F3ECE2]'
+                  }`}
+                  onClick={closeDrawer}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  {item.label}
+                  <IconChevronRight size={14} />
+                </Link>
+              );
+            })}
 
           <div className="h-[1px] bg-[#E2D5C7] my-4 mx-6" />
 
