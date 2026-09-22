@@ -44,8 +44,77 @@ export default async function AboutPage() {
           </p>
         </div>
 
+        {/* Founder Letter & Brand Card Block (matching reference) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-center mb-24">
+          <div className="w-full flex justify-center">
+            <div className="relative w-full max-w-[500px] aspect-square rounded-2xl overflow-hidden shadow-[0_12px_40px_rgba(44,29,19,0.12)] border border-[#3A0F17]/20">
+              <Image
+                src="/zarish-brand-card.webp"
+                alt="ZARISH by Nehala Mufeed"
+                fill
+                sizes="(max-width: 768px) 100vw, 500px"
+                className="object-cover"
+                priority
+              />
+            </div>
+          </div>
+
+          <div className="w-full max-w-[560px]">
+            <span className="text-[11px] tracking-[0.22em] uppercase text-[#7B5B3A] font-semibold block mb-3">
+              A NOTE FROM OUR FOUNDER
+            </span>
+            <h2 className="font-display text-2xl sm:text-3xl lg:text-[34px] font-bold text-[#2C1D13] tracking-tight mb-5">
+              Dear Zarish Family,
+            </h2>
+
+            <div className="space-y-4 text-xs sm:text-[14px] lg:text-[15px] leading-relaxed sm:leading-[1.8] text-[#5C4A3E]">
+              <p>
+                Zarish started as a small dream my husband and I shared. While building it, we were
+                also learning to be parents, and our little girl was growing alongside us. There
+                were days we wished we could give her more of our time, but she quietly waited,
+                adjusted, and grew with us. Looking back, I realise she didn’t just grow up alongside
+                Zarish—she grew up with it.
+              </p>
+
+              <p>
+                I’m forever grateful to my husband for being my strength through every high and low,
+                believing in me when I doubted myself, and always encouraging me to keep going. And
+                to our Zarish family, thank you for being part of this journey. Every order, kind
+                message, share, recommendation, and every person who believed in us has meant more
+                than you know.
+              </p>
+
+              <p>
+                We started Zarish with a dream, and today, we carry it with gratitude. Every order
+                reminds us that something we built with love has found a place in someone else’s
+                life. As we continue to grow, we’re grateful to have you with us. Thank you for
+                being a part of our Zarish story.
+              </p>
+            </div>
+
+            <div className="mt-6 pt-3 border-t border-[#F0E6DC]">
+              <p className="font-serif italic text-sm text-[#7B5B3A]">With love,</p>
+              <p className="font-display text-lg sm:text-xl font-bold text-[#2C1D13] mt-0.5">
+                Nehala Mufeed
+              </p>
+              <p className="text-[11px] sm:text-xs uppercase tracking-[0.22em] text-[#8C7B6B] font-semibold mt-0.5">
+                Founder, Zarish
+              </p>
+            </div>
+
+            <div className="mt-8">
+              <Link
+                href="/products"
+                className="inline-flex items-center justify-center px-8 py-3.5 bg-[#2C1D13] text-white text-xs sm:text-sm font-medium tracking-wider uppercase rounded-xl hover:bg-[#7B5B3A] transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+              >
+                Shop now
+              </Link>
+            </div>
+          </div>
+        </div>
+
         {/* Brand Narrative Block */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-12 items-center mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-12 items-center mb-20 pt-8 border-t border-[#EBDCD0]">
           <div className="relative w-full h-[320px] sm:h-[360px] md:h-[380px] rounded-2xl overflow-hidden border border-[#EBDCD0]">
             <Image
               src="/zarish.png"
@@ -67,8 +136,8 @@ export default async function AboutPage() {
               Every collection is thoughtfully curated — from the selection of breathable Korean and Arabian nida fabrics to delicate cuff embroidery, precision seam lines, and flattering drape silhouettes that move with you throughout your day.
             </p>
 
-            <Link href="/products" className="inline-flex items-center justify-center font-medium tracking-wide uppercase rounded-full transition-all whitespace-nowrap cursor-pointer text-xs sm:text-sm px-6 py-2.5 sm:px-7 sm:py-3 bg-[#3D2B1F] text-white hover:bg-[#7B5B3A] hover:-translate-y-0.5 hover:shadow-md">
-              Explore Our Creations
+            <Link href="/collections" className="inline-flex items-center justify-center font-medium tracking-wide uppercase rounded-full transition-all whitespace-nowrap cursor-pointer text-xs sm:text-sm px-6 py-2.5 sm:px-7 sm:py-3 bg-[#3D2B1F] text-white hover:bg-[#7B5B3A] hover:-translate-y-0.5 hover:shadow-md">
+              Explore Our Collections
             </Link>
           </div>
         </div>
