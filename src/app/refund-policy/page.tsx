@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 };
 
 export const revalidate = 0; // Fresh policy on load
+export const dynamic = 'force-dynamic';
 
 export default async function RefundPolicyPage() {
   const [settings, announcements, navigationItems, policy] = await Promise.all([
@@ -54,21 +55,14 @@ export default async function RefundPolicyPage() {
     ],
   };
 
-  const section3 = policy?.section3 || {
-    heading: '3. Refund Processing Timeline',
-    intro: 'Once your unboxing verification is approved by our quality control team:',
-    approval_text: 'Approval: Our team reviews your video and notifies you within 24 business hours.',
-    bank_credit_text:
-      'Bank Credit: The monetary refund is processed back to the original payment method (credit card, debit card, UPI, or net banking) via our payment gateway partner Razorpay. The credit typically reflects in your bank statement within 5 to 7 business days depending on your issuing bank.',
-  };
-
   const section4 = policy?.section4 || {
-    heading: '4. How to Initiate a Refund Request',
+    heading: '3. How to Initiate a Refund Request',
     intro: 'Send your order reference number and unboxing video directly to our support team:',
     whatsapp: settings?.social_whatsapp || '+91 9562292945',
     email: settings?.contact_email || 'zarish2025co@gmail.com',
     hours: 'Monday – Saturday, 9:30 AM – 7:00 PM IST',
   };
+  const contactHeading = (section4.heading || '3. How to Initiate a Refund Request').replace(/^4\./, '3.');
 
   return (
     <div className="min-h-screen bg-[#FAF6F0] flex flex-col">
@@ -139,29 +133,11 @@ export default async function RefundPolicyPage() {
               </section>
             )}
 
-            {/* Section 3: Refund Processing Timeline */}
-            {section3 && (
-              <section>
-                <h2 className="font-display text-lg font-bold text-[#2C1D13] mb-2.5">
-                  {section3.heading}
-                </h2>
-                {section3.intro && <p>{section3.intro}</p>}
-                <ul className="list-disc pl-5 space-y-2 text-[#6B5744] mt-2">
-                  {section3.approval_text && (
-                    <li>{section3.approval_text}</li>
-                  )}
-                  {section3.bank_credit_text && (
-                    <li>{section3.bank_credit_text}</li>
-                  )}
-                </ul>
-              </section>
-            )}
-
-            {/* Section 4: Contact & Initiation */}
+            {/* Section 3: Contact & Initiation */}
             {section4 && (
               <section className="bg-[#FAF8F5] p-5 sm:p-6 rounded-2xl border border-[#E2D5C7]">
                 <h2 className="font-display text-base font-bold text-[#2C1D13] mb-2">
-                  {section4.heading}
+                  {contactHeading}
                 </h2>
                 {section4.intro && (
                   <p className="text-xs text-[#6B5744] mb-3">{section4.intro}</p>

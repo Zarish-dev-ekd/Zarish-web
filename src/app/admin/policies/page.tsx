@@ -22,7 +22,7 @@ interface RefundPolicyForm {
     intro: string;
     points: string[];
   };
-  section3: {
+  section3?: {
     heading: string;
     intro: string;
     approval_text: string;
@@ -66,15 +66,8 @@ const DEFAULT_REFUND_POLICY: RefundPolicyForm = {
       'Products without an authentic, continuous unboxing video.',
     ],
   },
-  section3: {
-    heading: '3. Refund Processing Timeline',
-    intro: 'Once your unboxing verification is approved by our quality control team:',
-    approval_text: 'Approval: Our team reviews your video and notifies you within 24 business hours.',
-    bank_credit_text:
-      'Bank Credit: The monetary refund is processed back to the original payment method (credit card, debit card, UPI, or net banking) via our payment gateway partner Razorpay. The credit typically reflects in your bank statement within 5 to 7 business days depending on your issuing bank.',
-  },
   section4: {
-    heading: '4. How to Initiate a Refund Request',
+    heading: '3. How to Initiate a Refund Request',
     intro: 'Send your order reference number and unboxing video directly to our support team:',
     whatsapp: '+91 9562292945',
     email: 'zarish2025co@gmail.com',
@@ -137,10 +130,6 @@ export default function AdminPoliciesPage() {
   const [s2Heading, setS2Heading] = useState(DEFAULT_REFUND_POLICY.section2.heading);
   const [s2Intro, setS2Intro] = useState(DEFAULT_REFUND_POLICY.section2.intro);
   const [s2PointsText, setS2PointsText] = useState(DEFAULT_REFUND_POLICY.section2.points.join('\n'));
-  const [s3Heading, setS3Heading] = useState(DEFAULT_REFUND_POLICY.section3.heading);
-  const [s3Intro, setS3Intro] = useState(DEFAULT_REFUND_POLICY.section3.intro);
-  const [s3Approval, setS3Approval] = useState(DEFAULT_REFUND_POLICY.section3.approval_text);
-  const [s3BankCredit, setS3BankCredit] = useState(DEFAULT_REFUND_POLICY.section3.bank_credit_text);
   const [s4Heading, setS4Heading] = useState(DEFAULT_REFUND_POLICY.section4.heading);
   const [s4Intro, setS4Intro] = useState(DEFAULT_REFUND_POLICY.section4.intro);
   const [s4Whatsapp, setS4Whatsapp] = useState(DEFAULT_REFUND_POLICY.section4.whatsapp);
@@ -193,14 +182,8 @@ export default function AdminPoliciesPage() {
               setS2Intro(p.section2.intro || DEFAULT_REFUND_POLICY.section2.intro);
               if (Array.isArray(p.section2.points)) setS2PointsText(p.section2.points.join('\n'));
             }
-            if (p.section3) {
-              setS3Heading(p.section3.heading || DEFAULT_REFUND_POLICY.section3.heading);
-              setS3Intro(p.section3.intro || DEFAULT_REFUND_POLICY.section3.intro);
-              setS3Approval(p.section3.approval_text || DEFAULT_REFUND_POLICY.section3.approval_text);
-              setS3BankCredit(p.section3.bank_credit_text || DEFAULT_REFUND_POLICY.section3.bank_credit_text);
-            }
             if (p.section4) {
-              setS4Heading(p.section4.heading || DEFAULT_REFUND_POLICY.section4.heading);
+              setS4Heading((p.section4.heading || DEFAULT_REFUND_POLICY.section4.heading).replace(/^4\./, '3.'));
               setS4Intro(p.section4.intro || DEFAULT_REFUND_POLICY.section4.intro);
               setS4Whatsapp(p.section4.whatsapp || DEFAULT_REFUND_POLICY.section4.whatsapp);
               setS4Email(p.section4.email || DEFAULT_REFUND_POLICY.section4.email);
@@ -264,14 +247,8 @@ export default function AdminPoliciesPage() {
           intro: s2Intro.trim(),
           points: s2PointsText.split('\n').map((p) => p.trim()).filter(Boolean),
         },
-        section3: {
-          heading: s3Heading.trim(),
-          intro: s3Intro.trim(),
-          approval_text: s3Approval.trim(),
-          bank_credit_text: s3BankCredit.trim(),
-        },
         section4: {
-          heading: s4Heading.trim(),
+          heading: s4Heading.trim().replace(/^4\./, '3.'),
           intro: s4Intro.trim(),
           whatsapp: s4Whatsapp.trim(),
           email: s4Email.trim(),
@@ -556,24 +533,60 @@ export default function AdminPoliciesPage() {
                 </div>
               </div>
 
-              {/* Section 4 */}
+              {/* Section 3 (formerly Section 4) */}
               <div className="bg-white border border-[#E8E0D5] rounded-xl p-6 shadow-sm">
-                <h2 className="text-base font-semibold text-[#2C241E] m-0 mb-4">Support Contact Details</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    value={s4Whatsapp}
-                    onChange={(e) => setS4Whatsapp(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E]"
-                    placeholder="WhatsApp"
-                  />
-                  <input
-                    type="email"
-                    value={s4Email}
-                    onChange={(e) => setS4Email(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E]"
-                    placeholder="Email"
-                  />
+                <h2 className="text-base font-semibold text-[#2C241E] m-0 mb-4">Section 3: How to Initiate a Refund Request</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#2C241E] mb-1">Section Heading</label>
+                    <input
+                      type="text"
+                      value={s4Heading}
+                      onChange={(e) => setS4Heading(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#2C241E] mb-1">Intro Text</label>
+                    <input
+                      type="text"
+                      value={s4Intro}
+                      onChange={(e) => setS4Intro(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-[#2C241E] mb-1">WhatsApp Number</label>
+                      <input
+                        type="text"
+                        value={s4Whatsapp}
+                        onChange={(e) => setS4Whatsapp(e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E]"
+                        placeholder="WhatsApp"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#2C241E] mb-1">Support Email</label>
+                      <input
+                        type="email"
+                        value={s4Email}
+                        onChange={(e) => setS4Email(e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E]"
+                        placeholder="Email"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#2C241E] mb-1">Support Hours</label>
+                    <input
+                      type="text"
+                      value={s4Hours}
+                      onChange={(e) => setS4Hours(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E]"
+                      placeholder="Support Hours"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -610,6 +623,18 @@ export default function AdminPoliciesPage() {
                     <ul className="list-disc pl-4 space-y-1 text-[11px]">
                       {previewS1Points.map((pt, i) => <li key={i}>{pt}</li>)}
                     </ul>
+                  </div>
+                  <div>
+                    <p className="font-bold text-[#2C1D13]">{s2Heading}</p>
+                    <ul className="list-disc pl-4 space-y-1 text-[11px]">
+                      {previewS2Points.map((pt, i) => <li key={i}>{pt}</li>)}
+                    </ul>
+                  </div>
+                  <div className="p-3 bg-[#FAF8F5] border border-[#E2D5C7] rounded">
+                    <p className="font-bold text-[#2C1D13]">{s4Heading}</p>
+                    <p className="text-[10px] text-[#6B5744] mt-0.5">{s4Intro}</p>
+                    <p className="text-[10px] mt-1"><strong>WhatsApp:</strong> {s4Whatsapp}</p>
+                    <p className="text-[10px]"><strong>Email:</strong> {s4Email}</p>
                   </div>
                 </div>
               </div>
