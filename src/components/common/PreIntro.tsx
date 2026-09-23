@@ -115,12 +115,20 @@ export default function PreIntro({
             transform: phase >= 1 ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.94)',
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/logo-zarish.png"
-            alt="ZARISH by Nehala Mufeed"
-            className="w-56 sm:w-72 md:w-84 h-auto object-contain filter drop-shadow-[0_4px_20px_rgba(123,91,58,0.18)] drop-shadow-[0_0_35px_rgba(212,175,55,0.25)]"
-          />
+          <div className="relative inline-flex items-start">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo-zarish.png"
+              alt="ZARISH by Nehala Mufeed"
+              className="w-56 sm:w-72 md:w-84 h-auto object-contain filter drop-shadow-[0_4px_20px_rgba(123,91,58,0.18)] drop-shadow-[0_0_35px_rgba(212,175,55,0.25)]"
+            />
+            <span
+              className="text-[10px] sm:text-[12px] md:text-[14px] font-sans font-medium text-[#7B5B3A] select-none -translate-y-0.5 sm:-translate-y-1 ml-0.5 filter drop-shadow-[0_2px_8px_rgba(123,91,58,0.25)]"
+              aria-hidden="true"
+            >
+              ™
+            </span>
+          </div>
         </div>
       </div>
 

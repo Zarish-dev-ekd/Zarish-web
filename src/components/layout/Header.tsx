@@ -144,14 +144,19 @@ export default function Header({ navigationItems = [], cartItemCount = 0 }: Head
             className="shrink-0 flex items-center justify-center max-md:justify-center py-1"
             aria-label="ZARISH - Home"
           >
-            <Image
-              src="/logo-zarish.png"
-              alt="ZARISH by Nehala Mufeed"
-              width={220}
-              height={56}
-              priority
-              className="h-10 sm:h-11 md:h-12 w-auto max-w-[190px] sm:max-w-none object-contain transition-all"
-            />
+            <span className="relative inline-flex items-start">
+              <Image
+                src="/logo-zarish.png"
+                alt="ZARISH by Nehala Mufeed"
+                width={220}
+                height={56}
+                priority
+                className="h-10 sm:h-11 md:h-12 w-auto max-w-[190px] sm:max-w-none object-contain transition-all"
+              />
+              <span className="text-[8px] sm:text-[9px] md:text-[10px] font-sans font-medium text-[#7B5B3A] select-none -translate-y-0.5 ml-0.5" aria-hidden="true">
+                ™
+              </span>
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -404,13 +409,18 @@ export default function Header({ navigationItems = [], cartItemCount = 0 }: Head
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2D5C7]">
           <Link href="/" className="shrink-0" onClick={closeDrawer} aria-label="ZARISH - Home">
-            <Image
-              src="/logo-zarish.png"
-              alt="ZARISH by Nehala Mufeed"
-              width={160}
-              height={40}
-              className="h-8 sm:h-9 w-auto object-contain"
-            />
+            <span className="relative inline-flex items-start">
+              <Image
+                src="/logo-zarish.png"
+                alt="ZARISH by Nehala Mufeed"
+                width={160}
+                height={40}
+                className="h-8 sm:h-9 w-auto object-contain"
+              />
+              <span className="text-[7px] sm:text-[8px] font-sans font-medium text-[#7B5B3A] select-none -translate-y-0.5 ml-0.5" aria-hidden="true">
+                ™
+              </span>
+            </span>
           </Link>
           <button className="w-8 h-8 flex items-center justify-center text-[#2C1D13] [&>svg]:w-5 [&>svg]:h-5" onClick={closeDrawer} aria-label="Close navigation menu">
             <IconX />
