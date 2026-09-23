@@ -72,13 +72,18 @@ export default function Footer({ brandDescription, socialLinks = {} }: FooterPro
           <div className="lg:col-span-2 flex flex-col justify-between">
             <div>
               <Link href="/" className="inline-block mb-2.5" aria-label="ZARISH - Home">
-                <Image
-                  src="/logo-zarish.png"
-                  alt="ZARISH by Nehala Mufeed"
-                  width={140}
-                  height={34}
-                  style={{ height: '30px', width: 'auto', filter: 'brightness(0) invert(1)' }}
-                />
+                <span className="relative inline-flex items-start">
+                  <Image
+                    src="/logo-zarish.png"
+                    alt="ZARISH by Nehala Mufeed"
+                    width={140}
+                    height={34}
+                    style={{ height: '30px', width: 'auto', filter: 'brightness(0) invert(1)' }}
+                  />
+                  <span className="text-[7px] sm:text-[8px] font-sans font-medium text-[#E8DDD4] select-none -translate-y-0.5 ml-0.5" aria-hidden="true">
+                    ™
+                  </span>
+                </span>
               </Link>
 
               <p className="text-xs text-[#9E8E7E] leading-relaxed max-w-sm mb-3.5">
