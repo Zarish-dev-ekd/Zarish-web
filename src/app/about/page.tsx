@@ -50,9 +50,9 @@ export default async function AboutPage() {
         {brandStory?.is_active !== false && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-center mb-24">
             <div className="w-full flex justify-center">
-              <div className="relative w-full max-w-[500px] aspect-square rounded-2xl overflow-hidden shadow-[0_12px_40px_rgba(44,29,19,0.12)] border border-[#3A0F17]/20">
+              <div className="relative w-full max-w-[500px] aspect-square rounded-2xl overflow-hidden shadow-[0_16px_40px_rgba(104,60,22,0.07)] border border-[#EADCCB]">
                 <Image
-                  src={brandStory?.image_url || '/zarish-brand-card.webp'}
+                  src={brandStory?.image_url || '/zarish-luxury-card.webp'}
                   alt={brandStory?.image_alt || 'ZARISH by Nehala Mufeed'}
                   fill
                   sizes="(max-width: 768px) 100vw, 500px"

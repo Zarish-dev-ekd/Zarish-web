@@ -1,0 +1,42 @@
+{
+  "name": "ZARISH by Nehala Mufeed",
+  "short_name": "ZARISH",
+  "description": "Premium modest fashion — co-ord sets, party wear & everyday graceful pieces crafted with love.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F6EDDC",
+  "theme_color": "#F6EDDC",
+  "orientation": "portrait-primary",
+  "categories": [
+    "shopping",
+    "fashion"
+  ],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/og-image.jpg",
+      "sizes": "1200x630",
+      "type": "image/jpeg",
+      "label": "ZARISH Homepage"
+    }
+  ]
+}

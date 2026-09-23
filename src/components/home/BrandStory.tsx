@@ -18,7 +18,7 @@ export default function BrandStory({ story }: BrandStoryProps) {
     return null;
   }
 
-  const imageUrl = story?.image_url || '/zarish-brand-card.webp';
+  const imageUrl = story?.image_url || '/zarish-luxury-card.webp';
   const imageAlt = story?.image_alt || 'ZARISH by Nehala Mufeed';
   const heading = story?.heading || story?.title || 'Dear Zarish Family,';
   const signOff = story?.sign_off || 'With love,';
@@ -48,7 +48,7 @@ export default function BrandStory({ story }: BrandStoryProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-center">
           {/* Left Column: Luxury Brand Card */}
           <div className="w-full flex justify-center">
-            <div className="relative w-full max-w-[520px] aspect-square rounded-2xl overflow-hidden shadow-[0_12px_40px_rgba(44,29,19,0.12)] border border-[#3A0F17]/20 group">
+            <div className="relative w-full max-w-[520px] aspect-square rounded-2xl overflow-hidden shadow-[0_16px_40px_rgba(104,60,22,0.07)] border border-[#EADCCB] group">
               <Image
                 src={imageUrl}
                 alt={imageAlt}

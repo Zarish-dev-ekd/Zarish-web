@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { createClient } from '@/utils/supabase/server';
 import fs from 'fs';
 import path from 'path';
@@ -17,7 +19,7 @@ const DEFAULT_STORY = {
   sign_off: 'With love,',
   founder_name: 'Nehala Mufeed',
   founder_role: 'Founder, Zarish',
-  image_url: '/zarish-brand-card.webp',
+  image_url: '/zarish-luxury-card.webp',
   image_alt: 'ZARISH by Nehala Mufeed',
   cta_text: 'Shop now',
   cta_url: '/products',
@@ -96,23 +98,35 @@ export async function POST(req: Request) {
     let dbError = null;
 
     try {
-      const supabase = await createClient();
+      // Use admin client with service role key to guarantee write permission
+      const supabase = createAdminClient();
       const { data: existing } = await supabase.from('brand_story').select('id').limit(1).maybeSingle();
+
+      // Exclude string ID so Postgres doesn't complain about invalid UUID syntax
+      const { id: _id, ...fieldsToSave } = payload;
 
       if (existing?.id) {
         const { error } = await supabase
           .from('brand_story')
-          .update(payload)
+          .update(fieldsToSave)
           .eq('id', existing.id);
         if (!error) supabaseSuccess = true;
         else dbError = error.message;
       } else {
-        const { error } = await supabase.from('brand_story').insert([payload]);
+        const { error } = await supabase.from('brand_story').insert([fieldsToSave]);
         if (!error) supabaseSuccess = true;
         else dbError = error.message;
       }
     } catch (e: any) {
       dbError = e?.message;
+    }
+
+    // Bust the Next.js cache so changes immediately go live on homepage and about page
+    try {
+      revalidatePath('/');
+      revalidatePath('/about');
+    } catch {
+      // Ignore cache revalidation errors
     }
 
     return NextResponse.json({

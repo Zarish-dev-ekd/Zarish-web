@@ -433,7 +433,7 @@ export async function getBrandStory(): Promise<BrandStoryData | null> {
     sign_off: 'With love,',
     founder_name: 'Nehala Mufeed',
     founder_role: 'Founder, Zarish',
-    image_url: '/zarish-brand-card.webp',
+    image_url: '/zarish-luxury-card.webp',
     image_alt: 'ZARISH by Nehala Mufeed',
     cta_text: 'Shop now',
     cta_url: '/products',

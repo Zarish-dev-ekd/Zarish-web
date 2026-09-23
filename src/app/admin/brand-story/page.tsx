@@ -212,49 +212,88 @@ export default function AdminBrandStoryPage() {
             </div>
 
             {/* Left Card Image Section */}
+            {/* Left Card Image Section */}
             <div className="bg-white border border-[#E8E0D5] rounded-xl p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 max-sm:flex-col max-sm:items-start max-sm:gap-2">
                 <div>
                   <h2 className="text-base font-semibold text-[#2C241E] m-0">
                     Luxury Card Image (Left Side)
                   </h2>
                   <p className="text-xs text-[#8C7B6B] mt-1 mb-0">
-                    Square card (1:1 aspect ratio) shown beside the letter.
+                    Square card (1:1 ratio) displayed alongside the founder&apos;s letter on Homepage and About page.
                   </p>
                 </div>
-                {imageUrl !== DEFAULT_IMAGE && (
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={handleResetToDefaultImage}
-                    className="text-xs text-[#7B5B3A] hover:underline font-semibold"
+                    onClick={() => {
+                      setImageUrl('/zarish-luxury-card.webp');
+                      setImageAlt('ZARISH by Nehala Mufeed');
+                    }}
+                    className="text-xs px-2.5 py-1 rounded bg-[#F8F5F0] hover:bg-[#EADCCB] text-[#7B5B3A] font-semibold border border-[#EADCCB] transition-colors"
                   >
-                    Reset to Velvet Logo Card
+                    ✨ Use Luxury Card
                   </button>
-                )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageUrl('/zarish-brand-card-minimal.webp');
+                      setImageAlt('ZARISH by Nehala Mufeed');
+                    }}
+                    className="text-xs px-2.5 py-1 rounded bg-[#F8F5F0] hover:bg-[#EADCCB] text-[#7B5B3A] font-semibold border border-[#EADCCB] transition-colors"
+                  >
+                    🌿 Minimal Card
+                  </button>
+                </div>
               </div>
 
               <div className="flex items-start gap-5 max-sm:flex-col">
-                <div className="relative w-36 h-36 rounded-xl overflow-hidden border border-[#3A0F17]/30 flex-shrink-0 bg-[#2C1D13] shadow-inner">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={imageUrl}
-                    alt={imageAlt}
-                    className="w-full h-full object-cover"
-                  />
+                {/* Image Thumbnail Preview (Safely handles empty string) */}
+                <div className="relative w-36 h-36 rounded-xl overflow-hidden border border-[#EADCCB] flex-shrink-0 bg-[#F6EDDC] shadow-sm flex items-center justify-center">
+                  {imageUrl && imageUrl.trim() !== '' ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={imageUrl}
+                      alt={imageAlt || 'Brand Card Preview'}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="text-center p-3 text-[#8C7B6B]">
+                      <svg className="w-8 h-8 mx-auto text-[#C8A774] mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-[11px] font-medium block">No Image</span>
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex-1 w-full">
+                <div className="flex-1 w-full space-y-4">
+                  {/* File Upload Component */}
                   <ImageUpload
                     value={imageUrl}
-                    onChange={(url) => setImageUrl(url)}
+                    onChange={(url) => setImageUrl(url || '')}
                     folder="zarish-brand"
-                    label="Upload Custom Card Image"
-                    helperText="Square 1000x1000px PNG/JPG/WEBP recommended"
+                    label="Upload New Picture (JPG/PNG/WEBP)"
+                    helperText="Square 1000x1000px recommended. Automatically uploaded and optimized."
                   />
 
-                  <div className="mt-4">
+                  {/* Manual URL Input Option */}
+                  <div>
                     <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                      Image Alt Text
+                      Or Image URL / Path
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      placeholder="/zarish-luxury-card.webp or https://res.cloudinary.com/..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#2C241E] mb-1">
+                      Image Alt Text (for SEO & Accessibility)
                     </label>
                     <input
                       type="text"
@@ -431,13 +470,20 @@ export default function AdminBrandStoryPage() {
               <div className="bg-white border border-[#E8E0D5] border-t-0 rounded-b-xl p-5 shadow-md">
                 <div className="flex flex-col gap-6">
                   {/* Preview Card */}
-                  <div className="relative w-full aspect-square rounded-xl overflow-hidden shadow-md border border-[#3A0F17]/30 bg-[#1A0507]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={imageUrl || DEFAULT_IMAGE}
-                      alt={imageAlt}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="relative w-full aspect-square rounded-xl overflow-hidden shadow-md border border-[#EADCCB] bg-[#F6EDDC] flex items-center justify-center">
+                    {imageUrl && imageUrl.trim() !== '' ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={imageUrl}
+                        alt={imageAlt || 'Storefront Preview'}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="text-center p-6 text-[#8C7B6B]">
+                        <span className="text-sm font-medium text-[#7B5B3A] block">No Image Selected</span>
+                        <span className="text-xs text-[#A39281] mt-1 block">Upload an image or pick a preset</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Preview Text */}

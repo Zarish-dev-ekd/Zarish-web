@@ -49,21 +49,17 @@ export default function PreIntro({
       // ignore
     }
 
-    // Step-by-step luxury timeline
+    // Luxury intro timeline
     const t1 = setTimeout(() => setPhase(1), 120);  // Logo blooms in with warm glow
-    const t2 = setTimeout(() => setPhase(2), 500);  // Gold accent bar expands
-    const t3 = setTimeout(() => setPhase(3), 800);  // Subtitle reveals
-    const t4 = setTimeout(() => setPhase(4), 1600); // Slide-up curtain reveal starts
-    const t5 = setTimeout(() => {
+    const t2 = setTimeout(() => setPhase(4), 1400); // Slide-up curtain reveal starts
+    const t3 = setTimeout(() => {
       completeIntro();
-    }, 2450); // Complete removal
+    }, 2150); // Complete removal
 
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
-      clearTimeout(t4);
-      clearTimeout(t5);
     };
   }, [completeIntro]);
 
@@ -125,28 +121,6 @@ export default function PreIntro({
             alt="ZARISH by Nehala Mufeed"
             className="w-56 sm:w-72 md:w-84 h-auto object-contain filter drop-shadow-[0_4px_20px_rgba(123,91,58,0.18)] drop-shadow-[0_0_35px_rgba(212,175,55,0.25)]"
           />
-        </div>
-
-        {/* Expanding Gold Divider Line */}
-        <div
-          className="w-16 sm:w-24 h-[1.5px] bg-gradient-to-r from-transparent via-[#C8A97E] to-transparent my-1 transition-transform duration-500 ease-out"
-          style={{
-            transform: phase >= 2 ? 'scaleX(1)' : 'scaleX(0)',
-            transformOrigin: 'center',
-          }}
-        />
-
-        {/* Luxury Subtitle with Elegant Tracking */}
-        <div
-          className="overflow-hidden transition-all duration-500 ease-out"
-          style={{
-            opacity: phase >= 3 ? 1 : 0,
-            transform: phase >= 3 ? 'translateY(0)' : 'translateY(6px)',
-          }}
-        >
-          <p className="text-[9.5px] sm:text-xs font-semibold tracking-[0.20em] sm:tracking-[0.28em] uppercase text-[#7B5B3A] whitespace-nowrap">
-            {subtitle}
-          </p>
         </div>
       </div>
 
