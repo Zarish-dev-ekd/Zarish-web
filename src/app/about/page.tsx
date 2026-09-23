@@ -11,6 +11,9 @@ import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'About ZARISH by Nehala Mufeed | The Brand Story',
   description: 'Learn about the vision, craftsmanship, and modest fashion philosophy of ZARISH by Nehala Mufeed.',

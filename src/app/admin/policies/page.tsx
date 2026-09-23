@@ -82,8 +82,43 @@ const DEFAULT_REFUND_POLICY: RefundPolicyForm = {
   },
 };
 
+const DEFAULT_PRIVACY_POLICY = {
+  eyebrow: 'Legal & Transparency',
+  title: 'Privacy Policy',
+  last_updated: 'Last updated: September 2026 • Effective Date: Immediate',
+  intro:
+    'Welcome to ZARISH by Nehala Mufeed ("we", "our", or "us"). We respect your privacy and are committed to protecting your personal data in full compliance with the Information Technology Act, 2000 and applicable consumer protection regulations in India. This Privacy Policy details how we collect, utilize, and safeguard your details when you visit our website or purchase our modest luxury garments.',
+  collect_intro: 'We collect only necessary information required to process and dispatch your orders:',
+  collect_points: [
+    'Identity & Contact: Full name, email address, phone number, and delivery address.',
+    'Order & Transaction Details: Products purchased, size, color preferences, order totals, and generated order reference numbers.',
+    'Payment Information: All online card, UPI, and net banking transactions are processed securely via our certified payment partner, Razorpay. ZARISH does NOT store or have access to your credit/debit card numbers, CVV, or UPI PINs.',
+    'Technical Data: IP address, device type, browser settings, and page navigation metrics to ensure a seamless checkout experience.',
+  ],
+  use_points: [
+    'To confirm, fulfill, pack, and ship your luxury apparel orders.',
+    'To dispatch real-time order tracking numbers, delivery updates, and digital tax receipts.',
+    'To provide dedicated customer support regarding custom sizing, unboxing verification, and queries via WhatsApp or email.',
+    'To prevent fraudulent transactions and maintain store security.',
+  ],
+  payment_security:
+    'We use Razorpay as our authoritative payment gateway. Razorpay is certified with PCI-DSS (Payment Card Industry Data Security Standard) Level 1 compliance — the highest standard of online payment security. All transmissions are protected with end-to-end 256-bit SSL encryption.',
+  sharing_intro:
+    'We never sell, rent, or trade your personal data to third parties. We share information strictly with verified partners essential for delivering your order:',
+  sharing_points: [
+    'Authorized delivery courier networks (to deliver packages to your doorstep).',
+    'Razorpay payment infrastructure (to securely process payment verifications).',
+    'Legal or government authorities only when strictly required by Indian law.',
+  ],
+  data_retention:
+    'We retain your order details for legitimate accounting and tax audit purposes under Indian commercial laws. You have the right to request access to your stored personal information, correct any inaccuracies, or request account closure by contacting us.',
+  contact_email: 'zarish2025co@gmail.com',
+  contact_whatsapp: '+91 9562292945',
+  contact_location: 'Kerala, India',
+};
+
 export default function AdminPoliciesPage() {
-  const [activeTab, setActiveTab] = useState<'refund' | 'shipping' | 'terms' | 'privacy'>('refund');
+  const [activeTab, setActiveTab] = useState<'refund' | 'privacy'>('refund');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,83 +128,104 @@ export default function AdminPoliciesPage() {
   const [eyebrow, setEyebrow] = useState(DEFAULT_REFUND_POLICY.eyebrow);
   const [title, setTitle] = useState(DEFAULT_REFUND_POLICY.title);
   const [lastUpdated, setLastUpdated] = useState(DEFAULT_REFUND_POLICY.last_updated);
-
-  // Highlight Box
   const [highlightTitle, setHighlightTitle] = useState(DEFAULT_REFUND_POLICY.highlight_box.title);
   const [highlightRule, setHighlightRule] = useState(DEFAULT_REFUND_POLICY.highlight_box.main_rule);
   const [highlightDetail, setHighlightDetail] = useState(DEFAULT_REFUND_POLICY.highlight_box.detail);
-
-  // Section 1
   const [s1Heading, setS1Heading] = useState(DEFAULT_REFUND_POLICY.section1.heading);
   const [s1Intro, setS1Intro] = useState(DEFAULT_REFUND_POLICY.section1.intro);
   const [s1PointsText, setS1PointsText] = useState(DEFAULT_REFUND_POLICY.section1.points.join('\n'));
-
-  // Section 2
   const [s2Heading, setS2Heading] = useState(DEFAULT_REFUND_POLICY.section2.heading);
   const [s2Intro, setS2Intro] = useState(DEFAULT_REFUND_POLICY.section2.intro);
   const [s2PointsText, setS2PointsText] = useState(DEFAULT_REFUND_POLICY.section2.points.join('\n'));
-
-  // Section 3 (Timeline)
   const [s3Heading, setS3Heading] = useState(DEFAULT_REFUND_POLICY.section3.heading);
   const [s3Intro, setS3Intro] = useState(DEFAULT_REFUND_POLICY.section3.intro);
   const [s3Approval, setS3Approval] = useState(DEFAULT_REFUND_POLICY.section3.approval_text);
   const [s3BankCredit, setS3BankCredit] = useState(DEFAULT_REFUND_POLICY.section3.bank_credit_text);
-
-  // Section 4 (Contact)
   const [s4Heading, setS4Heading] = useState(DEFAULT_REFUND_POLICY.section4.heading);
   const [s4Intro, setS4Intro] = useState(DEFAULT_REFUND_POLICY.section4.intro);
   const [s4Whatsapp, setS4Whatsapp] = useState(DEFAULT_REFUND_POLICY.section4.whatsapp);
   const [s4Email, setS4Email] = useState(DEFAULT_REFUND_POLICY.section4.email);
   const [s4Hours, setS4Hours] = useState(DEFAULT_REFUND_POLICY.section4.hours);
 
+  // Form states for Privacy Policy
+  const [privEyebrow, setPrivEyebrow] = useState(DEFAULT_PRIVACY_POLICY.eyebrow);
+  const [privTitle, setPrivTitle] = useState(DEFAULT_PRIVACY_POLICY.title);
+  const [privLastUpdated, setPrivLastUpdated] = useState(DEFAULT_PRIVACY_POLICY.last_updated);
+  const [privIntro, setPrivIntro] = useState(DEFAULT_PRIVACY_POLICY.intro);
+  const [privCollectIntro, setPrivCollectIntro] = useState(DEFAULT_PRIVACY_POLICY.collect_intro);
+  const [privCollectPointsText, setPrivCollectPointsText] = useState(DEFAULT_PRIVACY_POLICY.collect_points.join('\n'));
+  const [privUsePointsText, setPrivUsePointsText] = useState(DEFAULT_PRIVACY_POLICY.use_points.join('\n'));
+  const [privSecurity, setPrivSecurity] = useState(DEFAULT_PRIVACY_POLICY.payment_security);
+  const [privSharingIntro, setPrivSharingIntro] = useState(DEFAULT_PRIVACY_POLICY.sharing_intro);
+  const [privSharingPointsText, setPrivSharingPointsText] = useState(DEFAULT_PRIVACY_POLICY.sharing_points.join('\n'));
+  const [privRetention, setPrivRetention] = useState(DEFAULT_PRIVACY_POLICY.data_retention);
+  const [privEmail, setPrivEmail] = useState(DEFAULT_PRIVACY_POLICY.contact_email);
+  const [privWhatsapp, setPrivWhatsapp] = useState(DEFAULT_PRIVACY_POLICY.contact_whatsapp);
+  const [privLocation, setPrivLocation] = useState(DEFAULT_PRIVACY_POLICY.contact_location);
+
   useEffect(() => {
-    async function loadRefundPolicy() {
+    async function loadPolicy() {
       try {
         setLoading(true);
-        const res = await fetch('/api/policies/refund-policy');
-        const json = await res.json();
+        setError(null);
+        setSuccess(null);
 
-        if (json?.policy) {
-          const p = json.policy;
-          setEyebrow(p.eyebrow || DEFAULT_REFUND_POLICY.eyebrow);
-          setTitle(p.title || DEFAULT_REFUND_POLICY.title);
-          setLastUpdated(p.last_updated || DEFAULT_REFUND_POLICY.last_updated);
-
-          if (p.highlight_box) {
-            setHighlightTitle(p.highlight_box.title || DEFAULT_REFUND_POLICY.highlight_box.title);
-            setHighlightRule(p.highlight_box.main_rule || DEFAULT_REFUND_POLICY.highlight_box.main_rule);
-            setHighlightDetail(p.highlight_box.detail || DEFAULT_REFUND_POLICY.highlight_box.detail);
-          }
-
-          if (p.section1) {
-            setS1Heading(p.section1.heading || DEFAULT_REFUND_POLICY.section1.heading);
-            setS1Intro(p.section1.intro || DEFAULT_REFUND_POLICY.section1.intro);
-            if (p.section1.points && Array.isArray(p.section1.points)) {
-              setS1PointsText(p.section1.points.join('\n'));
+        if (activeTab === 'refund') {
+          const res = await fetch('/api/policies/refund-policy');
+          const json = await res.json();
+          if (json?.policy) {
+            const p = json.policy;
+            setEyebrow(p.eyebrow || DEFAULT_REFUND_POLICY.eyebrow);
+            setTitle(p.title || DEFAULT_REFUND_POLICY.title);
+            setLastUpdated(p.last_updated || DEFAULT_REFUND_POLICY.last_updated);
+            if (p.highlight_box) {
+              setHighlightTitle(p.highlight_box.title || DEFAULT_REFUND_POLICY.highlight_box.title);
+              setHighlightRule(p.highlight_box.main_rule || DEFAULT_REFUND_POLICY.highlight_box.main_rule);
+              setHighlightDetail(p.highlight_box.detail || DEFAULT_REFUND_POLICY.highlight_box.detail);
+            }
+            if (p.section1) {
+              setS1Heading(p.section1.heading || DEFAULT_REFUND_POLICY.section1.heading);
+              setS1Intro(p.section1.intro || DEFAULT_REFUND_POLICY.section1.intro);
+              if (Array.isArray(p.section1.points)) setS1PointsText(p.section1.points.join('\n'));
+            }
+            if (p.section2) {
+              setS2Heading(p.section2.heading || DEFAULT_REFUND_POLICY.section2.heading);
+              setS2Intro(p.section2.intro || DEFAULT_REFUND_POLICY.section2.intro);
+              if (Array.isArray(p.section2.points)) setS2PointsText(p.section2.points.join('\n'));
+            }
+            if (p.section3) {
+              setS3Heading(p.section3.heading || DEFAULT_REFUND_POLICY.section3.heading);
+              setS3Intro(p.section3.intro || DEFAULT_REFUND_POLICY.section3.intro);
+              setS3Approval(p.section3.approval_text || DEFAULT_REFUND_POLICY.section3.approval_text);
+              setS3BankCredit(p.section3.bank_credit_text || DEFAULT_REFUND_POLICY.section3.bank_credit_text);
+            }
+            if (p.section4) {
+              setS4Heading(p.section4.heading || DEFAULT_REFUND_POLICY.section4.heading);
+              setS4Intro(p.section4.intro || DEFAULT_REFUND_POLICY.section4.intro);
+              setS4Whatsapp(p.section4.whatsapp || DEFAULT_REFUND_POLICY.section4.whatsapp);
+              setS4Email(p.section4.email || DEFAULT_REFUND_POLICY.section4.email);
+              setS4Hours(p.section4.hours || DEFAULT_REFUND_POLICY.section4.hours);
             }
           }
-
-          if (p.section2) {
-            setS2Heading(p.section2.heading || DEFAULT_REFUND_POLICY.section2.heading);
-            setS2Intro(p.section2.intro || DEFAULT_REFUND_POLICY.section2.intro);
-            if (p.section2.points && Array.isArray(p.section2.points)) {
-              setS2PointsText(p.section2.points.join('\n'));
-            }
-          }
-
-          if (p.section3) {
-            setS3Heading(p.section3.heading || DEFAULT_REFUND_POLICY.section3.heading);
-            setS3Intro(p.section3.intro || DEFAULT_REFUND_POLICY.section3.intro);
-            setS3Approval(p.section3.approval_text || DEFAULT_REFUND_POLICY.section3.approval_text);
-            setS3BankCredit(p.section3.bank_credit_text || DEFAULT_REFUND_POLICY.section3.bank_credit_text);
-          }
-
-          if (p.section4) {
-            setS4Heading(p.section4.heading || DEFAULT_REFUND_POLICY.section4.heading);
-            setS4Intro(p.section4.intro || DEFAULT_REFUND_POLICY.section4.intro);
-            setS4Whatsapp(p.section4.whatsapp || DEFAULT_REFUND_POLICY.section4.whatsapp);
-            setS4Email(p.section4.email || DEFAULT_REFUND_POLICY.section4.email);
-            setS4Hours(p.section4.hours || DEFAULT_REFUND_POLICY.section4.hours);
+        } else if (activeTab === 'privacy') {
+          const res = await fetch('/api/policies/privacy-policy');
+          const json = await res.json();
+          if (json?.policy) {
+            const p = json.policy;
+            setPrivEyebrow(p.eyebrow || DEFAULT_PRIVACY_POLICY.eyebrow);
+            setPrivTitle(p.title || DEFAULT_PRIVACY_POLICY.title);
+            setPrivLastUpdated(p.last_updated || DEFAULT_PRIVACY_POLICY.last_updated);
+            setPrivIntro(p.intro || DEFAULT_PRIVACY_POLICY.intro);
+            setPrivCollectIntro(p.collect_intro || DEFAULT_PRIVACY_POLICY.collect_intro);
+            if (Array.isArray(p.collect_points)) setPrivCollectPointsText(p.collect_points.join('\n'));
+            if (Array.isArray(p.use_points)) setPrivUsePointsText(p.use_points.join('\n'));
+            setPrivSecurity(p.payment_security || DEFAULT_PRIVACY_POLICY.payment_security);
+            setPrivSharingIntro(p.sharing_intro || DEFAULT_PRIVACY_POLICY.sharing_intro);
+            if (Array.isArray(p.sharing_points)) setPrivSharingPointsText(p.sharing_points.join('\n'));
+            setPrivRetention(p.data_retention || DEFAULT_PRIVACY_POLICY.data_retention);
+            setPrivEmail(p.contact_email || DEFAULT_PRIVACY_POLICY.contact_email);
+            setPrivWhatsapp(p.contact_whatsapp || DEFAULT_PRIVACY_POLICY.contact_whatsapp);
+            setPrivLocation(p.contact_location || DEFAULT_PRIVACY_POLICY.contact_location);
           }
         }
       } catch (err: any) {
@@ -179,9 +235,7 @@ export default function AdminPoliciesPage() {
       }
     }
 
-    if (activeTab === 'refund') {
-      loadRefundPolicy();
-    }
+    loadPolicy();
   }, [activeTab]);
 
   const handleSubmitRefund = async (e: React.FormEvent) => {
@@ -203,18 +257,12 @@ export default function AdminPoliciesPage() {
         section1: {
           heading: s1Heading.trim(),
           intro: s1Intro.trim(),
-          points: s1PointsText
-            .split('\n')
-            .map((p) => p.trim())
-            .filter(Boolean),
+          points: s1PointsText.split('\n').map((p) => p.trim()).filter(Boolean),
         },
         section2: {
           heading: s2Heading.trim(),
           intro: s2Intro.trim(),
-          points: s2PointsText
-            .split('\n')
-            .map((p) => p.trim())
-            .filter(Boolean),
+          points: s2PointsText.split('\n').map((p) => p.trim()).filter(Boolean),
         },
         section3: {
           heading: s3Heading.trim(),
@@ -242,7 +290,7 @@ export default function AdminPoliciesPage() {
         throw new Error(data.error || 'Failed to save refund policy');
       }
 
-      setSuccess('Refund Policy updated successfully! The live storefront is now updated.');
+      setSuccess('Refund Policy updated successfully! Changes are now live.');
     } catch (err: any) {
       console.error('Error saving policy:', err);
       setError(err?.message || 'Failed to save changes. Please try again.');
@@ -251,15 +299,55 @@ export default function AdminPoliciesPage() {
     }
   };
 
-  const previewS1Points = s1PointsText
-    .split('\n')
-    .map((p) => p.trim())
-    .filter(Boolean);
+  const handleSubmitPrivacy = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+    setSuccess(null);
 
-  const previewS2Points = s2PointsText
-    .split('\n')
-    .map((p) => p.trim())
-    .filter(Boolean);
+    try {
+      const payload = {
+        eyebrow: privEyebrow.trim(),
+        title: privTitle.trim(),
+        last_updated: privLastUpdated.trim(),
+        intro: privIntro.trim(),
+        collect_intro: privCollectIntro.trim(),
+        collect_points: privCollectPointsText.split('\n').map((p) => p.trim()).filter(Boolean),
+        use_points: privUsePointsText.split('\n').map((p) => p.trim()).filter(Boolean),
+        payment_security: privSecurity.trim(),
+        sharing_intro: privSharingIntro.trim(),
+        sharing_points: privSharingPointsText.split('\n').map((p) => p.trim()).filter(Boolean),
+        data_retention: privRetention.trim(),
+        contact_email: privEmail.trim(),
+        contact_whatsapp: privWhatsapp.trim(),
+        contact_location: privLocation.trim(),
+      };
+
+      const res = await fetch('/api/policies/privacy-policy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Failed to save privacy policy');
+      }
+
+      setSuccess('Privacy Policy updated successfully! Changes are now live on /privacy-policy.');
+    } catch (err: any) {
+      console.error('Error saving privacy policy:', err);
+      setError(err?.message || 'Failed to save changes. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const previewS1Points = s1PointsText.split('\n').map((p) => p.trim()).filter(Boolean);
+  const previewS2Points = s2PointsText.split('\n').map((p) => p.trim()).filter(Boolean);
+  const previewPrivCollect = privCollectPointsText.split('\n').map((p) => p.trim()).filter(Boolean);
+  const previewPrivUse = privUsePointsText.split('\n').map((p) => p.trim()).filter(Boolean);
+  const previewPrivSharing = privSharingPointsText.split('\n').map((p) => p.trim()).filter(Boolean);
 
   if (loading) {
     return (
@@ -278,17 +366,17 @@ export default function AdminPoliciesPage() {
             Store Policies Management
           </h1>
           <p className="text-sm text-[#7A6F66] mt-1.5 mb-0">
-            Edit refund terms, unboxing video requirements, processing timelines, and customer guidelines.
+            Edit refund terms, privacy policy, contact details, and guidelines live from the database.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <Link
-            href="/refund-policy"
+            href={activeTab === 'refund' ? '/refund-policy' : '/privacy-policy'}
             target="_blank"
             className="px-4 py-2 text-xs font-semibold text-[#7B5B3A] bg-[#FAF4ED] border border-[#E8DFC8] rounded-md hover:bg-[#F2E7DC] transition-colors"
           >
-            View Live Refund Page ↗
+            View Live {activeTab === 'refund' ? 'Refund' : 'Privacy'} Page ↗
           </Link>
         </div>
       </div>
@@ -306,6 +394,17 @@ export default function AdminPoliciesPage() {
         >
           🔄 Refund &amp; Return Policy
         </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('privacy')}
+          className={`px-5 py-3 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
+            activeTab === 'privacy'
+              ? 'border-[#7B5B3A] text-[#7B5B3A]'
+              : 'border-transparent text-[#7A6F66] hover:text-[#2C241E]'
+          }`}
+        >
+          🛡️ Privacy Policy
+        </button>
         <Link
           href="/shipping-policy"
           target="_blank"
@@ -319,13 +418,6 @@ export default function AdminPoliciesPage() {
           className="px-5 py-3 text-sm font-semibold text-[#7A6F66] hover:text-[#2C241E] whitespace-nowrap"
         >
           📜 Terms &amp; Conditions ↗
-        </Link>
-        <Link
-          href="/privacy-policy"
-          target="_blank"
-          className="px-5 py-3 text-sm font-semibold text-[#7A6F66] hover:text-[#2C241E] whitespace-nowrap"
-        >
-          🛡️ Privacy Policy ↗
         </Link>
       </div>
 
@@ -341,436 +433,379 @@ export default function AdminPoliciesPage() {
         </div>
       )}
 
-      {/* Refund Policy Form & Live Preview */}
-      <form onSubmit={handleSubmitRefund}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Main Editing Column */}
-          <div className="lg:col-span-7 space-y-6">
-            {/* Header & Meta */}
-            <div className="bg-white border border-[#E8E0D5] rounded-xl p-6 shadow-sm">
-              <h2 className="text-base font-semibold text-[#2C241E] m-0 mb-4">
-                Page Title &amp; Subtitle
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                    Eyebrow (Small Tag)
-                  </label>
-                  <input
-                    type="text"
-                    value={eyebrow}
-                    onChange={(e) => setEyebrow(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
-                    placeholder="Customer Assurance & Guidelines"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                    Page Main Title
-                  </label>
-                  <input
-                    type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
-                    placeholder="Refund & Return Policy"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                    Last Updated Notice
-                  </label>
-                  <input
-                    type="text"
-                    value={lastUpdated}
-                    onChange={(e) => setLastUpdated(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
-                    placeholder="Last updated: September 2026 • Valid for all online purchases on zarish.in"
-                  />
+      {/* ─── TAB 1: REFUND POLICY ───────────────────────────────────────── */}
+      {activeTab === 'refund' && (
+        <form onSubmit={handleSubmitRefund}>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-7 space-y-6">
+              <div className="bg-white border border-[#E8E0D5] rounded-xl p-6 shadow-sm">
+                <h2 className="text-base font-semibold text-[#2C241E] m-0 mb-4">Page Title &amp; Subtitle</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#2C241E] mb-1">Eyebrow</label>
+                    <input
+                      type="text"
+                      value={eyebrow}
+                      onChange={(e) => setEyebrow(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#2C241E] mb-1">Page Title</label>
+                    <input
+                      type="text"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#2C241E] mb-1">Last Updated Notice</label>
+                    <input
+                      type="text"
+                      value={lastUpdated}
+                      onChange={(e) => setLastUpdated(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Mandatory Unboxing Video Highlight Box */}
-            <div className="bg-[#FAF7F2] border-2 border-[#7B5B3A]/30 rounded-xl p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-base">📹</span>
-                <h2 className="text-base font-bold text-[#2C1D13] m-0">
-                  Mandatory Unboxing Video Highlight Box
-                </h2>
-              </div>
-              <p className="text-xs text-[#8C7B6B] mb-4">
-                This is the prominent colored banner at the top of the policy page.
-              </p>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                    Box Title
-                  </label>
-                  <input
-                    type="text"
-                    value={highlightTitle}
-                    onChange={(e) => setHighlightTitle(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
-                    placeholder="Mandatory Unboxing Video Requirement"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                    Core Rule (Bold Text)
-                  </label>
-                  <input
-                    type="text"
-                    value={highlightRule}
-                    onChange={(e) => setHighlightRule(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
-                    placeholder="Refunds are applicable only for damaged or defective products received by the customer."
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                    Full Requirement Details (Timeframe, uncut video conditions)
-                  </label>
-                  <textarea
-                    rows={4}
-                    value={highlightDetail}
-                    onChange={(e) => setHighlightDetail(e.target.value)}
-                    className="w-full px-3 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A] leading-relaxed"
-                    placeholder="To claim a refund, you must contact our official WhatsApp support..."
-                  />
+              {/* Highlight Box */}
+              <div className="bg-[#FAF7F2] border-2 border-[#7B5B3A]/30 rounded-xl p-6 shadow-sm">
+                <h2 className="text-base font-bold text-[#2C1D13] m-0 mb-3">📹 Unboxing Video Highlight Box</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#2C241E] mb-1">Box Title</label>
+                    <input
+                      type="text"
+                      value={highlightTitle}
+                      onChange={(e) => setHighlightTitle(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#2C241E] mb-1">Core Rule</label>
+                    <input
+                      type="text"
+                      value={highlightRule}
+                      onChange={(e) => setHighlightRule(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#2C241E] mb-1">Details</label>
+                    <textarea
+                      rows={4}
+                      value={highlightDetail}
+                      onChange={(e) => setHighlightDetail(e.target.value)}
+                      className="w-full px-3 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Section 1: Return & Refund Criteria */}
-            <div className="bg-white border border-[#E8E0D5] rounded-xl p-6 shadow-sm">
-              <h2 className="text-base font-semibold text-[#2C241E] m-0 mb-4">
-                Section 1: Return &amp; Refund Criteria
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                    Section Heading
-                  </label>
+              {/* Section 1 */}
+              <div className="bg-white border border-[#E8E0D5] rounded-xl p-6 shadow-sm">
+                <h2 className="text-base font-semibold text-[#2C241E] m-0 mb-4">Section 1: Criteria</h2>
+                <div className="space-y-4">
                   <input
                     type="text"
                     value={s1Heading}
                     onChange={(e) => setS1Heading(e.target.value)}
                     className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
                   />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                    Introduction Sentence
-                  </label>
                   <input
                     type="text"
                     value={s1Intro}
                     onChange={(e) => setS1Intro(e.target.value)}
                     className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
                   />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-semibold text-[#2C241E]">
-                      Criteria Bullet Points
-                    </label>
-                    <span className="text-[11px] text-[#8C7B6B]">One point per line</span>
-                  </div>
                   <textarea
                     rows={4}
                     value={s1PointsText}
                     onChange={(e) => setS1PointsText(e.target.value)}
-                    className="w-full px-3 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A] leading-relaxed"
+                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
                   />
                 </div>
               </div>
-            </div>
 
-            {/* Section 2: Non-Returnable Items */}
-            <div className="bg-white border border-[#E8E0D5] rounded-xl p-6 shadow-sm">
-              <h2 className="text-base font-semibold text-[#2C241E] m-0 mb-4">
-                Section 2: Non-Returnable Items
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                    Section Heading
-                  </label>
+              {/* Section 2 */}
+              <div className="bg-white border border-[#E8E0D5] rounded-xl p-6 shadow-sm">
+                <h2 className="text-base font-semibold text-[#2C241E] m-0 mb-4">Section 2: Non-Returnable Items</h2>
+                <div className="space-y-4">
                   <input
                     type="text"
                     value={s2Heading}
                     onChange={(e) => setS2Heading(e.target.value)}
                     className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
                   />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                    Introduction Sentence
-                  </label>
                   <input
                     type="text"
                     value={s2Intro}
                     onChange={(e) => setS2Intro(e.target.value)}
                     className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
                   />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-semibold text-[#2C241E]">
-                      Non-Returnable Items Bullet Points
-                    </label>
-                    <span className="text-[11px] text-[#8C7B6B]">One point per line</span>
-                  </div>
                   <textarea
                     rows={4}
                     value={s2PointsText}
                     onChange={(e) => setS2PointsText(e.target.value)}
-                    className="w-full px-3 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A] leading-relaxed"
+                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
                   />
                 </div>
               </div>
-            </div>
 
-            {/* Section 3: Refund Processing Timeline */}
-            <div className="bg-white border-2 border-[#7B5B3A]/40 rounded-xl p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-base">⏱️</span>
-                <h2 className="text-base font-bold text-[#2C1D13] m-0">
-                  Section 3: Refund Processing Timeline
-                </h2>
-              </div>
-              <p className="text-xs text-[#8C7B6B] mb-4">
-                Configure approval hours, Razorpay refund speed, and bank credit estimates.
-              </p>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                    Section Heading
-                  </label>
-                  <input
-                    type="text"
-                    value={s3Heading}
-                    onChange={(e) => setS3Heading(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                    Introduction Sentence
-                  </label>
-                  <input
-                    type="text"
-                    value={s3Intro}
-                    onChange={(e) => setS3Intro(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                    Approval Timeline Text
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={s3Approval}
-                    onChange={(e) => setS3Approval(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
-                    placeholder="Approval: Our team reviews your video and notifies you within 24 business hours."
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                    Bank Credit &amp; Razorpay Timeline Text
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={s3BankCredit}
-                    onChange={(e) => setS3BankCredit(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A] leading-relaxed"
-                    placeholder="Bank Credit: The monetary refund is processed back to the original payment method..."
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Section 4: Support Contact Details */}
-            <div className="bg-white border border-[#E8E0D5] rounded-xl p-6 shadow-sm">
-              <h2 className="text-base font-semibold text-[#2C241E] m-0 mb-4">
-                Section 4: Support Contact Details
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                    Section Heading
-                  </label>
-                  <input
-                    type="text"
-                    value={s4Heading}
-                    onChange={(e) => setS4Heading(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                    Instruction Text
-                  </label>
-                  <input
-                    type="text"
-                    value={s4Intro}
-                    onChange={(e) => setS4Intro(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
-                  />
-                </div>
+              {/* Section 4 */}
+              <div className="bg-white border border-[#E8E0D5] rounded-xl p-6 shadow-sm">
+                <h2 className="text-base font-semibold text-[#2C241E] m-0 mb-4">Support Contact Details</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    value={s4Whatsapp}
+                    onChange={(e) => setS4Whatsapp(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E]"
+                    placeholder="WhatsApp"
+                  />
+                  <input
+                    type="email"
+                    value={s4Email}
+                    onChange={(e) => setS4Email(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E]"
+                    placeholder="Email"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-8 py-3.5 bg-[#7B5B3A] text-white text-sm font-semibold rounded-lg hover:bg-[#62462B] transition-all shadow-sm hover:shadow-md disabled:opacity-50 cursor-pointer"
+                >
+                  {submitting ? 'Saving Policy...' : 'Save & Publish Refund Policy'}
+                </button>
+              </div>
+            </div>
+
+            {/* Live Storefront Preview */}
+            <div className="lg:col-span-5">
+              <div className="sticky top-6">
+                <div className="bg-[#2B2118] text-white px-5 py-3 rounded-t-xl flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#E5DACF]">Refund Preview</span>
+                  <span className="text-[10px] text-white/60">Live preview</span>
+                </div>
+                <div className="bg-white border border-[#E8E0D5] border-t-0 rounded-b-xl p-5 shadow-md max-h-[calc(100vh-140px)] overflow-y-auto space-y-4 text-xs text-[#5C4A3E]">
                   <div>
-                    <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                      Official WhatsApp Number
-                    </label>
+                    <span className="text-[10px] font-bold text-[#7B5B3A] uppercase block">{eyebrow}</span>
+                    <h3 className="font-display text-lg font-bold text-[#2C1D13]">{title}</h3>
+                    <p className="text-[10px] text-[#8C7B6B] mt-0.5">{lastUpdated}</p>
+                  </div>
+                  <div className="p-3 bg-[#FAF7F2] border-l-4 border-[#7B5B3A] rounded">
+                    <p className="font-bold text-[#2C1D13] text-[11px]">{highlightTitle}</p>
+                    <p className="text-[10px] mt-1">{highlightDetail}</p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-[#2C1D13]">{s1Heading}</p>
+                    <ul className="list-disc pl-4 space-y-1 text-[11px]">
+                      {previewS1Points.map((pt, i) => <li key={i}>{pt}</li>)}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      )}
+
+      {/* ─── TAB 2: PRIVACY POLICY ───────────────────────────────────────── */}
+      {activeTab === 'privacy' && (
+        <form onSubmit={handleSubmitPrivacy}>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-7 space-y-6">
+              {/* Header */}
+              <div className="bg-white border border-[#E8E0D5] rounded-xl p-6 shadow-sm">
+                <h2 className="text-base font-semibold text-[#2C241E] m-0 mb-4">Privacy Page Header</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#2C241E] mb-1">Eyebrow</label>
                     <input
                       type="text"
-                      value={s4Whatsapp}
-                      onChange={(e) => setS4Whatsapp(e.target.value)}
+                      value={privEyebrow}
+                      onChange={(e) => setPrivEyebrow(e.target.value)}
                       className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
-                      placeholder="+91 9562292945"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                      Support Email
-                    </label>
+                    <label className="block text-xs font-semibold text-[#2C241E] mb-1">Page Title</label>
                     <input
-                      type="email"
-                      value={s4Email}
-                      onChange={(e) => setS4Email(e.target.value)}
+                      type="text"
+                      value={privTitle}
+                      onChange={(e) => setPrivTitle(e.target.value)}
                       className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
-                      placeholder="zarish2025co@gmail.com"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#2C241E] mb-1">Last Updated Notice</label>
+                    <input
+                      type="text"
+                      value={privLastUpdated}
+                      onChange={(e) => setPrivLastUpdated(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
                     />
                   </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#2C241E] mb-1">
-                    Support Hours
-                  </label>
+              </div>
+
+              {/* 1. Intro */}
+              <div className="bg-white border border-[#E8E0D5] rounded-xl p-6 shadow-sm">
+                <h2 className="text-base font-semibold text-[#2C241E] m-0 mb-2">1. Introduction</h2>
+                <textarea
+                  rows={4}
+                  value={privIntro}
+                  onChange={(e) => setPrivIntro(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A] leading-relaxed"
+                />
+              </div>
+
+              {/* 2. Collect */}
+              <div className="bg-white border border-[#E8E0D5] rounded-xl p-6 shadow-sm">
+                <h2 className="text-base font-semibold text-[#2C241E] m-0 mb-3">2. Information We Collect</h2>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#2C241E] mb-1">Intro text</label>
+                    <input
+                      type="text"
+                      value={privCollectIntro}
+                      onChange={(e) => setPrivCollectIntro(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#2C241E] mb-1">Bullet points (one per line)</label>
+                    <textarea
+                      rows={5}
+                      value={privCollectPointsText}
+                      onChange={(e) => setPrivCollectPointsText(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. Use of Data */}
+              <div className="bg-white border border-[#E8E0D5] rounded-xl p-6 shadow-sm">
+                <h2 className="text-base font-semibold text-[#2C241E] m-0 mb-2">3. How We Use Your Data (one point per line)</h2>
+                <textarea
+                  rows={5}
+                  value={privUsePointsText}
+                  onChange={(e) => setPrivUsePointsText(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E]"
+                />
+              </div>
+
+              {/* 4. Payment Security */}
+              <div className="bg-white border border-[#E8E0D5] rounded-xl p-6 shadow-sm">
+                <h2 className="text-base font-semibold text-[#2C241E] m-0 mb-2">4. Payment Security &amp; Razorpay</h2>
+                <textarea
+                  rows={3}
+                  value={privSecurity}
+                  onChange={(e) => setPrivSecurity(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E]"
+                />
+              </div>
+
+              {/* 5. Sharing */}
+              <div className="bg-white border border-[#E8E0D5] rounded-xl p-6 shadow-sm">
+                <h2 className="text-base font-semibold text-[#2C241E] m-0 mb-2">5. Sharing of Information</h2>
+                <textarea
+                  rows={4}
+                  value={privSharingPointsText}
+                  onChange={(e) => setPrivSharingPointsText(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E]"
+                />
+              </div>
+
+              {/* 6. Contact details */}
+              <div className="bg-white border border-[#E8E0D5] rounded-xl p-6 shadow-sm">
+                <h2 className="text-base font-semibold text-[#2C241E] m-0 mb-3">6. Privacy Support Contact</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <input
+                    type="email"
+                    value={privEmail}
+                    onChange={(e) => setPrivEmail(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E]"
+                    placeholder="Email"
+                  />
                   <input
                     type="text"
-                    value={s4Hours}
-                    onChange={(e) => setS4Hours(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
-                    placeholder="Monday – Saturday, 9:30 AM – 7:00 PM IST"
+                    value={privWhatsapp}
+                    onChange={(e) => setPrivWhatsapp(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E]"
+                    placeholder="WhatsApp"
+                  />
+                  <input
+                    type="text"
+                    value={privLocation}
+                    onChange={(e) => setPrivLocation(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E]"
+                    placeholder="Location"
                   />
                 </div>
               </div>
-            </div>
 
-            {/* Save Button */}
-            <div className="pt-2">
-              <button
-                type="submit"
-                disabled={submitting}
-                className="px-8 py-3.5 bg-[#7B5B3A] text-white text-sm font-semibold rounded-lg hover:bg-[#62462B] transition-all shadow-sm hover:shadow-md disabled:opacity-50 cursor-pointer"
-              >
-                {submitting ? 'Saving Policy Changes...' : 'Save & Publish Refund Policy'}
-              </button>
-            </div>
-          </div>
-
-          {/* Live Storefront Preview Column */}
-          <div className="lg:col-span-5">
-            <div className="sticky top-6">
-              <div className="bg-[#2B2118] text-white px-5 py-3 rounded-t-xl flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#E5DACF]">
-                  Storefront Live Preview
-                </span>
-                <span className="text-[10px] text-white/60">Updates in real-time</span>
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-8 py-3.5 bg-[#7B5B3A] text-white text-sm font-semibold rounded-lg hover:bg-[#62462B] transition-all shadow-sm hover:shadow-md disabled:opacity-50 cursor-pointer"
+                >
+                  {submitting ? 'Saving Policy...' : 'Save & Publish Privacy Policy'}
+                </button>
               </div>
+            </div>
 
-              <div className="bg-white border border-[#E8E0D5] border-t-0 rounded-b-xl p-5 shadow-md max-h-[calc(100vh-140px)] overflow-y-auto">
-                <div className="border-b border-[#F2ECE4] pb-4 mb-5">
-                  <span className="text-[10px] font-bold tracking-[0.2em] text-[#7B5B3A] uppercase block mb-1">
-                    {eyebrow || 'Customer Assurance & Guidelines'}
-                  </span>
-                  <h3 className="font-display text-lg font-bold text-[#2C1D13]">
-                    {title || 'Refund & Return Policy'}
-                  </h3>
-                  <p className="text-[10px] text-[#8C7B6B] mt-1">{lastUpdated}</p>
+            {/* Privacy Storefront Preview */}
+            <div className="lg:col-span-5">
+              <div className="sticky top-6">
+                <div className="bg-[#2B2118] text-white px-5 py-3 rounded-t-xl flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#E5DACF]">Privacy Live Preview</span>
+                  <span className="text-[10px] text-white/60">Updates live</span>
                 </div>
-
-                <div className="space-y-5 text-xs text-[#5C4A3E] leading-relaxed">
-                  {/* Highlight Box Preview */}
-                  <div className="p-4 bg-[#FAF7F2] border-l-4 border-[#7B5B3A] border border-[#E8E0D5] rounded-xl">
-                    <h4 className="font-display text-xs font-bold text-[#2C1D13] mb-1">
-                      {highlightTitle}
-                    </h4>
-                    <p className="text-[11px] text-[#6B5744] font-semibold mb-2">{highlightRule}</p>
-                    <p className="text-[11px] text-[#6B5744] leading-relaxed">{highlightDetail}</p>
-                  </div>
-
-                  {/* Section 1 Preview */}
+                <div className="bg-white border border-[#E8E0D5] border-t-0 rounded-b-xl p-5 shadow-md max-h-[calc(100vh-140px)] overflow-y-auto space-y-4 text-xs text-[#5C4A3E]">
                   <div>
-                    <h4 className="font-display text-xs font-bold text-[#2C1D13] mb-1">
-                      {s1Heading}
-                    </h4>
-                    <p className="text-[11px] mb-1">{s1Intro}</p>
-                    <ul className="list-disc pl-4 space-y-1 text-[11px] text-[#6B5744]">
-                      {previewS1Points.map((pt, i) => (
-                        <li key={i}>{pt}</li>
-                      ))}
-                    </ul>
+                    <span className="text-[10px] font-bold text-[#7B5B3A] uppercase block">{privEyebrow}</span>
+                    <h3 className="font-display text-lg font-bold text-[#2C1D13]">{privTitle}</h3>
+                    <p className="text-[10px] text-[#8C7B6B] mt-0.5">{privLastUpdated}</p>
                   </div>
-
-                  {/* Section 2 Preview */}
                   <div>
-                    <h4 className="font-display text-xs font-bold text-[#2C1D13] mb-1">
-                      {s2Heading}
-                    </h4>
-                    <p className="text-[11px] mb-1">{s2Intro}</p>
-                    <ul className="list-disc pl-4 space-y-1 text-[11px] text-[#6B5744]">
-                      {previewS2Points.map((pt, i) => (
-                        <li key={i}>{pt}</li>
-                      ))}
+                    <h4 className="font-display text-xs font-bold text-[#2C1D13] mb-1">1. Introduction</h4>
+                    <p className="text-[11px] leading-relaxed">{privIntro}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-display text-xs font-bold text-[#2C1D13] mb-1">2. Information Collected</h4>
+                    <ul className="list-disc pl-4 space-y-1 text-[11px]">
+                      {previewPrivCollect.map((pt, i) => <li key={i}>{pt}</li>)}
                     </ul>
                   </div>
-
-                  {/* Section 3 Preview */}
-                  <div className="bg-[#FFFDF9] p-3 rounded-lg border border-[#E2D5C7]/60">
-                    <h4 className="font-display text-xs font-bold text-[#2C1D13] mb-1">
-                      {s3Heading}
-                    </h4>
-                    <p className="text-[11px] mb-1">{s3Intro}</p>
-                    <ul className="list-disc pl-4 space-y-1.5 text-[11px] text-[#6B5744]">
-                      <li>{s3Approval}</li>
-                      <li>{s3BankCredit}</li>
+                  <div>
+                    <h4 className="font-display text-xs font-bold text-[#2C1D13] mb-1">3. How We Use Data</h4>
+                    <ul className="list-disc pl-4 space-y-1 text-[11px]">
+                      {previewPrivUse.map((pt, i) => <li key={i}>{pt}</li>)}
                     </ul>
                   </div>
-
-                  {/* Section 4 Preview */}
-                  <div className="bg-[#FAF8F5] p-3 rounded-xl border border-[#E2D5C7]">
-                    <h4 className="font-display text-xs font-bold text-[#2C1D13] mb-1">
-                      {s4Heading}
-                    </h4>
-                    <p className="text-[10px] text-[#6B5744] mb-2">{s4Intro}</p>
-                    <div className="space-y-0.5 text-[10px] font-medium text-[#2C1D13]">
-                      <p>
-                        <strong>WhatsApp:</strong>{' '}
-                        <span className="text-[#7B5B3A] underline font-bold">{s4Whatsapp}</span>
-                      </p>
-                      <p>
-                        <strong>Email:</strong> {s4Email}
-                      </p>
-                      <p>
-                        <strong>Hours:</strong> {s4Hours}
-                      </p>
-                    </div>
+                  <div className="bg-[#FAF8F5] p-3 rounded border border-[#E2D5C7]">
+                    <h4 className="font-display text-xs font-bold text-[#2C1D13] mb-1">Contact Officer</h4>
+                    <p className="text-[10px]">Email: {privEmail}</p>
+                    <p className="text-[10px]">WhatsApp: {privWhatsapp}</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </form>
+        </form>
+      )}
     </div>
   );
 }

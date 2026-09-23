@@ -1,10 +1,11 @@
 /* ============================================================
    ZARISH — Homepage
    Server Component. Assembles all homepage sections.
-   Connected to Supabase live data with graceful empty states.
+   Connected to Supabase live data with real-time freshness.
    ============================================================ */
 
-export const revalidate = 60;
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
 import {
   getAnnouncements,

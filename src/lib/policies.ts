@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
+import { revalidatePath } from 'next/cache';
 
 const DATA_FILE = path.join(process.cwd(), 'src', 'data', 'policies.json');
 
@@ -100,7 +102,7 @@ export async function savePolicy(slug: string, content: any): Promise<{ success:
   let dbError = undefined;
 
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data: existing } = await supabase
       .from('store_policies')
       .select('id')
@@ -123,6 +125,15 @@ export async function savePolicy(slug: string, content: any): Promise<{ success:
     }
   } catch (err: any) {
     dbError = err?.message;
+  }
+
+  // Purge Next.js cache so live pages update immediately
+  try {
+    revalidatePath(`/${slug}`);
+    revalidatePath('/privacy-policy');
+    revalidatePath('/refund-policy');
+  } catch {
+    // Ignore cache error
   }
 
   return {

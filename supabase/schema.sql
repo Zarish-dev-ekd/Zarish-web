@@ -217,6 +217,15 @@ CREATE TABLE IF NOT EXISTS public.brand_story (
   updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
 );
 
+-- 11c. Store Policies Table (Refund, Privacy, Shipping, Terms)
+CREATE TABLE IF NOT EXISTS public.store_policies (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug TEXT NOT NULL UNIQUE,
+  title TEXT,
+  content JSONB NOT NULL DEFAULT '{}'::jsonb,
+  updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
+);
+
 -- Indexes for optimal performance
 CREATE INDEX IF NOT EXISTS idx_products_category ON public.products(category_id);
 CREATE INDEX IF NOT EXISTS idx_products_slug ON public.products(slug);
@@ -225,6 +234,7 @@ CREATE INDEX IF NOT EXISTS idx_categories_slug ON public.categories(slug);
 CREATE INDEX IF NOT EXISTS idx_colors_slug ON public.colors(slug);
 CREATE INDEX IF NOT EXISTS idx_product_images_product ON public.product_images(product_id);
 CREATE INDEX IF NOT EXISTS idx_product_variants_product ON public.product_variants(product_id);
+CREATE INDEX IF NOT EXISTS idx_store_policies_slug ON public.store_policies(slug);
 
 -- Enable Row Level Security (RLS) on all tables
 ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
@@ -240,6 +250,7 @@ ALTER TABLE public.product_images ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.product_variants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.subscribers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.brand_story ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.store_policies ENABLE ROW LEVEL SECURITY;
 
 -- Public READ policies (anyone can read active content for storefront)
 CREATE POLICY "Public read site_settings" ON public.site_settings FOR SELECT USING (true);
@@ -254,6 +265,7 @@ CREATE POLICY "Public read products" ON public.products FOR SELECT USING (true);
 CREATE POLICY "Public read product_images" ON public.product_images FOR SELECT USING (true);
 CREATE POLICY "Public read product_variants" ON public.product_variants FOR SELECT USING (true);
 CREATE POLICY "Public read brand_story" ON public.brand_story FOR SELECT USING (true);
+CREATE POLICY "Public read store_policies" ON public.store_policies FOR SELECT USING (true);
 
 -- Public INSERT for newsletter subscriptions
 CREATE POLICY "Public insert subscribers" ON public.subscribers FOR INSERT WITH CHECK (true);
@@ -272,6 +284,8 @@ CREATE POLICY "Admin all product_images" ON public.product_images FOR ALL TO aut
 CREATE POLICY "Admin all product_variants" ON public.product_variants FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Admin all subscribers" ON public.subscribers FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Admin all brand_story" ON public.brand_story FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin all store_policies" ON public.store_policies FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
 
 -- Insert initial default site settings if none exist
 INSERT INTO public.site_settings (site_name, tagline, meta_title, meta_description)

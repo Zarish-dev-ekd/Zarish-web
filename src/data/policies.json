@@ -40,5 +40,35 @@
       "email": "zarish2025co@gmail.com",
       "hours": "Monday – Saturday, 9:30 AM – 7:00 PM IST"
     }
+  },
+  "privacy-policy": {
+    "eyebrow": "Legal & Transparency",
+    "title": "Privacy Policy",
+    "last_updated": "Last updated: September 2026 • Effective Date: Immediate",
+    "intro": "Welcome to ZARISH by Nehala Mufeed (\"we\", \"our\", or \"us\"). We respect your privacy and are committed to protecting your personal data in full compliance with the Information Technology Act, 2000 and applicable consumer protection regulations in India. This Privacy Policy details how we collect, utilize, and safeguard your details when you visit our website or purchase our modest luxury garments.",
+    "collect_intro": "We collect only necessary information required to process and dispatch your orders:",
+    "collect_points": [
+      "Identity & Contact: Full name, email address, phone number, and delivery address.",
+      "Order & Transaction Details: Products purchased, size, color preferences, order totals, and generated order reference numbers.",
+      "Payment Information: All online card, UPI, and net banking transactions are processed securely via our certified payment partner, Razorpay. ZARISH does NOT store or have access to your credit/debit card numbers, CVV, or UPI PINs.",
+      "Technical Data: IP address, device type, browser settings, and page navigation metrics to ensure a seamless checkout experience."
+    ],
+    "use_points": [
+      "To confirm, fulfill, pack, and ship your luxury apparel orders.",
+      "To dispatch real-time order tracking numbers, delivery updates, and digital tax receipts.",
+      "To provide dedicated customer support regarding custom sizing, unboxing verification, and queries via WhatsApp or email.",
+      "To prevent fraudulent transactions and maintain store security."
+    ],
+    "payment_security": "We use Razorpay as our authoritative payment gateway. Razorpay is certified with PCI-DSS (Payment Card Industry Data Security Standard) Level 1 compliance — the highest standard of online payment security. All transmissions are protected with end-to-end 256-bit SSL encryption.",
+    "sharing_intro": "We never sell, rent, or trade your personal data to third parties. We share information strictly with verified partners essential for delivering your order:",
+    "sharing_points": [
+      "Authorized delivery courier networks (to deliver packages to your doorstep).",
+      "Razorpay payment infrastructure (to securely process payment verifications).",
+      "Legal or government authorities only when strictly required by Indian law."
+    ],
+    "data_retention": "We retain your order details for legitimate accounting and tax audit purposes under Indian commercial laws. You have the right to request access to your stored personal information, correct any inaccuracies, or request account closure by contacting us.",
+    "contact_email": "zarish2025co@gmail.com",
+    "contact_whatsapp": "+91 9562292945",
+    "contact_location": "Kerala, India"
   }
 }
