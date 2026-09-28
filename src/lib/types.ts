@@ -25,6 +25,7 @@ export interface SiteSettings {
   meta_title: string;
   meta_description: string;
   og_image_url: string;
+  default_size_chart?: SizeMeasurementRow[] | null;
   updated_at: string;
 }
 
@@ -117,6 +118,21 @@ export interface Size {
   updated_at: string;
 }
 
+// ─── Size Chart ──────────────────────────────────────────────
+export interface SizeMeasurementRow {
+  size: string;
+  bustIn: number;
+  lengthIn: number;
+  waistIn?: number;
+  hipsIn?: number;
+}
+
+export interface SizeChartConfig {
+  is_active: boolean;
+  use_default: boolean;
+  rows?: SizeMeasurementRow[];
+}
+
 // ─── Products ────────────────────────────────────────────────
 export interface Product {
   id: string;
@@ -141,6 +157,7 @@ export interface Product {
   stock_quantity: number;
   seo_title: string | null;
   seo_description: string | null;
+  size_chart?: SizeChartConfig | null;
   published_at: string | null;
   created_at: string;
   updated_at: string;

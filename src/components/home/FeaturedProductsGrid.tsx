@@ -31,11 +31,6 @@ function GridProductCard({ product }: { product: Product }) {
     product.images?.find((img) => img.role === 'primary') || product.images?.[0];
   const hasDiscount =
     product.compare_at_price && product.compare_at_price > product.price;
-  const discountPercent = hasDiscount
-    ? Math.round(
-        ((product.compare_at_price! - product.price) / product.compare_at_price!) * 100
-      )
-    : 0;
 
   const totalStock = getTotalStock(product);
   const isOutOfStock = totalStock <= 0;
@@ -63,13 +58,6 @@ function GridProductCard({ product }: { product: Product }) {
 
           {/* Hover overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-          {/* Badges (Top-Left: Sale) */}
-          {product.is_on_sale && (
-            <div className="absolute top-2.5 left-2.5 z-10">
-              <Badge variant="sale" />
-            </div>
-          )}
 
           {/* Top-Right: Wishlist */}
           <div className="absolute top-2.5 right-2.5 z-10">
@@ -115,14 +103,9 @@ function GridProductCard({ product }: { product: Product }) {
               {formatPrice(product.price)}
             </span>
             {hasDiscount && (
-              <>
-                <span className="text-[11px] sm:text-[12px] text-[#A89585] line-through">
-                  {formatPrice(product.compare_at_price!)}
-                </span>
-                <span className="text-[10px] font-semibold text-[#0E7064] bg-[#E8F5F3] px-1.5 py-0.5 rounded">
-                  {discountPercent}% off
-                </span>
-              </>
+              <span className="text-[11px] sm:text-[12px] text-[#A89585] line-through">
+                {formatPrice(product.compare_at_price!)}
+              </span>
             )}
           </div>
         </div>

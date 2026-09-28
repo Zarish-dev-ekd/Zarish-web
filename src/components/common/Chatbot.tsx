@@ -150,17 +150,24 @@ export default function Chatbot() {
         q.includes('deliver') ||
         q.includes('courier') ||
         q.includes('charge') ||
+        q.includes('dtdc') ||
+        q.includes('speed post') ||
+        q.includes('india post') ||
         q.includes('days') ||
         q.includes('time') ||
         q.includes('cod') ||
         q.includes('international')
       ) {
+        const shippingWaUrl = `https://wa.me/${OFFICIAL_WHATSAPP_NUMBER}?text=${encodeURIComponent(
+          'Hi ZARISH, I would like to inquire about international delivery / shipping details.'
+        )}`;
         return {
-          text: `We provide express delivery across India & worldwide!\n\n• Delivery Timeline: 3–5 business days across India.\n• Free Shipping: Complimentary on all orders above ₹2,999.\n• International: Worldwide delivery to UAE, GCC, UK, US, etc.`,
+          text: `We ship our orders through  courier services such as Standard India Post Parcel,EMS Speed Post and DTDC.\n\nIndia Post Parcel and EMS Speed Post offer home delivery. DTDC provides home delivery only in selected areas, such as towns and nearby locations. If home delivery is unavailable in your area, you may need to collect your package from the nearest DTDC office.\n\nIndia Post Parcel generally delivers within 2–5 working days across kerala\n\nDTDC delivers within 1–2 working days in Kerala.\n\nEMS Speed Post: 1–3 working days within Kerala, 3-5 working days across India(other state).\n\nDelivery times may vary during holidays.\n\n✈️ For international delivery, please contact us via WhatsApp.`,
           action: {
-            label: 'Explore New Collections',
-            href: '/collections',
-            isExternal: false,
+            label: 'Contact on WhatsApp for International Delivery',
+            href: shippingWaUrl,
+            isExternal: true,
+            isWhatsApp: true,
           },
         };
       }

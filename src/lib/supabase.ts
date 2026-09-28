@@ -353,10 +353,11 @@ export async function getFilteredProducts(options?: {
 }
 
 export async function searchProducts(searchTerm: string): Promise<Product[]> {
-  if (!searchTerm.trim()) return [];
+  const trimmed = searchTerm.trim();
+  if (!trimmed) return [];
   try {
     const supabase = await createClient();
-    const term = `%${searchTerm.trim()}%`;
+    const term = `%${trimmed}%`;
     const { data, error } = await supabase
       .from('products')
       .select(`
@@ -366,11 +367,28 @@ export async function searchProducts(searchTerm: string): Promise<Product[]> {
         variants:product_variants(*, size:sizes(*))
       `)
       .eq('is_active', true)
-      .ilike('name', term)
+      .or(`name.ilike.${term},sku.ilike.${term},description.ilike.${term}`)
       .limit(20);
 
     if (error || !data) return [];
-    return data as Product[];
+    const products = data as Product[];
+
+    // Prioritize exact or prefix product code / SKU matches
+    products.sort((a, b) => {
+      const aExact = a.sku?.toLowerCase() === trimmed.toLowerCase();
+      const bExact = b.sku?.toLowerCase() === trimmed.toLowerCase();
+      if (aExact && !bExact) return -1;
+      if (!aExact && bExact) return 1;
+
+      const aStarts = a.sku?.toLowerCase().startsWith(trimmed.toLowerCase());
+      const bStarts = b.sku?.toLowerCase().startsWith(trimmed.toLowerCase());
+      if (aStarts && !bStarts) return -1;
+      if (!aStarts && bStarts) return 1;
+
+      return 0;
+    });
+
+    return products;
   } catch {
     return [];
   }

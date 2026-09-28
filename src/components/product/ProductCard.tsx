@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Product } from '@/lib/types';
-import { formatPrice, getDiscountPercent, optimizeCloudinaryUrl } from '@/lib/utils';
+import { formatPrice, optimizeCloudinaryUrl } from '@/lib/utils';
 import WishlistButton from './WishlistButton';
 import Badge from './Badge';
 
@@ -11,9 +11,6 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const primaryImage = product.images?.find((img) => img.role === 'primary') || product.images?.[0];
   const hasDiscount = product.compare_at_price && product.compare_at_price > product.price;
-  const discountPercent = hasDiscount
-    ? getDiscountPercent(product.price, product.compare_at_price!)
-    : 0;
 
   const totalStock =
     product.variants && product.variants.length > 0
@@ -42,7 +39,6 @@ export default function ProductCard({ product }: ProductCardProps) {
           {/* Badges */}
           <div className="absolute z-10 flex flex-col gap-1 bottom-2.5 right-2.5 sm:bottom-auto sm:right-auto sm:top-3 sm:left-3 items-end sm:items-start pointer-events-none">
             {product.is_new_arrival && <Badge variant="new" />}
-            {product.is_on_sale && !product.is_new_arrival && <Badge variant="sale" />}
             {isOutOfStock && <Badge variant="out-of-stock" />}
           </div>
 
@@ -59,14 +55,9 @@ export default function ProductCard({ product }: ProductCardProps) {
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm sm:text-base font-semibold text-[#2C1D13]">{formatPrice(product.price)}</span>
             {hasDiscount && (
-              <>
-                <span className="text-xs sm:text-sm text-[#8C7B6B] line-through">
-                  {formatPrice(product.compare_at_price!)}
-                </span>
-                <span className="text-xs text-[#0E7064] font-medium">
-                  ({discountPercent}% off)
-                </span>
-              </>
+              <span className="text-xs sm:text-sm text-[#8C7B6B] line-through">
+                {formatPrice(product.compare_at_price!)}
+              </span>
             )}
           </div>
         </div>

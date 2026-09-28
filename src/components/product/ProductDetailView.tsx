@@ -4,10 +4,11 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { formatPrice, getDiscountPercent, optimizeCloudinaryUrl } from '@/lib/utils';
-import { IconArrowRight, IconTruck, IconShield, IconPackage, IconShoppingBag } from '@/components/icons';
+import { IconArrowRight, IconTruck, IconShield, IconPackage, IconShoppingBag, IconRuler, IconTapeMeasure } from '@/components/icons';
 import Badge from './Badge';
 import WishlistButton from './WishlistButton';
 import CheckoutModal from '@/components/checkout/CheckoutModal';
+import SizeGuideModal from './SizeGuideModal';
 import { useCart } from '@/context/CartContext';
 import type { Product, SiteSettings, ProductColor } from '@/lib/types';
 
@@ -21,6 +22,10 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
   const router = useRouter();
   // Checkout modal state
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  // Size Guide modal state
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+  const [sizeGuideTab, setSizeGuideTab] = useState<'chart' | 'measure'>('chart');
+  const isSizeChartActive = product?.size_chart?.is_active !== false;
 
   // 1. Detect colors available for this product (from variants and image alt tags)
   const productColors = useMemo(() => {
@@ -405,12 +410,23 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
 
         {/* Right Column: Product Info & Actions (Equal 50% width) */}
         <div className="w-full flex flex-col">
-          {/* Category Eyebrow */}
-          {product.category && (
-            <p className="text-[11px] font-bold tracking-[0.22em] text-[#7B5B3A] uppercase mb-1.5">
-              {product.category.name}
-            </p>
-          )}
+          {/* Top Eyebrow Row: Category & Product Code */}
+          <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+            {product.category ? (
+              <p className="text-[11px] font-bold tracking-[0.22em] text-[#7B5B3A] uppercase m-0">
+                {product.category.name}
+              </p>
+            ) : (
+              <span />
+            )}
+
+            {product.sku && (
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-mono font-bold tracking-wider text-[#7B5B3A] bg-[#FAF6F0] px-2.5 py-0.5 rounded-full border border-[#E2D5C7] shadow-2xs">
+                <span className="text-[#8C7B6B] font-sans font-medium text-[10px] uppercase tracking-normal">CODE:</span>
+                <span className="text-[#2C1D13]">{product.sku}</span>
+              </span>
+            )}
+          </div>
 
           {/* Title */}
           <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-serif font-medium text-[#2C1D13] mb-2 leading-tight tracking-[-0.01em]">
@@ -487,13 +503,41 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
 
           {/* Size Selector */}
           {availableSizes.length > 0 && (
-            <div className="mb-2">
-              <div className="flex items-center justify-between mb-2">
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2.5">
                 <label className="text-xs sm:text-sm font-medium text-[#3D2B1F]">
                   Select Size: <strong className="font-bold text-[#2C1D13]">{selectedSize}</strong>
                 </label>
+
+                {/* Mobile Size Guide Pill Button */}
+                {isSizeChartActive && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSizeGuideTab('chart');
+                      setIsSizeGuideOpen(true);
+                    }}
+                    className="sm:hidden inline-flex items-center gap-1.5 text-[11px] font-bold text-[#7B5B3A] hover:text-[#2C1D13] bg-[#FAF6F0] hover:bg-[#F2ECE4] px-2.5 py-1 rounded-full border border-[#E2D5C7] transition-all cursor-pointer shadow-2xs active:scale-95 group"
+                    title="View Size Chart & Measurement Guide"
+                  >
+                    <IconRuler size={13} className="text-[#7B5B3A] group-hover:scale-110 transition-transform" />
+                    <span>Size Guide</span>
+                    <svg
+                      className="w-3 h-3 text-[#7B5B3A] group-hover:translate-x-0.5 transition-transform"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </button>
+                )}
               </div>
-              <div className="flex flex-wrap gap-2">
+
+              <div className="flex flex-wrap gap-2 items-center">
                 {availableSizes.map((s) => {
                   const isSelected = selectedSize === s.name;
                   return (
@@ -536,6 +580,33 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
                     </button>
                   );
                 })}
+
+                {/* Desktop Inline Size Guide Pill Button (same row with small gap) */}
+                {isSizeChartActive && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSizeGuideTab('chart');
+                      setIsSizeGuideOpen(true);
+                    }}
+                    className="hidden sm:inline-flex h-10 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold transition-all border border-[#7B5B3A]/40 bg-[#FAF6F0] hover:bg-[#7B5B3A] text-[#7B5B3A] hover:text-white shadow-2xs hover:shadow-xs cursor-pointer active:scale-95 items-center justify-center gap-1.5 ml-1 group"
+                    title="View Size Chart & Measurement Guide"
+                  >
+                    <IconRuler size={14} className="group-hover:scale-110 transition-transform" />
+                    <span>Size Guide</span>
+                    <svg
+                      className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </button>
+                )}
               </div>
 
               {/* Dynamic Stock Indicator below Select Size */}
@@ -559,19 +630,45 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
 
           {/* Dynamic Stock Indicator when no sizes */}
           {availableSizes.length === 0 && (
-            <div className="mb-4">
-              {!isCurrentInStock ? (
-                <span className="text-xs sm:text-sm font-medium text-[#DC2626]">
-                  Out of stock
-                </span>
-              ) : currentStock < 5 ? (
-                <span className="text-xs sm:text-sm font-medium text-[#EA580C]">
-                  Only {currentStock} left in stock!
-                </span>
-              ) : (
-                <span className="text-xs sm:text-sm font-medium text-[#16A34A]">
-                  In stock ({currentStock} available)
-                </span>
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                {!isCurrentInStock ? (
+                  <span className="text-xs sm:text-sm font-medium text-[#DC2626]">
+                    Out of stock
+                  </span>
+                ) : currentStock < 5 ? (
+                  <span className="text-xs sm:text-sm font-medium text-[#EA580C]">
+                    Only {currentStock} left in stock!
+                  </span>
+                ) : (
+                  <span className="text-xs sm:text-sm font-medium text-[#16A34A]">
+                    In stock ({currentStock} available)
+                  </span>
+                )}
+              </div>
+              {isSizeChartActive && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSizeGuideTab('chart');
+                    setIsSizeGuideOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-[#7B5B3A] hover:text-[#2C1D13] bg-[#FAF6F0] hover:bg-[#F2ECE4] px-2.5 py-1 rounded-full border border-[#E2D5C7] transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 group"
+                >
+                  <IconRuler size={13} className="text-[#7B5B3A] group-hover:scale-110 transition-transform" />
+                  <span>Size Guide</span>
+                  <svg
+                    className="w-3 h-3 text-[#7B5B3A] group-hover:translate-x-0.5 transition-transform"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
               )}
             </div>
           )}
@@ -631,21 +728,7 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
             </div>
           </div>
 
-          {/* Trust Guarantees */}
-          <div className="bg-[#FAF6F0] border border-[#E2D5C7]/80 rounded-2xl p-4 sm:p-5 space-y-3 mb-8">
-            <div className="flex items-center gap-3 text-xs  text-[#6B5744]">
-              <IconTruck size={18} className="text-[#7B5B3A] flex-shrink-0" />
-              <span>Complimentary shipping on orders over ₹2,999</span>
-            </div>
-            <div className="flex items-center gap-3 text-xs  text-[#6B5744]">
-              <IconShield size={18} className="text-[#7B5B3A] flex-shrink-0" />
-              <span>100% Genuine Designer Modest Craftsmanship</span>
-            </div>
-            <div className="flex items-center gap-3 text-xs text-[#6B5744]">
-              <IconPackage size={18} className="text-[#7B5B3A] flex-shrink-0" />
-              <span>Delivered in signature luxury ZARISH packaging</span>
-            </div>
-          </div>
+
 
           {/* Information Tabs */}
           <div className="border-t border-[#E2D5C7] pt-6">
@@ -758,6 +841,20 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
         selectedColor={selectedColor}
         quantity={quantity}
       />
+
+      {/* Size & Measurement Guide Modal */}
+      {isSizeChartActive && (
+        <SizeGuideModal
+          isOpen={isSizeGuideOpen}
+          onClose={() => setIsSizeGuideOpen(false)}
+          initialTab={sizeGuideTab}
+          selectedSize={selectedSize}
+          onSelectSize={(size) => setSelectedSize(size)}
+          availableSizes={availableSizes}
+          product={product}
+          settings={settings}
+        />
+      )}
 
       {/* Fullscreen High-Res Luxury Lightbox Modal */}
       {isLightboxOpen && activeImage && (

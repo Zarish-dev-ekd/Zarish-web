@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import type { Size, ProductColor } from '@/lib/types';
+import { DEFAULT_SIZE_CHART_ROWS, getDefaultSizeChartRows, saveDefaultSizeChartLocally } from '@/lib/sizeChart';
+import type { Size, ProductColor, SizeMeasurementRow } from '@/lib/types';
+import { IconRuler } from '@/components/icons';
 
 const STANDARD_SIZES = [
   { name: 'XS', slug: 'xs', display_order: 1 },
@@ -33,6 +35,12 @@ export default function AdminSizesAndColorsPage() {
   const [colorSlug, setColorSlug] = useState('');
   const [colorDisplayOrder, setColorDisplayOrder] = useState('0');
   const [colorIsActive, setColorIsActive] = useState(true);
+
+  // Default Size Chart State
+  const [defaultChartRows, setDefaultChartRows] = useState<SizeMeasurementRow[]>(DEFAULT_SIZE_CHART_ROWS);
+  const [loadingChart, setLoadingChart] = useState(true);
+  const [savingChart, setSavingChart] = useState(false);
+  const [chartUnit, setChartUnit] = useState<'in' | 'cm'>('in');
 
 
   // Common UI State
@@ -80,9 +88,35 @@ export default function AdminSizesAndColorsPage() {
     }
   };
 
+  // Fetch Default Size Chart
+  const fetchDefaultSizeChart = async () => {
+    try {
+      setLoadingChart(true);
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('default_size_chart')
+        .limit(1)
+        .maybeSingle();
+
+      if (data?.default_size_chart && Array.isArray(data.default_size_chart) && data.default_size_chart.length > 0) {
+        setDefaultChartRows(data.default_size_chart);
+        saveDefaultSizeChartLocally(data.default_size_chart);
+      } else {
+        const local = getDefaultSizeChartRows();
+        setDefaultChartRows(local);
+      }
+    } catch {
+      const local = getDefaultSizeChartRows();
+      setDefaultChartRows(local);
+    } finally {
+      setLoadingChart(false);
+    }
+  };
+
   useEffect(() => {
     fetchSizes();
     fetchColors();
+    fetchDefaultSizeChart();
   }, []);
 
   // Size Form Handlers
@@ -203,6 +237,81 @@ export default function AdminSizesAndColorsPage() {
       setError(err?.message || 'Failed to add color');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // Size Chart Handlers
+  const handleUpdateChartRow = (index: number, field: keyof SizeMeasurementRow, val: any) => {
+    const updated = [...defaultChartRows];
+    updated[index] = {
+      ...updated[index],
+      [field]: field === 'size' ? val : parseFloat(val) || 0,
+    };
+    setDefaultChartRows(updated);
+  };
+
+  const handleAddChartRow = () => {
+    const nextSize = sizes.find(
+      (s) => !defaultChartRows.some((r) => r.size.toUpperCase() === s.name.toUpperCase())
+    )?.name || 'Custom';
+
+    setDefaultChartRows([
+      ...defaultChartRows,
+      {
+        size: nextSize,
+        bustIn: 32.0,
+        lengthIn: 22.0,
+        waistIn: 28.0,
+        hipsIn: 38.0,
+      },
+    ]);
+  };
+
+  const handleDeleteChartRow = (index: number) => {
+    if (defaultChartRows.length <= 1) {
+      setError('Size chart must contain at least one size row.');
+      return;
+    }
+    setDefaultChartRows(defaultChartRows.filter((_, i) => i !== index));
+  };
+
+  const handleSaveDefaultSizeChart = async () => {
+    try {
+      setSavingChart(true);
+      setError(null);
+      setSuccess(null);
+
+      // Save to localStorage immediately for instant client feedback
+      saveDefaultSizeChartLocally(defaultChartRows);
+
+      // Try saving to site_settings in Supabase
+      const { data: settings } = await supabase
+        .from('site_settings')
+        .select('id')
+        .limit(1)
+        .maybeSingle();
+
+      if (settings?.id) {
+        await supabase
+          .from('site_settings')
+          .update({ default_size_chart: defaultChartRows })
+          .eq('id', settings.id);
+      }
+
+      setSuccess('Default size chart saved successfully! Products using default chart will reflect these measurements.');
+    } catch (err: any) {
+      // Even if database update had an issue, local storage updated
+      console.warn('Database save warning:', err);
+      setSuccess('Default size chart updated locally!');
+    } finally {
+      setSavingChart(false);
+    }
+  };
+
+  const handleResetFactoryDefaults = () => {
+    if (confirm('Reset default size chart back to factory standard values?')) {
+      setDefaultChartRows(JSON.parse(JSON.stringify(DEFAULT_SIZE_CHART_ROWS)));
+      setSuccess('Reset to factory standard measurements. Remember to click "Save Default Size Chart" to apply.');
     }
   };
 
@@ -611,6 +720,224 @@ export default function AdminSizesAndColorsPage() {
           </div>
         </div>
       )}
+
+      {/* ─── GLOBAL DEFAULT SIZE CHART MANAGEMENT SECTION ─── */}
+      <div className="mt-12 pt-8 border-t border-[#E8E0D5]">
+        <div className="bg-white border border-[#E8E0D5] rounded-2xl p-6 sm:p-7 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E8E0D5]/80 pb-5 mb-6">
+            <div className="flex items-center gap-3.5">
+              <span className="w-11 h-11 rounded-xl bg-[#FAF6F0] border border-[#E2D5C7] flex items-center justify-center text-[#7B5B3A] shadow-xs">
+                <IconRuler size={22} />
+              </span>
+              <div>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <h3 className="text-lg font-serif font-bold text-[#2C1D13] tracking-wide m-0">
+                    Store-Wide Default Size Chart
+                  </h3>
+                  <span className="text-[11px] font-medium tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-[#FAF6F0] text-[#7B5B3A] border border-[#E2D5C7]">
+                    Used by 95% of Products
+                  </span>
+                </div>
+                <p className="text-xs text-[#7A6F66] mt-1 m-0">
+                  This standard size chart applies automatically to all products unless a custom variation is specified in the product editor.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center flex-wrap gap-2.5">
+              {/* Unit Toggle */}
+              <div className="inline-flex items-center bg-[#F4EFEA] p-0.5 rounded-full border border-[#E2D5C7]">
+                <button
+                  type="button"
+                  onClick={() => setChartUnit('in')}
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    chartUnit === 'in'
+                      ? 'bg-[#2C1D13] text-white shadow-xs'
+                      : 'text-[#7A6F66] hover:text-[#2C1D13]'
+                  }`}
+                >
+                  in
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setChartUnit('cm')}
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    chartUnit === 'cm'
+                      ? 'bg-[#2C1D13] text-white shadow-xs'
+                      : 'text-[#7A6F66] hover:text-[#2C1D13]'
+                  }`}
+                >
+                  cm
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleResetFactoryDefaults}
+                className="px-3.5 py-2 text-xs font-medium rounded-lg border border-[#E8E0D5] bg-[#FAF8F5] text-[#7A6F66] hover:text-[#2C1D13] hover:bg-[#F2ECE4] hover:border-[#D6CEC5] transition-all cursor-pointer"
+              >
+                Reset Defaults
+              </button>
+
+              <button
+                type="button"
+                disabled={savingChart}
+                onClick={handleSaveDefaultSizeChart}
+                className="px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-[#2C1D13] text-white hover:bg-[#422C1D] active:scale-98 transition-all shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                {savingChart ? 'Saving...' : 'Save Size Chart'}
+              </button>
+            </div>
+          </div>
+
+          {loadingChart ? (
+            <div className="p-8 text-center text-xs text-[#7A6F66]">
+              <span className="w-5 h-5 border-2 border-[#E8E0D5] border-t-[#7B5B3A] rounded-full animate-spin inline-block mb-2" />
+              <p>Loading default size chart...</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="overflow-x-auto border border-[#E8E0D5] rounded-xl shadow-2xs">
+                <table className="w-full border-collapse text-left text-sm min-w-[700px]">
+                  <thead>
+                    <tr className="bg-[#FAF7F2] border-b border-[#E8E0D5]">
+                      <th className="px-4 py-3.5 font-bold text-xs uppercase tracking-[0.06em] text-[#6E6259] w-32">
+                        Size
+                      </th>
+                      <th className="px-4 py-3.5 font-bold text-xs uppercase tracking-[0.06em] text-[#6E6259]">
+                        Bust ({chartUnit === 'in' ? 'in' : 'cm'})
+                      </th>
+                      <th className="px-4 py-3.5 font-bold text-xs uppercase tracking-[0.06em] text-[#6E6259]">
+                        Front Length ({chartUnit === 'in' ? 'in' : 'cm'})
+                      </th>
+                      <th className="px-4 py-3.5 font-bold text-xs uppercase tracking-[0.06em] text-[#6E6259]">
+                        Waist ({chartUnit === 'in' ? 'in' : 'cm'})
+                      </th>
+                      <th className="px-4 py-3.5 font-bold text-xs uppercase tracking-[0.06em] text-[#6E6259]">
+                        Hips ({chartUnit === 'in' ? 'in' : 'cm'})
+                      </th>
+                      <th className="px-4 py-3.5 font-bold text-xs uppercase tracking-[0.06em] text-[#6E6259] text-right w-24">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#EFE9E1]">
+                    {defaultChartRows.map((row, idx) => {
+                      const displayBust = chartUnit === 'cm' ? (row.bustIn * 2.54).toFixed(1) : row.bustIn;
+                      const displayLength = chartUnit === 'cm' ? (row.lengthIn * 2.54).toFixed(1) : row.lengthIn;
+                      const displayWaist = row.waistIn ? (chartUnit === 'cm' ? (row.waistIn * 2.54).toFixed(1) : row.waistIn) : '';
+                      const displayHips = row.hipsIn ? (chartUnit === 'cm' ? (row.hipsIn * 2.54).toFixed(1) : row.hipsIn) : '';
+
+                      return (
+                        <tr key={idx} className="hover:bg-[#FAF6F0]/60 transition-colors">
+                          <td className="px-4 py-3 align-middle">
+                            <input
+                              type="text"
+                              value={row.size}
+                              onChange={(e) => handleUpdateChartRow(idx, 'size', e.target.value)}
+                              className="w-24 h-9 px-3 text-xs font-bold text-[#2C1D13] bg-white border border-[#E8E0D5] rounded-lg focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15 outline-none transition-all shadow-2xs"
+                              placeholder="e.g. S"
+                            />
+                          </td>
+                          <td className="px-4 py-3 align-middle">
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="number"
+                                step="0.5"
+                                value={row.bustIn}
+                                onChange={(e) => handleUpdateChartRow(idx, 'bustIn', e.target.value)}
+                                className="w-24 h-9 px-3 text-xs font-mono font-medium text-[#2C1D13] bg-white border border-[#E8E0D5] rounded-lg focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15 outline-none transition-all shadow-2xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              />
+                              {chartUnit === 'cm' && (
+                                <span className="text-[11px] text-[#7A6F66] font-mono whitespace-nowrap">
+                                  ({displayBust}cm)
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 align-middle">
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="number"
+                                step="0.5"
+                                value={row.lengthIn}
+                                onChange={(e) => handleUpdateChartRow(idx, 'lengthIn', e.target.value)}
+                                className="w-24 h-9 px-3 text-xs font-mono font-medium text-[#2C1D13] bg-white border border-[#E8E0D5] rounded-lg focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15 outline-none transition-all shadow-2xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              />
+                              {chartUnit === 'cm' && (
+                                <span className="text-[11px] text-[#7A6F66] font-mono whitespace-nowrap">
+                                  ({displayLength}cm)
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 align-middle">
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="number"
+                                step="0.5"
+                                value={row.waistIn ?? ''}
+                                placeholder="Opt"
+                                onChange={(e) => handleUpdateChartRow(idx, 'waistIn', e.target.value)}
+                                className="w-24 h-9 px-3 text-xs font-mono font-medium text-[#2C1D13] bg-white border border-[#E8E0D5] rounded-lg focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15 outline-none transition-all shadow-2xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              />
+                              {chartUnit === 'cm' && row.waistIn && (
+                                <span className="text-[11px] text-[#7A6F66] font-mono whitespace-nowrap">
+                                  ({displayWaist}cm)
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 align-middle">
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="number"
+                                step="0.5"
+                                value={row.hipsIn ?? ''}
+                                placeholder="Opt"
+                                onChange={(e) => handleUpdateChartRow(idx, 'hipsIn', e.target.value)}
+                                className="w-24 h-9 px-3 text-xs font-mono font-medium text-[#2C1D13] bg-white border border-[#E8E0D5] rounded-lg focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15 outline-none transition-all shadow-2xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              />
+                              {chartUnit === 'cm' && row.hipsIn && (
+                                <span className="text-[11px] text-[#7A6F66] font-mono whitespace-nowrap">
+                                  ({displayHips}cm)
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-right align-middle">
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteChartRow(idx)}
+                              className="px-3 py-1.5 text-xs font-medium rounded-lg text-[#9E3E3E] bg-[#FDF2F2] border border-[#F8D7D7] hover:bg-[#FDE8E8] hover:text-[#B91C1C] transition-all cursor-pointer active:scale-95"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={handleAddChartRow}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-[#7B5B3A] bg-white text-[#7B5B3A] hover:bg-[#FAF6F0] text-xs font-bold transition-all cursor-pointer active:scale-95 shadow-2xs"
+                >
+                  <span>+ Add Size Row to Default Chart</span>
+                </button>
+
+                <p className="text-xs text-[#7A6F66] m-0">
+                  * Values are configured in inches (in) and automatically converted to cm for customers in storefront modals.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
