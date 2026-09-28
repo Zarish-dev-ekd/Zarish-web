@@ -114,17 +114,34 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
             slug,
             price,
             compare_at_price,
+            sku,
             is_new_arrival,
             is_on_sale,
             category:categories(name, slug),
             images:product_images(secure_url, role, alt_text)
           `)
           .eq('is_active', true)
-          .ilike('name', `%${term}%`)
-          .limit(8);
+          .or(`name.ilike.%${term}%,sku.ilike.%${term}%,description.ilike.%${term}%`)
+          .limit(10);
 
         if (error) throw error;
-        setResults((data as unknown as Product[]) || []);
+        const fetched = ((data as unknown as Product[]) || []);
+        // Prioritize exact or prefix product code / SKU matches
+        fetched.sort((a, b) => {
+          const aExactSku = a.sku?.toLowerCase() === term.toLowerCase();
+          const bExactSku = b.sku?.toLowerCase() === term.toLowerCase();
+          if (aExactSku && !bExactSku) return -1;
+          if (!aExactSku && bExactSku) return 1;
+
+          const aStartsSku = a.sku?.toLowerCase().startsWith(term.toLowerCase());
+          const bStartsSku = b.sku?.toLowerCase().startsWith(term.toLowerCase());
+          if (aStartsSku && !bStartsSku) return -1;
+          if (!aStartsSku && bStartsSku) return 1;
+
+          return 0;
+        });
+
+        setResults(fetched);
       } catch (err) {
         console.error('Live search error:', err);
         setResults([]);
@@ -275,11 +292,18 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         </div>
 
                         <div className="min-w-0">
-                          {product.category?.name && (
-                            <span className="text-[10px] font-bold tracking-wider uppercase text-[#7B5B3A] block mb-0.5">
-                              {product.category.name}
-                            </span>
-                          )}
+                          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                            {product.category?.name && (
+                              <span className="text-[10px] font-bold tracking-wider uppercase text-[#7B5B3A]">
+                                {product.category.name}
+                              </span>
+                            )}
+                            {product.sku && (
+                              <span className="text-[10px] font-mono font-bold text-[#6E6259] bg-[#FAF6F0] px-1.5 py-0.5 rounded border border-[#E2D5C7]">
+                                CODE: {product.sku}
+                              </span>
+                            )}
+                          </div>
                           <h4 className="font-semibold text-sm sm:text-base text-[#2C1D13] group-hover:text-[#7B5B3A] transition-colors truncate">
                             {product.name}
                           </h4>

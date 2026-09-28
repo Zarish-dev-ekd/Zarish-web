@@ -28,13 +28,11 @@ const FOOTER_COLUMNS = [
       { label: 'New Arrivals', href: '/collections/new-arrivals' },
       { label: 'All Collections', href: '/collections' },
       { label: 'Shop by Size', href: '/shop-by-size' },
-      { label: 'Featured Modest Wear', href: '/products' },
     ],
   },
   {
     title: 'About Zarish',
     links: [
-      { label: 'Our Story & Philosophy', href: '/about' },
       { label: 'By Nehala Mufeed', href: '/about' },
       { label: 'Size & Silhouette Guide', href: '/shop-by-size' },
       { label: 'Contact Customer Care', href: '/contact' },
@@ -221,28 +219,6 @@ export default function Footer({ brandDescription, socialLinks = {} }: FooterPro
 
         {/* ─── Bottom Bar ───────────────────────────────────────────── */}
         <div className="pt-5 border-t border-[#2E2218] flex flex-col items-center justify-center gap-2 text-center">
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[11px] text-[#A69584]">
-            <Link href="/privacy-policy" className="hover:text-[#E8DDD4] transition-colors">
-              Privacy Policy
-            </Link>
-            <span>•</span>
-            <Link href="/terms-and-conditions" className="hover:text-[#E8DDD4] transition-colors">
-              Terms &amp; Conditions
-            </Link>
-            <span>•</span>
-            <Link href="/refund-policy" className="hover:text-[#E8DDD4] transition-colors">
-              Refund &amp; Return Policy
-            </Link>
-            <span>•</span>
-            <Link href="/shipping-policy" className="hover:text-[#E8DDD4] transition-colors">
-              Shipping &amp; Delivery
-            </Link>
-            <span>•</span>
-            <Link href="/contact" className="hover:text-[#E8DDD4] transition-colors">
-              Contact Us
-            </Link>
-          </div>
-
           <p className="text-[11px] text-[#8C7B6B] flex items-center justify-center gap-2 flex-wrap">
             <span>© {currentYear} ZARISH by Nehala Mufeed. All rights reserved.</span>
             <span>•</span>

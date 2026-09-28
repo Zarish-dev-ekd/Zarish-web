@@ -8,6 +8,7 @@ import type { Product } from '@/lib/types';
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -53,6 +54,15 @@ export default function AdminProductsPage() {
     }
   };
 
+  const filteredProducts = products.filter((p) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase().trim();
+    const matchesName = p.name.toLowerCase().includes(q);
+    const matchesSku = p.sku?.toLowerCase().includes(q);
+    const matchesCategory = p.category?.name.toLowerCase().includes(q);
+    return matchesName || matchesSku || matchesCategory;
+  });
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6 max-sm:flex-col max-sm:items-start max-sm:gap-4">
@@ -85,6 +95,31 @@ export default function AdminProductsPage() {
       )}
 
       <div className="bg-white border border-[#E8E0D5] rounded-lg p-6 mb-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+        {/* Search & Filter Bar */}
+        <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
+          <div className="relative flex-1 min-w-[240px] max-w-md">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by Product Code (e.g. ZAR-01) or Title..."
+              className="w-full px-3.5 py-2 text-sm border border-[#E8E0D5] rounded-lg bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15 transition-all"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#7A6F66] hover:text-[#2C241E] p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          <span className="text-xs text-[#7A6F66]">
+            Showing <strong>{filteredProducts.length}</strong> of {products.length} products
+          </span>
+        </div>
+
         {loading ? (
           <div className="text-center py-10">
             <span className="w-5 h-5 border-2 border-[#E8E0D5] border-t-[#7B5B3A] rounded-full animate-spin inline-block" />
@@ -105,6 +140,19 @@ export default function AdminProductsPage() {
               + Add First Product
             </Link>
           </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="text-center py-10 text-[#7A6F66]">
+            <p className="text-sm font-medium text-[#2C241E]">
+              No products found matching &ldquo;{searchQuery}&rdquo;
+            </p>
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="mt-2 text-xs text-[#7B5B3A] underline cursor-pointer"
+            >
+              Clear search query
+            </button>
+          </div>
         ) : (
           <div className="overflow-x-auto border border-[#E8E0D5] rounded-lg">
             <table className="w-full border-collapse text-left text-sm">
@@ -119,7 +167,7 @@ export default function AdminProductsPage() {
                 </tr>
               </thead>
               <tbody>
-                {products.map((p) => {
+                {filteredProducts.map((p) => {
                   const primaryImg = p.images?.find((img) => img.role === 'primary') || p.images?.[0];
 
                   return (
@@ -150,12 +198,19 @@ export default function AdminProductsPage() {
                           <div>
                             <Link
                               href={`/admin/products/${p.id}`}
-                              className="font-semibold text-[#2C241E] no-underline hover:underline"
+                              className="font-semibold text-[#2C241E] no-underline hover:underline block"
                             >
                               {p.name}
                             </Link>
-                            <div className="text-xs text-[#7A6F66]">
-                              SKU: {p.sku || 'N/A'} • {p.images?.length || 0} photo{p.images?.length === 1 ? '' : 's'}
+                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                              {p.sku && (
+                                <span className="text-[11px] font-mono font-bold text-[#7B5B3A] bg-[#FAF6F0] px-1.5 py-0.5 rounded border border-[#E2D5C7]">
+                                  {p.sku}
+                                </span>
+                              )}
+                              <span className="text-xs text-[#7A6F66]">
+                                {p.images?.length || 0} photo{p.images?.length === 1 ? '' : 's'}
+                              </span>
                             </div>
                           </div>
                         </div>

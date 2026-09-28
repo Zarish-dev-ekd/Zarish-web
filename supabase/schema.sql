@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS public.site_settings (
   meta_title TEXT DEFAULT 'ZARISH by Nehala Mufeed | Premium Modest Fashion',
   meta_description TEXT DEFAULT 'Discover elegant modest fashion by ZARISH. Graceful pieces for your everyday elegance.',
   og_image_url TEXT DEFAULT '',
+  default_size_chart JSONB DEFAULT NULL,
   updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
 );
 
@@ -154,6 +155,7 @@ CREATE TABLE IF NOT EXISTS public.products (
   stock_quantity INTEGER DEFAULT 0,
   seo_title TEXT,
   seo_description TEXT,
+  size_chart JSONB DEFAULT NULL,
   published_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW()),
   created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW()),
   updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
@@ -368,4 +370,11 @@ CREATE POLICY "Admin manage order items" ON public.order_items FOR ALL TO authen
 
 CREATE POLICY "Public read active coupons" ON public.coupons FOR SELECT USING (true);
 CREATE POLICY "Admin manage coupons" ON public.coupons FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- Optional Migrations (if updating existing production database):
+ALTER TABLE public.site_settings ADD COLUMN IF NOT EXISTS default_size_chart JSONB DEFAULT NULL;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS size_chart JSONB DEFAULT NULL;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS sku TEXT DEFAULT NULL;
+CREATE INDEX IF NOT EXISTS idx_products_sku ON public.products(sku);
+
 

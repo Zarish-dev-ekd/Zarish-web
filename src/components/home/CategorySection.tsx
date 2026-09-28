@@ -35,24 +35,29 @@ export default function CategorySection({
   const [isInteracting, setIsInteracting] = useState(false);
   const resumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fast & Smooth Auto-Slide Loop with Native Touch Swipe support
+  // Gentle & Smooth Minimal Auto-Slide Loop with Native Touch Swipe support
   useEffect(() => {
     const el = scrollRef.current;
     if (!el || activeCategories.length === 0) return;
 
     let animId: number;
-    // Increased speed: 1.4px per frame (~85px/sec) for brisk, lively auto-slide
-    const speed = 1.4;
+    let pos = el.scrollLeft;
+    // Ultra-slow, gentle auto-slide speed (~0.32px per frame)
+    const speed = 0.32;
 
     const animate = () => {
       if (!isInteracting && el) {
-        el.scrollLeft += speed;
+        pos += speed;
         const halfWidth = el.scrollWidth / 2;
-        if (halfWidth > 0 && el.scrollLeft >= halfWidth) {
-          el.scrollLeft -= halfWidth;
-        } else if (el.scrollLeft <= 0) {
-          el.scrollLeft += halfWidth;
+        if (halfWidth > 0 && pos >= halfWidth) {
+          pos -= halfWidth;
+        } else if (pos <= 0) {
+          pos += halfWidth;
         }
+        el.scrollLeft = pos;
+      } else if (el) {
+        // Keep tracker accurately synced when user touches / drags
+        pos = el.scrollLeft;
       }
       animId = requestAnimationFrame(animate);
     };

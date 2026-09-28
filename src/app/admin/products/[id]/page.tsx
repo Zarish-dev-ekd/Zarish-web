@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import ColorImageUploader from '@/components/admin/ColorImageUploader';
 import MultiImageUpload, { type UploadedImageItem } from '@/components/admin/MultiImageUpload';
-import type { Category, Size, ProductColor, Product } from '@/lib/types';
+import ProductSizeChartEditor from '@/components/admin/ProductSizeChartEditor';
+import type { Category, Size, ProductColor, Product, SizeChartConfig } from '@/lib/types';
 
 interface EditProductPageProps {
   params: Promise<{ id: string }>;
@@ -42,6 +43,13 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
   const [isFeatured, setIsFeatured] = useState(false);
   const [isNewArrival, setIsNewArrival] = useState(true);
   const [isOnSale, setIsOnSale] = useState(false);
+
+  // Size Chart Configuration
+  const [sizeChartConfig, setSizeChartConfig] = useState<SizeChartConfig>({
+    is_active: true,
+    use_default: true,
+    rows: undefined,
+  });
 
   // Color & Image Management State
   const [selectedColorIds, setSelectedColorIds] = useState<string[]>([]);
@@ -104,6 +112,15 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
         setIsFeatured(Boolean(p.is_featured));
         setIsNewArrival(Boolean(p.is_new_arrival));
         setIsOnSale(Boolean(p.is_on_sale));
+        if (p.size_chart) {
+          setSizeChartConfig(p.size_chart);
+        } else {
+          setSizeChartConfig({
+            is_active: true,
+            use_default: true,
+            rows: undefined,
+          });
+        }
 
         // 1. Reconstruct colors & variant stock from product_variants
         const colorsList = clrs || [];
@@ -413,27 +430,40 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
       const parsedComparePrice = comparePrice ? parseFloat(comparePrice) : null;
 
       // 1. Update product table
-      const { error: updateErr } = await supabase
+      const updatePayload: any = {
+        name: name.trim(),
+        slug: slug.trim() || name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        category_id: categoryId || null,
+        price: parsedPrice,
+        compare_at_price: parsedComparePrice,
+        sku: sku.trim() || null,
+        stock_quantity: totalStock,
+        short_description: shortDescription.trim() || null,
+        description: description.trim() || null,
+        materials: materials.trim() || null,
+        care_instructions: careInstructions.trim() || null,
+        is_active: isActive,
+        is_featured: isFeatured,
+        is_new_arrival: isNewArrival,
+        is_on_sale: isOnSale,
+        size_chart: sizeChartConfig,
+        updated_at: new Date().toISOString(),
+      };
+
+      let { error: updateErr } = await supabase
         .from('products')
-        .update({
-          name: name.trim(),
-          slug: slug.trim() || name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-          category_id: categoryId || null,
-          price: parsedPrice,
-          compare_at_price: parsedComparePrice,
-          sku: sku.trim() || null,
-          stock_quantity: totalStock,
-          short_description: shortDescription.trim() || null,
-          description: description.trim() || null,
-          materials: materials.trim() || null,
-          care_instructions: careInstructions.trim() || null,
-          is_active: isActive,
-          is_featured: isFeatured,
-          is_new_arrival: isNewArrival,
-          is_on_sale: isOnSale,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updatePayload)
         .eq('id', productId);
+
+      // Fallback if size_chart column does not exist yet
+      if (updateErr && updateErr.message?.includes('size_chart')) {
+        delete updatePayload.size_chart;
+        const retry = await supabase
+          .from('products')
+          .update(updatePayload)
+          .eq('id', productId);
+        updateErr = retry.error;
+      }
 
       if (updateErr) throw updateErr;
 
@@ -635,34 +665,52 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
                 />
               </div>
 
-              <div className="mb-5">
-                <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-[13px] font-semibold text-[#2C241E]">
-                    URL Slug
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                <div>
+                  <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">
+                    Product Code (SKU)
                   </label>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setSlug(
-                        name
-                          .toLowerCase()
-                          .trim()
-                          .replace(/[^a-z0-9]+/g, '-')
-                          .replace(/(^-|-$)/g, '')
-                      )
-                    }
-                    className="text-xs text-[#7B5B3A] hover:underline"
-                  >
-                    ↺ Sync with Title
-                  </button>
+                  <input
+                    type="text"
+                    className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15 uppercase font-mono font-medium"
+                    placeholder="e.g. ZAR-010"
+                    value={sku}
+                    onChange={(e) => setSku(e.target.value.toUpperCase())}
+                  />
+                  <p className="text-[11px] text-[#7A6F66] mt-1 m-0">
+                    Searchable code shown on product detail page.
+                  </p>
                 </div>
-                <input
-                  type="text"
-                  className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
-                  placeholder="classic-embroidered-silk-abaya"
-                  value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
-                />
+
+                <div>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="block text-[13px] font-semibold text-[#2C241E]">
+                      URL Slug
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSlug(
+                          name
+                            .toLowerCase()
+                            .trim()
+                            .replace(/[^a-z0-9]+/g, '-')
+                            .replace(/(^-|-$)/g, '')
+                        )
+                      }
+                      className="text-xs text-[#7B5B3A] hover:underline cursor-pointer"
+                    >
+                      ↺ Sync with Title
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
+                    placeholder="classic-embroidered-silk-abaya"
+                    value={slug}
+                    onChange={(e) => setSlug(e.target.value)}
+                  />
+                </div>
               </div>
 
               <div className="mb-5">
@@ -992,7 +1040,7 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
             </div>
 
             {/* 4. Fabric & Specifications */}
-            <div className="bg-white border border-[#E8E0D5] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+            <div className="bg-white border border-[#E8E0D5] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)] mb-8">
               <h3 className="text-lg font-semibold m-0 mb-4 text-[#2C241E]">
                 4. Fabric & Garment Specifications
               </h3>
@@ -1024,6 +1072,13 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
                 </div>
               </div>
             </div>
+
+            {/* 5. Size Chart & Measurement Guide Configuration */}
+            <ProductSizeChartEditor
+              value={sizeChartConfig}
+              onChange={setSizeChartConfig}
+              availableSizes={availableSizes}
+            />
           </div>
 
           {/* ─── RIGHT COLUMN: Pricing, Category, Badges, Save ─── */}
