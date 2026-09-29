@@ -91,19 +91,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           <span className="text-[11px] tracking-[0.2em] uppercase text-[#7B5B3A] font-semibold">
             {onSale ? 'SPECIAL OFFERS' : activeCategory ? 'CURATED COLLECTION' : 'EXPLORE SHOP'}
           </span>
-          <h1 className="font-display text-2xl sm:text-4xl font-bold text-[#2C1D13] mt-1.5 mb-2">
+          <h1 className="font-display text-2xl sm:text-4xl font-bold text-[#2C1D13] mt-1.5">
             {onSale
               ? 'Sale & Special Offers'
               : activeCategory
               ? activeCategory.name
               : 'The Full Collection'}
           </h1>
-          <p className="text-xs sm:text-sm text-[#8C7B6B] max-w-[580px] mx-auto leading-relaxed">
-            {activeCategory?.description ||
-              (onSale
-                ? 'Discover limited-edition deals and timeless seasonal pieces at special pricing.'
-                : 'Refined modest silhouettes crafted with premium fabrics for everyday elegance.')}
-          </p>
         </div>
 
         {/* ── FILTER & SORT CONTROLS ── */}

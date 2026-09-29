@@ -33,7 +33,6 @@ const FOOTER_COLUMNS = [
   {
     title: 'About Zarish',
     links: [
-      { label: 'By Nehala Mufeed', href: '/about' },
       { label: 'Size & Silhouette Guide', href: '/shop-by-size' },
       { label: 'Contact Customer Care', href: '/contact' },
     ],

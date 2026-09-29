@@ -59,9 +59,6 @@ export default async function CollectionSlugPage({ params }: CollectionSlugPageP
           <h1 className="font-display my-2 text-3xl sm:text-4xl font-bold text-[#2C1D13]">
             New Arrivals
           </h1>
-          <p className="text-xs sm:text-sm text-[#8C7B6B] leading-relaxed">
-            Our newest seasonal silhouettes fresh from the atelier. Tailored with premium fabrics for effortless confidence and memorable moments.
-          </p>
         </div>
 
         {/* Direct Link to Full Shop Catalog */}

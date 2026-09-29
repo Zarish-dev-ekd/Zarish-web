@@ -152,7 +152,7 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
     availableSizes.length > 0 ? availableSizes[0].name : 'Standard'
   );
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState<'details' | 'materials' | 'shipping'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'materials'>('details');
 
   // Keep selectedSize synchronized when color/availableSizes change
   useEffect(() => {
@@ -749,17 +749,6 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
                   Fabric & Care
                 </button>
               )}
-              <button
-                type="button"
-                className={`pb-3 text-xs font-semibold uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
-                  activeTab === 'shipping'
-                    ? 'border-[#2C1D13] text-[#2C1D13]'
-                    : 'border-transparent text-[#8C7B6B] hover:text-[#2C1D13]'
-                }`}
-                onClick={() => setActiveTab('shipping')}
-              >
-                Delivery & Returns
-              </button>
             </div>
 
             <div className="pt-4 text-xs text-[#6B5744] leading-relaxed">
@@ -778,12 +767,6 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
                       <strong>Care:</strong> {product.care_instructions}
                     </p>
                   )}
-                </div>
-              )}
-              {activeTab === 'shipping' && (
-                <div className="space-y-1.5">
-                  <p>All pieces are carefully packed and dispatched within 24–48 business hours.</p>
-                  <p>Express courier delivery takes 3–5 working days across India, and 5–8 days internationally.</p>
                 </div>
               )}
             </div>

@@ -37,9 +37,6 @@ export default async function CollectionsPage() {
           <h1 className="font-display my-2 text-2xl sm:text-4xl font-bold text-[#2C1D13] uppercase">
             ZARISH Collections
           </h1>
-          <p className="text-xs sm:text-sm text-[#8C7B6B] max-w-[580px] mx-auto leading-relaxed">
-            Curated modest edits designed with rich fabrics, clean tailoring, and everyday versatility.
-          </p>
         </div>
 
         {categories.length > 0 ? (
