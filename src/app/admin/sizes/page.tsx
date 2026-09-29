@@ -1087,34 +1087,14 @@ export default function AdminSizesAndColorsPage() {
                   You can upload a file above directly to Cloudinary, or paste any image URL here.
                 </p>
               </div>
-
-              {/* Guideline Overlay Toggle */}
-              <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5]">
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={guideShowOverlay}
-                    onChange={(e) => setGuideShowOverlay(e.target.checked)}
-                    className="w-4 h-4 rounded text-[#7B5B3A] focus:ring-[#7B5B3A] mt-0.5"
-                  />
-                  <div>
-                    <span className="text-xs font-bold text-[#2C1D13] block">
-                      Show interactive measurement guideline overlays (Bust, Waist, Hips lines)
-                    </span>
-                    <span className="text-[11px] text-[#7A6F66] mt-0.5 block">
-                      Keep checked if using a plain model figure. Uncheck if your uploaded graphic already has measurement arrows or text baked into the artwork.
-                    </span>
-                  </div>
-                </label>
-              </div>
             </div>
 
             {/* Right: Live Storefront Preview Box */}
             <div className="lg:col-span-5 flex flex-col items-center">
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#7B5B3A] mb-2 self-start">
-                Storefront Modal Live Preview
+                Storefront Modal Live Preview (Image Only)
               </span>
-              <div className="relative w-52 h-[370px] bg-white rounded-2xl border-2 border-[#E8E0D5] p-2 shadow-sm overflow-hidden flex items-center justify-center">
+              <div className="relative w-full max-w-[280px] h-[380px] bg-white rounded-2xl border-2 border-[#E8E0D5] p-3 shadow-sm overflow-hidden flex items-center justify-center">
                 <div className="relative w-full h-full">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -1122,41 +1102,6 @@ export default function AdminSizesAndColorsPage() {
                     alt="Guide Preview"
                     className="w-full h-full object-contain object-center"
                   />
-
-                  {guideShowOverlay && (
-                    <>
-                      <svg
-                        className="absolute inset-0 w-full h-full pointer-events-none"
-                        viewBox="0 0 200 370"
-                        preserveAspectRatio="none"
-                      >
-                        <line x1="35" y1="110" x2="165" y2="110" stroke="#E11D48" strokeWidth="2" strokeDasharray="4 3" />
-                        <circle cx="100" cy="110" r="3.5" fill="#E11D48" />
-
-                        <line x1="45" y1="138" x2="155" y2="138" stroke="#E11D48" strokeWidth="2" strokeDasharray="4 3" />
-                        <circle cx="100" cy="138" r="3.5" fill="#E11D48" />
-
-                        <line x1="40" y1="172" x2="160" y2="172" stroke="#E11D48" strokeWidth="2" strokeDasharray="4 3" />
-                        <circle cx="100" cy="172" r="3.5" fill="#E11D48" />
-                      </svg>
-
-                      <div className="absolute top-[28%] right-1">
-                        <span className="text-[9px] font-bold text-[#E11D48] bg-white/95 px-1.5 py-0.5 rounded-full shadow-2xs border border-[#FECDD3]">
-                          1. Bust
-                        </span>
-                      </div>
-                      <div className="absolute top-[35.5%] right-1">
-                        <span className="text-[9px] font-bold text-[#E11D48] bg-white/95 px-1.5 py-0.5 rounded-full shadow-2xs border border-[#FECDD3]">
-                          2. Waist
-                        </span>
-                      </div>
-                      <div className="absolute top-[44.5%] right-1">
-                        <span className="text-[9px] font-bold text-[#E11D48] bg-white/95 px-1.5 py-0.5 rounded-full shadow-2xs border border-[#FECDD3]">
-                          3. Hips
-                        </span>
-                      </div>
-                    </>
-                  )}
                 </div>
               </div>
               <span className="text-[11px] text-[#7A6F66] mt-2">

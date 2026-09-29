@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import { IconX, IconRuler, IconTapeMeasure } from '@/components/icons';
+import { IconX } from '@/components/icons';
 import { getDefaultSizeChartRows, getEffectiveProductSizeChart, getSizeGuideConfig } from '@/lib/sizeChart';
 import type { Product, SiteSettings, SizeMeasurementRow } from '@/lib/types';
 
@@ -29,7 +29,6 @@ export default function SizeGuideModal({
 }: SizeGuideModalProps) {
   const [activeTab, setActiveTab] = useState<'chart' | 'measure'>(initialTab);
   const [unit, setUnit] = useState<'in' | 'cm'>('in');
-  const [highlightedPoint, setHighlightedPoint] = useState<'bust' | 'waist' | 'hips' | 'length' | null>(null);
 
   // Dynamically resolve measurement rows: Custom product size chart OR Global Default Size Chart
   const measurementRows = useMemo(() => {
@@ -38,13 +37,12 @@ export default function SizeGuideModal({
     return resolved.rows;
   }, [product, settings]);
 
-  // Dynamically resolve How-to-Measure graphic & overlay settings
+  // Dynamically resolve How-to-Measure graphic settings
   const guideConfig = useMemo(() => {
     return getSizeGuideConfig(settings);
   }, [settings]);
 
   const modelImageUrl = guideConfig.imageUrl;
-  const showOverlay = guideConfig.showOverlay;
 
   // Sync initialTab when modal opens
   useEffect(() => {
@@ -144,36 +142,38 @@ export default function SizeGuideModal({
             </button>
           </div>
 
-          {/* Unit Toggle & Helper row */}
-          <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-[#EAE3DA]">
-            <span className="text-[11px] text-[#6E6259]">
-              Unit: <strong className="text-[#2C1D13]">{unit === 'in' ? 'Inches (in)' : 'Centimeters (cm)'}</strong>
-            </span>
-            <div className="inline-flex items-center bg-[#F2ECE4] p-0.5 rounded-full border border-[#D8CABE]">
-              <button
-                type="button"
-                onClick={() => setUnit('in')}
-                className={`px-3 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                  unit === 'in'
-                    ? 'bg-[#2C1D13] text-white shadow-xs'
-                    : 'text-[#6E6259] hover:text-[#2C1D13]'
-                }`}
-              >
-                in
-              </button>
-              <button
-                type="button"
-                onClick={() => setUnit('cm')}
-                className={`px-3 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                  unit === 'cm'
-                    ? 'bg-[#2C1D13] text-white shadow-xs'
-                    : 'text-[#6E6259] hover:text-[#2C1D13]'
-                }`}
-              >
-                cm
-              </button>
+          {/* Unit Toggle & Helper row (Size Chart only) */}
+          {activeTab === 'chart' && (
+            <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-[#EAE3DA]">
+              <span className="text-[11px] text-[#6E6259]">
+                Unit: <strong className="text-[#2C1D13]">{unit === 'in' ? 'Inches (in)' : 'Centimeters (cm)'}</strong>
+              </span>
+              <div className="inline-flex items-center bg-[#F2ECE4] p-0.5 rounded-full border border-[#D8CABE]">
+                <button
+                  type="button"
+                  onClick={() => setUnit('in')}
+                  className={`px-3 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                    unit === 'in'
+                      ? 'bg-[#2C1D13] text-white shadow-xs'
+                      : 'text-[#6E6259] hover:text-[#2C1D13]'
+                  }`}
+                >
+                  in
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUnit('cm')}
+                  className={`px-3 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                    unit === 'cm'
+                      ? 'bg-[#2C1D13] text-white shadow-xs'
+                      : 'text-[#6E6259] hover:text-[#2C1D13]'
+                  }`}
+                >
+                  cm
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Desktop Tab Switcher & Unit Toggle (hidden sm:flex - unchanged) */}
@@ -211,31 +211,33 @@ export default function SizeGuideModal({
             </button>
           </div>
 
-          {/* Unit Toggle (in / cm) */}
-          <div className="inline-flex items-center bg-[#F2ECE4] p-0.5 rounded-full border border-[#E2D5C7]">
-            <button
-              type="button"
-              onClick={() => setUnit('in')}
-              className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                unit === 'in'
-                  ? 'bg-[#2C1D13] text-white shadow-xs'
-                  : 'text-[#6E6259] hover:text-[#2C1D13]'
-              }`}
-            >
-              in
-            </button>
-            <button
-              type="button"
-              onClick={() => setUnit('cm')}
-              className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                unit === 'cm'
-                  ? 'bg-[#2C1D13] text-white shadow-xs'
-                  : 'text-[#6E6259] hover:text-[#2C1D13]'
-              }`}
-            >
-              cm
-            </button>
-          </div>
+          {/* Unit Toggle (in / cm) - only for size chart */}
+          {activeTab === 'chart' && (
+            <div className="inline-flex items-center bg-[#F2ECE4] p-0.5 rounded-full border border-[#E2D5C7]">
+              <button
+                type="button"
+                onClick={() => setUnit('in')}
+                className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                  unit === 'in'
+                    ? 'bg-[#2C1D13] text-white shadow-xs'
+                    : 'text-[#6E6259] hover:text-[#2C1D13]'
+                }`}
+              >
+                in
+              </button>
+              <button
+                type="button"
+                onClick={() => setUnit('cm')}
+                className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                  unit === 'cm'
+                    ? 'bg-[#2C1D13] text-white shadow-xs'
+                    : 'text-[#6E6259] hover:text-[#2C1D13]'
+                }`}
+              >
+                cm
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Modal Body */}
@@ -368,240 +370,20 @@ export default function SizeGuideModal({
               </div>
             </div>
           ) : (
-            /* TAB 2: REALISTIC HIGH-FASHION ILLUSTRATION HOW TO MEASURE GUIDE */
-            <div className="space-y-6">
-              <div>
-                <p className="text-xs sm:text-sm text-[#6E6259] m-0">
-                  Follow the guidelines below with a soft measuring tape. Hover or tap each measurement step to highlight the guide on the figure:
-                </p>
-              </div>
-
-              {/* High-Fashion Realistic Silhouette Guide Layout */}
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-center bg-[#FAF8F5] border border-[#E8E0D5] rounded-2xl p-5 sm:p-6">
-                
-                {/* Visual Model Graphic Column */}
-                <div className="sm:col-span-5 flex flex-col items-center justify-center">
-                  <div className="relative w-44 sm:w-52 h-[340px] sm:h-[370px] bg-white rounded-2xl border border-[#EFE9E1] p-2 shadow-xs overflow-hidden flex items-center justify-center">
-                    {/* Realistic High-Fashion Model Illustration */}
-                    <div className="relative w-full h-full">
-                      <Image
-                        src={modelImageUrl}
-                        alt="Body Measurement Guide Model"
-                        fill
-                        priority
-                        className="object-contain object-center"
-                      />
-
-                      {/* SVG Dynamic Overlay Guidelines over Model */}
-                      {showOverlay && (
-                        <>
-                          <svg
-                            className="absolute inset-0 w-full h-full pointer-events-none"
-                            viewBox="0 0 200 370"
-                            preserveAspectRatio="none"
-                          >
-                            {/* 1. BUST GUIDELINE (at 30% height) */}
-                            <g className={`transition-opacity duration-300 ${highlightedPoint === 'bust' || !highlightedPoint ? 'opacity-100' : 'opacity-35'}`}>
-                              <line
-                                x1="35"
-                                y1="110"
-                                x2="165"
-                                y2="110"
-                                stroke="#E11D48"
-                                strokeWidth={highlightedPoint === 'bust' ? '2.5' : '1.75'}
-                                strokeDasharray="4 3"
-                              />
-                              <circle cx="100" cy="110" r="3.5" fill="#E11D48" />
-                            </g>
-
-                            {/* 2. WAIST GUIDELINE (at 37% height) */}
-                            <g className={`transition-opacity duration-300 ${highlightedPoint === 'waist' || !highlightedPoint ? 'opacity-100' : 'opacity-35'}`}>
-                              <line
-                                x1="45"
-                                y1="138"
-                                x2="155"
-                                y2="138"
-                                stroke="#E11D48"
-                                strokeWidth={highlightedPoint === 'waist' ? '2.5' : '1.75'}
-                                strokeDasharray="4 3"
-                              />
-                              <circle cx="100" cy="138" r="3.5" fill="#E11D48" />
-                            </g>
-
-                            {/* 3. HIPS GUIDELINE (at 46% height) */}
-                            <g className={`transition-opacity duration-300 ${highlightedPoint === 'hips' || !highlightedPoint ? 'opacity-100' : 'opacity-35'}`}>
-                              <line
-                                x1="40"
-                                y1="172"
-                                x2="160"
-                                y2="172"
-                                stroke="#E11D48"
-                                strokeWidth={highlightedPoint === 'hips' ? '2.5' : '1.75'}
-                                strokeDasharray="4 3"
-                              />
-                              <circle cx="100" cy="172" r="3.5" fill="#E11D48" />
-                            </g>
-
-                            {/* 4. LENGTH GUIDELINE (Vertical from neck/shoulder to hemline) */}
-                            {highlightedPoint === 'length' && (
-                              <g className="transition-opacity duration-300">
-                                <line
-                                  x1="70"
-                                  y1="75"
-                                  x2="70"
-                                  y2="340"
-                                  stroke="#7B5B3A"
-                                  strokeWidth="2"
-                                  strokeDasharray="4 3"
-                                />
-                                <circle cx="70" cy="75" r="3" fill="#7B5B3A" />
-                                <circle cx="70" cy="340" r="3" fill="#7B5B3A" />
-                              </g>
-                            )}
-                          </svg>
-
-                          {/* On-model floating badges */}
-                          <div
-                            className={`absolute top-[28%] right-1 transition-all transform ${
-                              highlightedPoint === 'bust' ? 'scale-110' : ''
-                            }`}
-                          >
-                            <span className="text-[10px] font-bold text-[#E11D48] bg-white/95 backdrop-blur-xs px-2 py-0.5 rounded-full shadow-xs border border-[#FECDD3]">
-                              1. Bust
-                            </span>
-                          </div>
-
-                          <div
-                            className={`absolute top-[35.5%] right-1 transition-all transform ${
-                              highlightedPoint === 'waist' ? 'scale-110' : ''
-                            }`}
-                          >
-                            <span className="text-[10px] font-bold text-[#E11D48] bg-white/95 backdrop-blur-xs px-2 py-0.5 rounded-full shadow-xs border border-[#FECDD3]">
-                              2. Waist
-                            </span>
-                          </div>
-
-                          <div
-                            className={`absolute top-[44.5%] right-1 transition-all transform ${
-                              highlightedPoint === 'hips' ? 'scale-110' : ''
-                            }`}
-                          >
-                            <span className="text-[10px] font-bold text-[#E11D48] bg-white/95 backdrop-blur-xs px-2 py-0.5 rounded-full shadow-xs border border-[#FECDD3]">
-                              3. Hips
-                            </span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
+            /* TAB 2: HOW TO MEASURE GUIDE (IMAGE ONLY) */
+            <div className="flex flex-col items-center justify-center py-1 sm:py-2">
+              <div className="relative w-full max-w-xl h-[65vh] min-h-[350px] max-h-[560px] bg-[#FAF8F5] rounded-2xl border border-[#E8E0D5] p-3 sm:p-5 shadow-xs overflow-hidden flex items-center justify-center">
+                <div className="relative w-full h-full">
+                  <Image
+                    src={modelImageUrl}
+                    alt="How to Measure Guide"
+                    fill
+                    priority
+                    unoptimized
+                    sizes="(max-width: 640px) 100vw, 600px"
+                    className="object-contain object-center"
+                  />
                 </div>
-
-                {/* Step-by-step Interactive Guide Cards */}
-                <div className="sm:col-span-7 space-y-3 text-xs">
-                  {/* Step 1: Bust */}
-                  <div
-                    onMouseEnter={() => setHighlightedPoint('bust')}
-                    onMouseLeave={() => setHighlightedPoint(null)}
-                    onClick={() => setHighlightedPoint(highlightedPoint === 'bust' ? null : 'bust')}
-                    className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
-                      highlightedPoint === 'bust'
-                        ? 'bg-white border-[#E11D48] shadow-xs'
-                        : 'bg-white/80 border-[#E8E0D5] hover:border-[#D6CEC5]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="w-5 h-5 rounded-full bg-[#FFE4E6] text-[#E11D48] font-bold text-[10px] flex items-center justify-center">
-                        01
-                      </span>
-                      <h4 className="font-bold text-[#2C1D13] text-xs uppercase tracking-wide">
-                        Bust Measurement
-                      </h4>
-                    </div>
-                    <p className="text-[#6E6259] leading-relaxed pl-7 m-0">
-                      Wrap the measuring tape around the fullest part of your bust, keeping the tape level and parallel to the floor.
-                    </p>
-                  </div>
-
-                  {/* Step 2: Waist */}
-                  <div
-                    onMouseEnter={() => setHighlightedPoint('waist')}
-                    onMouseLeave={() => setHighlightedPoint(null)}
-                    onClick={() => setHighlightedPoint(highlightedPoint === 'waist' ? null : 'waist')}
-                    className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
-                      highlightedPoint === 'waist'
-                        ? 'bg-white border-[#E11D48] shadow-xs'
-                        : 'bg-white/80 border-[#E8E0D5] hover:border-[#D6CEC5]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="w-5 h-5 rounded-full bg-[#FFE4E6] text-[#E11D48] font-bold text-[10px] flex items-center justify-center">
-                        02
-                      </span>
-                      <h4 className="font-bold text-[#2C1D13] text-xs uppercase tracking-wide">
-                        Waist Measurement
-                      </h4>
-                    </div>
-                    <p className="text-[#6E6259] leading-relaxed pl-7 m-0">
-                      Measure around your natural waistline (the narrowest curve of your torso, typically right above your navel).
-                    </p>
-                  </div>
-
-                  {/* Step 3: Hips */}
-                  <div
-                    onMouseEnter={() => setHighlightedPoint('hips')}
-                    onMouseLeave={() => setHighlightedPoint(null)}
-                    onClick={() => setHighlightedPoint(highlightedPoint === 'hips' ? null : 'hips')}
-                    className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
-                      highlightedPoint === 'hips'
-                        ? 'bg-white border-[#E11D48] shadow-xs'
-                        : 'bg-white/80 border-[#E8E0D5] hover:border-[#D6CEC5]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="w-5 h-5 rounded-full bg-[#FFE4E6] text-[#E11D48] font-bold text-[10px] flex items-center justify-center">
-                        03
-                      </span>
-                      <h4 className="font-bold text-[#2C1D13] text-xs uppercase tracking-wide">
-                        Hips Measurement
-                      </h4>
-                    </div>
-                    <p className="text-[#6E6259] leading-relaxed pl-7 m-0">
-                      Stand upright with feet together. Wrap the measuring tape around the fullest point of your hips and seat.
-                    </p>
-                  </div>
-
-                  {/* Step 4: Garment Length */}
-                  <div
-                    onMouseEnter={() => setHighlightedPoint('length')}
-                    onMouseLeave={() => setHighlightedPoint(null)}
-                    onClick={() => setHighlightedPoint(highlightedPoint === 'length' ? null : 'length')}
-                    className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
-                      highlightedPoint === 'length'
-                        ? 'bg-white border-[#7B5B3A] shadow-xs'
-                        : 'bg-white/80 border-[#E8E0D5] hover:border-[#D6CEC5]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="w-5 h-5 rounded-full bg-[#F5ECE1] text-[#7B5B3A] font-bold text-[10px] flex items-center justify-center">
-                        04
-                      </span>
-                      <h4 className="font-bold text-[#2C1D13] text-xs uppercase tracking-wide">
-                        Front Length
-                      </h4>
-                    </div>
-                    <p className="text-[#6E6259] leading-relaxed pl-7 m-0">
-                      Measured vertically from the highest point of the shoulder down along the front to the bottom hemline.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Tailor Tip */}
-              <div className="bg-[#FAF7F2] border border-[#E8E0D5] rounded-2xl p-4 flex items-center gap-3 text-xs text-[#6E6259]">
-                <IconTapeMeasure size={20} className="text-[#7B5B3A] shrink-0" />
-                <p className="m-0 leading-relaxed">
-                  <strong className="text-[#2C1D13]">Pro Sizing Tip:</strong> Always keep the measuring tape comfortably snug but never tight against your skin. For the most accurate fit, measure directly over lightweight undergarments.
-                </p>
               </div>
             </div>
           )}
