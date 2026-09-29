@@ -145,14 +145,18 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   return (
     <>
       {/* ─── Heavy Level Organic SEO JSON-LD Schemas ─── */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
+      <section className="hidden" aria-hidden="true">
+        <script
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+      </section>
 
       <AnnouncementBar announcements={announcements} />
       <Header navigationItems={navigationItems} cartItemCount={0} />

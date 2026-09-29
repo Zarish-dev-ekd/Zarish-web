@@ -58,6 +58,7 @@ export default function AdminSidebar() {
               alt="ZARISH"
               width={90}
               height={28}
+              style={{ width: 'auto', height: 'auto' }}
               className="object-contain brightness-0 invert"
               priority
             />
@@ -112,6 +113,7 @@ export default function AdminSidebar() {
                   alt="ZARISH"
                   width={110}
                   height={34}
+                  style={{ width: 'auto', height: 'auto' }}
                   className="object-contain brightness-0 invert"
                 />
               </Link>
@@ -177,6 +179,7 @@ export default function AdminSidebar() {
               alt="ZARISH Admin"
               width={120}
               height={40}
+              style={{ width: 'auto', height: 'auto' }}
               className="object-contain brightness-0 invert mx-auto"
               priority
             />

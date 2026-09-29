@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { formatPrice, optimizeCloudinaryUrl } from '@/lib/utils';
-import { IconArrowRight, IconTruck, IconShield, IconPackage, IconShoppingBag, IconRuler, IconTapeMeasure } from '@/components/icons';
+import { IconArrowRight, IconTruck, IconShield, IconPackage, IconShoppingBag, IconRuler, IconTapeMeasure, IconWhatsapp } from '@/components/icons';
 import Badge from './Badge';
 import WishlistButton from './WishlistButton';
 import CheckoutModal from '@/components/checkout/CheckoutModal';
@@ -258,6 +258,39 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
     if (selectedColor) params.set('color', selectedColor);
     params.set('quantity', String(quantity));
     router.push(`/checkout?${params.toString()}`);
+  };
+
+  const handleWhatsAppOrder = () => {
+    const rawNumber = settings?.social_whatsapp
+      ? settings.social_whatsapp.replace(/[^0-9]/g, '')
+      : '919562292945';
+    const waNumber = rawNumber || '919562292945';
+    const currentUrl =
+      typeof window !== 'undefined'
+        ? window.location.href
+        : `https://www.zarishbynehalamufeed.com/products/${product.slug}`;
+    const totalPrice = formatPrice(product.price * quantity);
+
+    const message = [
+      `Hello ZARISH by Nehala Mufeed,`,
+      `I would like to order this garment via WhatsApp:`,
+      ``,
+      `*Product:* ${product.name}`,
+      product.sku ? `*SKU:* ${product.sku}` : null,
+      `*Size:* ${selectedSize || 'Standard'}`,
+      selectedColor ? `*Color:* ${selectedColor}` : null,
+      `*Quantity:* ${quantity}`,
+      `*Total Price:* ${totalPrice}`,
+      ``,
+      `*Link:* ${currentUrl}`,
+      ``,
+      `Please confirm my order and share payment / delivery details. Thank you!`,
+    ]
+      .filter((line) => line !== null)
+      .join('\n');
+
+    const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -715,9 +748,18 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
                 className="h-12 flex items-center justify-center gap-2 rounded-xl bg-[#2C1D13] hover:bg-[#7B5B3A] text-white px-5 text-xs font-bold tracking-[0.14em] uppercase shadow-[0_4px_16px_rgba(44,29,19,0.18)] hover:shadow-[0_6px_20px_rgba(123,91,58,0.25)] active:scale-[0.99] transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:hover:bg-[#2C1D13] disabled:cursor-not-allowed"
               >
                 <span>{isCurrentInStock ? 'Instant Checkout' : 'Unavailable'}</span>
-                {isCurrentInStock }
               </button>
             </div>
+
+            {/* WhatsApp Direct Order Button (under Instant Checkout) */}
+            <button
+              type="button"
+              onClick={handleWhatsAppOrder}
+              className="w-full h-12 flex items-center justify-center gap-2.5 rounded-xl bg-[#25D366] hover:bg-[#20BA5A] text-white text-[14px] sm:text-[15px] font-medium transition-all duration-200 shadow-[0_3px_12px_rgba(37,211,102,0.28)] hover:shadow-[0_5px_18px_rgba(37,211,102,0.38)] active:scale-[0.99] cursor-pointer select-none"
+            >
+              <IconWhatsapp size={22} className="text-white shrink-0" />
+              <span>Or order this via WhatsApp now!</span>
+            </button>
           </div>
 
 
