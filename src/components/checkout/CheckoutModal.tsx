@@ -39,7 +39,7 @@ export default function CheckoutModal({
   const [phone, setPhone] = useState('');
   const [addressLine1, setAddressLine1] = useState('');
   const [city, setCity] = useState('');
-  const [stateName, setStateName] = useState('');
+  const [stateName, setStateName] = useState('Kerala');
   const [postalCode, setPostalCode] = useState('');
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethodId>('india_post_parcel');
 
@@ -84,7 +84,7 @@ export default function CheckoutModal({
   const subtotal = product.price * quantity;
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
   const deliveryDetails = resolveDeliveryDetails(stateName || 'Kerala', deliveryMethod);
-  const deliveryFee = stateName ? deliveryDetails.deliveryFee : 0;
+  const deliveryFee = deliveryDetails.deliveryFee;
   const isKerala = deliveryDetails.isKerala;
   const finalPrice = Math.max(1, subtotal - discountAmount + deliveryFee);
 

@@ -30,18 +30,13 @@ export default function DeliveryMethodSelector({
   }, [options, selectedMethod, defaultMethodId, onSelectMethod]);
 
   return (
-    <div className={`space-y-3 ${className}`}>
-      <div className="flex items-center justify-between">
-        <label className="block text-xs font-bold uppercase tracking-wider text-[#2C1D13]">
-          Select Courier Partner {isKerala ? '(Across Kerala)' : '(Interstate Delivery)'}
-        </label>
-        <span className="text-[11px] text-[#7B5B3A] font-semibold">
-          {isKerala ? '3 Express Options' : 'Express National Courier'}
-        </span>
-      </div>
+    <div className={`space-y-2 ${className}`}>
+      <label className="block text-xs font-semibold text-[#3D2B1F] mb-1">
+        Select Courier Partner {isKerala ? '(Across Kerala)' : '(Interstate Delivery)'}
+      </label>
 
-      {/* Delivery Options Grid */}
-      <div className={`grid grid-cols-1 ${isKerala ? 'sm:grid-cols-3' : 'sm:grid-cols-1'} gap-3`}>
+      {/* Delivery Options Grid (Compact & Simple) */}
+      <div className={`grid grid-cols-1 ${isKerala ? 'sm:grid-cols-3' : 'sm:grid-cols-1'} gap-2`}>
         {options.map((option: DeliveryOption) => {
           const isSelected = selectedMethod === option.id;
 
@@ -49,38 +44,40 @@ export default function DeliveryMethodSelector({
             <div
               key={option.id}
               onClick={() => onSelectMethod(option.id)}
-              className={`relative p-3.5 sm:p-4 rounded-2xl border-2 transition-all cursor-pointer select-none flex flex-col justify-between ${
+              className={`p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2.5 ${
                 isSelected
-                  ? 'border-[#7B5B3A] bg-[#FAF6F0] shadow-sm'
-                  : 'border-[#E2D5C7] bg-white hover:border-[#7B5B3A]/50 hover:bg-[#FAF8F5]'
+                  ? 'border-[#7B5B3A] bg-[#FAF6F0] ring-1 ring-[#7B5B3A]/25 shadow-2xs'
+                  : 'border-[#E2D5C7] bg-white hover:border-[#7B5B3A]/40 hover:bg-[#FAF8F5]'
               }`}
             >
-              {/* Top Row: Radio circle + Courier Name */}
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
-                      isSelected
-                        ? 'border-[#7B5B3A] bg-[#7B5B3A]'
-                        : 'border-[#D4CCC4] bg-white'
-                    }`}
-                  >
-                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                  </div>
-                  <h4 className="text-xs sm:text-[13px] font-bold text-[#2C1D13] leading-snug">
-                    {option.name}
-                  </h4>
+              <div className="flex items-center gap-2 min-w-0">
+                <div
+                  className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${
+                    isSelected ? 'border-[#7B5B3A] bg-[#7B5B3A]' : 'border-[#C8BCB0] bg-white'
+                  }`}
+                >
+                  {isSelected && <div className="w-1 h-1 rounded-full bg-white" />}
                 </div>
 
-                {/* Blinking Green Text for Free Shipping or Price Tag */}
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-[#2C1D13] leading-tight truncate">
+                    {option.name}
+                  </h4>
+                  <span className="text-[10.5px] font-medium text-[#7A6F66] block leading-tight mt-0.5">
+                    {option.deliveryTime}
+                  </span>
+                </div>
+              </div>
+
+              <div className="shrink-0 text-right">
                 {option.isBlinkingFree ? (
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10.5px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
-                    <span className="animate-pulse">{option.badge || 'FREE SHIP'}</span>
+                    <span className="animate-pulse">FREE</span>
                   </span>
                 ) : (
                   <span
-                    className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                    className={`text-xs font-bold px-2 py-0.5 rounded-md ${
                       isSelected
                         ? 'bg-[#7B5B3A] text-white'
                         : 'bg-[#F2ECE4] text-[#2C1D13]'
@@ -89,14 +86,6 @@ export default function DeliveryMethodSelector({
                     {option.priceLabel}
                   </span>
                 )}
-              </div>
-
-              {/* Bottom Row: Delivery Transit Time */}
-              <div className="flex items-center justify-between text-xs pt-1.5 border-t border-[#EFE9E1] text-[#6E6259]">
-                <span className="text-[11px] font-medium text-[#7A6F66]">Delivery:</span>
-                <span className="text-[11px] font-bold text-[#2C1D13] bg-white px-2 py-0.5 rounded-md border border-[#E8E0D5]">
-                  {option.deliveryTime}
-                </span>
               </div>
             </div>
           );

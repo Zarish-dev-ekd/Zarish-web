@@ -36,7 +36,7 @@ function CheckoutContent() {
   const [phone, setPhone] = useState('');
   const [addressLine1, setAddressLine1] = useState('');
   const [city, setCity] = useState('');
-  const [stateName, setStateName] = useState('');
+  const [stateName, setStateName] = useState('Kerala');
   const [postalCode, setPostalCode] = useState('');
   const [orderNotes, setOrderNotes] = useState('');
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethodId>('india_post_parcel');
@@ -115,7 +115,7 @@ function CheckoutContent() {
 
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
   const deliveryDetails = resolveDeliveryDetails(stateName || 'Kerala', deliveryMethod);
-  const deliveryFee = stateName ? deliveryDetails.deliveryFee : 0;
+  const deliveryFee = deliveryDetails.deliveryFee;
   const isKerala = deliveryDetails.isKerala;
   const finalTotal = Math.max(1, subtotal - discountAmount + deliveryFee);
 
