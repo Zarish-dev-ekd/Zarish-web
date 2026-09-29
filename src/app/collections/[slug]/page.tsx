@@ -64,11 +64,8 @@ export default async function CollectionSlugPage({ params }: CollectionSlugPageP
           </p>
         </div>
 
-        {/* Count & Direct Link to Full Shop Catalog */}
-        <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#E2D5C7] text-xs text-[#8C7B6B]">
-          <span className="font-medium text-[#2C1D13]">
-            Showing {products.length} {products.length === 1 ? 'new garment' : 'new garments'}
-          </span>
+        {/* Direct Link to Full Shop Catalog */}
+        <div className="flex items-center justify-end mb-6 pb-4 border-b border-[#E2D5C7] text-xs text-[#8C7B6B]">
           <Link
             href="/products"
             className="group inline-flex items-center gap-1.5 text-[#7B5B3A] hover:text-[#2C1D13] font-semibold transition-colors uppercase tracking-wider text-[11px]"

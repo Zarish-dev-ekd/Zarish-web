@@ -180,68 +180,64 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           </div>
         </div>
 
-        {/* ── ACTIVE FILTER CHIPS & PRODUCT COUNT ── */}
-        <div className="flex flex-wrap items-center justify-between gap-3 my-5 text-xs text-[#8C7B6B]">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-medium text-[#2C1D13]">
-              Showing {products.length} {products.length === 1 ? 'garment' : 'garments'}
-            </span>
+        {/* ── ACTIVE FILTER CHIPS (ONLY WHEN FILTERS ACTIVE) ── */}
+        {hasActiveFilters && (
+          <div className="flex flex-wrap items-center justify-between gap-3 my-5 text-xs text-[#8C7B6B]">
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Active Filter Badges */}
+              {activeCategory && (
+                <Link
+                  href={buildUrl({ category: null })}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FAF6F0] border border-[#E2D5C7] text-[#2C1D13] hover:border-[#884A48] hover:text-[#884A48] transition-colors"
+                  title="Remove category filter"
+                >
+                  <span>Category: <strong>{activeCategory.name}</strong></span>
+                  <span className="text-xs font-bold">✕</span>
+                </Link>
+              )}
 
-            {/* Active Filter Badges */}
-            {activeCategory && (
-              <Link
-                href={buildUrl({ category: null })}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FAF6F0] border border-[#E2D5C7] text-[#2C1D13] hover:border-[#884A48] hover:text-[#884A48] transition-colors"
-                title="Remove category filter"
-              >
-                <span>Category: <strong>{activeCategory.name}</strong></span>
-                <span className="text-xs font-bold">✕</span>
-              </Link>
-            )}
+              {onSale && (
+                <Link
+                  href={buildUrl({ sale: false })}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FDF2F4] border border-[#8B4E5A]/40 text-[#8B4E5A] hover:border-[#8B4E5A] transition-colors"
+                  title="Remove sale filter"
+                >
+                  <span><strong>On Sale</strong></span>
+                  <span className="text-xs font-bold">✕</span>
+                </Link>
+              )}
 
-            {onSale && (
-              <Link
-                href={buildUrl({ sale: false })}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FDF2F4] border border-[#8B4E5A]/40 text-[#8B4E5A] hover:border-[#8B4E5A] transition-colors"
-                title="Remove sale filter"
-              >
-                <span><strong>On Sale</strong></span>
-                <span className="text-xs font-bold">✕</span>
-              </Link>
-            )}
+              {activeSize && (
+                <Link
+                  href={buildUrl({ size: null })}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FAF6F0] border border-[#E2D5C7] text-[#2C1D13] hover:border-[#884A48] hover:text-[#884A48] transition-colors"
+                  title="Remove size filter"
+                >
+                  <span>Size: <strong>{activeSize.name}</strong></span>
+                  <span className="text-xs font-bold">✕</span>
+                </Link>
+              )}
 
-            {activeSize && (
-              <Link
-                href={buildUrl({ size: null })}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FAF6F0] border border-[#E2D5C7] text-[#2C1D13] hover:border-[#884A48] hover:text-[#884A48] transition-colors"
-                title="Remove size filter"
-              >
-                <span>Size: <strong>{activeSize.name}</strong></span>
-                <span className="text-xs font-bold">✕</span>
-              </Link>
-            )}
+              {sort && sort !== 'newest' && (
+                <Link
+                  href={buildUrl({ sort: 'newest' })}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FAF6F0] border border-[#E2D5C7] text-[#2C1D13] hover:border-[#884A48] hover:text-[#884A48] transition-colors"
+                  title="Reset sorting to newest"
+                >
+                  <span>Sort: <strong>{sort === 'price-low' ? 'Price: Low to High' : 'Price: High to Low'}</strong></span>
+                  <span className="text-xs font-bold">✕</span>
+                </Link>
+              )}
+            </div>
 
-            {sort && sort !== 'newest' && (
-              <Link
-                href={buildUrl({ sort: 'newest' })}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FAF6F0] border border-[#E2D5C7] text-[#2C1D13] hover:border-[#884A48] hover:text-[#884A48] transition-colors"
-                title="Reset sorting to newest"
-              >
-                <span>Sort: <strong>{sort === 'price-low' ? 'Price: Low to High' : 'Price: High to Low'}</strong></span>
-                <span className="text-xs font-bold">✕</span>
-              </Link>
-            )}
-          </div>
-
-          {hasActiveFilters && (
             <Link
               href="/products"
               className="text-[#7B5B3A] underline underline-offset-2 font-medium hover:text-[#2C1D13] transition-colors"
             >
               Clear all filters
             </Link>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* ── GARMENT GRID OR EMPTY STATE ── */}
         {products.length > 0 ? (
