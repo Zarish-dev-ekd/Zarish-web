@@ -31,6 +31,27 @@ export async function getSiteSettings(): Promise<SiteSettings | null> {
       .maybeSingle();
 
     if (error || !data) return null;
+
+    // Attach custom size guide illustration if stored in store_policies
+    try {
+      const { data: guidePolicy } = await supabase
+        .from('store_policies')
+        .select('content')
+        .eq('slug', 'size-guide')
+        .maybeSingle();
+
+      if (guidePolicy?.content) {
+        if (guidePolicy.content.image_url) {
+          data.size_guide_image_url = guidePolicy.content.image_url;
+        }
+        if (typeof guidePolicy.content.show_overlay === 'boolean') {
+          data.size_guide_show_overlay = guidePolicy.content.show_overlay;
+        }
+      }
+    } catch {
+      // Ignore
+    }
+
     return data as SiteSettings;
   } catch {
     return null;

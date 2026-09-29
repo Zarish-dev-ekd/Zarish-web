@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { IconX, IconRuler, IconTapeMeasure } from '@/components/icons';
-import { getDefaultSizeChartRows, getEffectiveProductSizeChart } from '@/lib/sizeChart';
+import { getDefaultSizeChartRows, getEffectiveProductSizeChart, getSizeGuideConfig } from '@/lib/sizeChart';
 import type { Product, SiteSettings, SizeMeasurementRow } from '@/lib/types';
 
 interface SizeGuideModalProps {
@@ -37,6 +37,14 @@ export default function SizeGuideModal({
     const resolved = getEffectiveProductSizeChart(product, globalDefaults);
     return resolved.rows;
   }, [product, settings]);
+
+  // Dynamically resolve How-to-Measure graphic & overlay settings
+  const guideConfig = useMemo(() => {
+    return getSizeGuideConfig(settings);
+  }, [settings]);
+
+  const modelImageUrl = guideConfig.imageUrl;
+  const showOverlay = guideConfig.showOverlay;
 
   // Sync initialTab when modal opens
   useEffect(() => {
@@ -377,7 +385,7 @@ export default function SizeGuideModal({
                     {/* Realistic High-Fashion Model Illustration */}
                     <div className="relative w-full h-full">
                       <Image
-                        src="/size-guide-model.jpg"
+                        src={modelImageUrl}
                         alt="Body Measurement Guide Model"
                         fill
                         priority
@@ -385,101 +393,105 @@ export default function SizeGuideModal({
                       />
 
                       {/* SVG Dynamic Overlay Guidelines over Model */}
-                      <svg
-                        className="absolute inset-0 w-full h-full pointer-events-none"
-                        viewBox="0 0 200 370"
-                        preserveAspectRatio="none"
-                      >
-                        {/* 1. BUST GUIDELINE (at 30% height) */}
-                        <g className={`transition-opacity duration-300 ${highlightedPoint === 'bust' || !highlightedPoint ? 'opacity-100' : 'opacity-35'}`}>
-                          <line
-                            x1="35"
-                            y1="110"
-                            x2="165"
-                            y2="110"
-                            stroke="#E11D48"
-                            strokeWidth={highlightedPoint === 'bust' ? '2.5' : '1.75'}
-                            strokeDasharray="4 3"
-                          />
-                          <circle cx="100" cy="110" r="3.5" fill="#E11D48" />
-                        </g>
+                      {showOverlay && (
+                        <>
+                          <svg
+                            className="absolute inset-0 w-full h-full pointer-events-none"
+                            viewBox="0 0 200 370"
+                            preserveAspectRatio="none"
+                          >
+                            {/* 1. BUST GUIDELINE (at 30% height) */}
+                            <g className={`transition-opacity duration-300 ${highlightedPoint === 'bust' || !highlightedPoint ? 'opacity-100' : 'opacity-35'}`}>
+                              <line
+                                x1="35"
+                                y1="110"
+                                x2="165"
+                                y2="110"
+                                stroke="#E11D48"
+                                strokeWidth={highlightedPoint === 'bust' ? '2.5' : '1.75'}
+                                strokeDasharray="4 3"
+                              />
+                              <circle cx="100" cy="110" r="3.5" fill="#E11D48" />
+                            </g>
 
-                        {/* 2. WAIST GUIDELINE (at 37% height) */}
-                        <g className={`transition-opacity duration-300 ${highlightedPoint === 'waist' || !highlightedPoint ? 'opacity-100' : 'opacity-35'}`}>
-                          <line
-                            x1="45"
-                            y1="138"
-                            x2="155"
-                            y2="138"
-                            stroke="#E11D48"
-                            strokeWidth={highlightedPoint === 'waist' ? '2.5' : '1.75'}
-                            strokeDasharray="4 3"
-                          />
-                          <circle cx="100" cy="138" r="3.5" fill="#E11D48" />
-                        </g>
+                            {/* 2. WAIST GUIDELINE (at 37% height) */}
+                            <g className={`transition-opacity duration-300 ${highlightedPoint === 'waist' || !highlightedPoint ? 'opacity-100' : 'opacity-35'}`}>
+                              <line
+                                x1="45"
+                                y1="138"
+                                x2="155"
+                                y2="138"
+                                stroke="#E11D48"
+                                strokeWidth={highlightedPoint === 'waist' ? '2.5' : '1.75'}
+                                strokeDasharray="4 3"
+                              />
+                              <circle cx="100" cy="138" r="3.5" fill="#E11D48" />
+                            </g>
 
-                        {/* 3. HIPS GUIDELINE (at 46% height) */}
-                        <g className={`transition-opacity duration-300 ${highlightedPoint === 'hips' || !highlightedPoint ? 'opacity-100' : 'opacity-35'}`}>
-                          <line
-                            x1="40"
-                            y1="172"
-                            x2="160"
-                            y2="172"
-                            stroke="#E11D48"
-                            strokeWidth={highlightedPoint === 'hips' ? '2.5' : '1.75'}
-                            strokeDasharray="4 3"
-                          />
-                          <circle cx="100" cy="172" r="3.5" fill="#E11D48" />
-                        </g>
+                            {/* 3. HIPS GUIDELINE (at 46% height) */}
+                            <g className={`transition-opacity duration-300 ${highlightedPoint === 'hips' || !highlightedPoint ? 'opacity-100' : 'opacity-35'}`}>
+                              <line
+                                x1="40"
+                                y1="172"
+                                x2="160"
+                                y2="172"
+                                stroke="#E11D48"
+                                strokeWidth={highlightedPoint === 'hips' ? '2.5' : '1.75'}
+                                strokeDasharray="4 3"
+                              />
+                              <circle cx="100" cy="172" r="3.5" fill="#E11D48" />
+                            </g>
 
-                        {/* 4. LENGTH GUIDELINE (Vertical from neck/shoulder to hemline) */}
-                        {highlightedPoint === 'length' && (
-                          <g className="transition-opacity duration-300">
-                            <line
-                              x1="70"
-                              y1="75"
-                              x2="70"
-                              y2="340"
-                              stroke="#7B5B3A"
-                              strokeWidth="2"
-                              strokeDasharray="4 3"
-                            />
-                            <circle cx="70" cy="75" r="3" fill="#7B5B3A" />
-                            <circle cx="70" cy="340" r="3" fill="#7B5B3A" />
-                          </g>
-                        )}
-                      </svg>
+                            {/* 4. LENGTH GUIDELINE (Vertical from neck/shoulder to hemline) */}
+                            {highlightedPoint === 'length' && (
+                              <g className="transition-opacity duration-300">
+                                <line
+                                  x1="70"
+                                  y1="75"
+                                  x2="70"
+                                  y2="340"
+                                  stroke="#7B5B3A"
+                                  strokeWidth="2"
+                                  strokeDasharray="4 3"
+                                />
+                                <circle cx="70" cy="75" r="3" fill="#7B5B3A" />
+                                <circle cx="70" cy="340" r="3" fill="#7B5B3A" />
+                              </g>
+                            )}
+                          </svg>
 
-                      {/* On-model floating badges */}
-                      <div
-                        className={`absolute top-[28%] right-1 transition-all transform ${
-                          highlightedPoint === 'bust' ? 'scale-110' : ''
-                        }`}
-                      >
-                        <span className="text-[10px] font-bold text-[#E11D48] bg-white/95 backdrop-blur-xs px-2 py-0.5 rounded-full shadow-xs border border-[#FECDD3]">
-                          1. Bust
-                        </span>
-                      </div>
+                          {/* On-model floating badges */}
+                          <div
+                            className={`absolute top-[28%] right-1 transition-all transform ${
+                              highlightedPoint === 'bust' ? 'scale-110' : ''
+                            }`}
+                          >
+                            <span className="text-[10px] font-bold text-[#E11D48] bg-white/95 backdrop-blur-xs px-2 py-0.5 rounded-full shadow-xs border border-[#FECDD3]">
+                              1. Bust
+                            </span>
+                          </div>
 
-                      <div
-                        className={`absolute top-[35.5%] right-1 transition-all transform ${
-                          highlightedPoint === 'waist' ? 'scale-110' : ''
-                        }`}
-                      >
-                        <span className="text-[10px] font-bold text-[#E11D48] bg-white/95 backdrop-blur-xs px-2 py-0.5 rounded-full shadow-xs border border-[#FECDD3]">
-                          2. Waist
-                        </span>
-                      </div>
+                          <div
+                            className={`absolute top-[35.5%] right-1 transition-all transform ${
+                              highlightedPoint === 'waist' ? 'scale-110' : ''
+                            }`}
+                          >
+                            <span className="text-[10px] font-bold text-[#E11D48] bg-white/95 backdrop-blur-xs px-2 py-0.5 rounded-full shadow-xs border border-[#FECDD3]">
+                              2. Waist
+                            </span>
+                          </div>
 
-                      <div
-                        className={`absolute top-[44.5%] right-1 transition-all transform ${
-                          highlightedPoint === 'hips' ? 'scale-110' : ''
-                        }`}
-                      >
-                        <span className="text-[10px] font-bold text-[#E11D48] bg-white/95 backdrop-blur-xs px-2 py-0.5 rounded-full shadow-xs border border-[#FECDD3]">
-                          3. Hips
-                        </span>
-                      </div>
+                          <div
+                            className={`absolute top-[44.5%] right-1 transition-all transform ${
+                              highlightedPoint === 'hips' ? 'scale-110' : ''
+                            }`}
+                          >
+                            <span className="text-[10px] font-bold text-[#E11D48] bg-white/95 backdrop-blur-xs px-2 py-0.5 rounded-full shadow-xs border border-[#FECDD3]">
+                              3. Hips
+                            </span>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

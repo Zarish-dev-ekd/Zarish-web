@@ -76,3 +76,55 @@ export function getEffectiveProductSizeChart(
   // Fallback to global default
   return { isActive: true, rows: globalDefaultRows, isCustom: false };
 }
+
+export const DEFAULT_SIZE_GUIDE_IMAGE = '/size-guide-model.jpg';
+const LOCAL_STORAGE_GUIDE_IMAGE_KEY = 'zarish_size_guide_image';
+const LOCAL_STORAGE_GUIDE_OVERLAY_KEY = 'zarish_size_guide_show_overlay';
+
+export interface SizeGuideImageConfig {
+  imageUrl: string;
+  showOverlay: boolean;
+}
+
+/**
+ * Resolves the How-to-Measure model illustration from settings, localStorage, or fallback
+ */
+export function getSizeGuideConfig(settings?: SiteSettings | null): SizeGuideImageConfig {
+  let imageUrl = settings?.size_guide_image_url || '';
+  let showOverlay = settings?.size_guide_show_overlay ?? true;
+
+  if (typeof window !== 'undefined') {
+    try {
+      const cachedImg = localStorage.getItem(LOCAL_STORAGE_GUIDE_IMAGE_KEY);
+      if (cachedImg && !imageUrl) {
+        imageUrl = cachedImg;
+      }
+      const cachedOverlay = localStorage.getItem(LOCAL_STORAGE_GUIDE_OVERLAY_KEY);
+      if (cachedOverlay !== null) {
+        showOverlay = cachedOverlay === 'true';
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }
+
+  return {
+    imageUrl: imageUrl.trim() || DEFAULT_SIZE_GUIDE_IMAGE,
+    showOverlay,
+  };
+}
+
+/**
+ * Caches size guide image config in local storage for zero-latency reactive UI
+ */
+export function saveSizeGuideConfigLocally(config: { imageUrl: string; showOverlay: boolean }) {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_GUIDE_IMAGE_KEY, config.imageUrl);
+      localStorage.setItem(LOCAL_STORAGE_GUIDE_OVERLAY_KEY, String(config.showOverlay));
+    } catch {
+      // Ignore
+    }
+  }
+}
+

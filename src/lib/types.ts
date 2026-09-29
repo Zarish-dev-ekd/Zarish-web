@@ -26,6 +26,8 @@ export interface SiteSettings {
   meta_description: string;
   og_image_url: string;
   default_size_chart?: SizeMeasurementRow[] | null;
+  size_guide_image_url?: string | null;
+  size_guide_show_overlay?: boolean | null;
   updated_at: string;
 }
 

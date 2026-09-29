@@ -2,9 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { DEFAULT_SIZE_CHART_ROWS, getDefaultSizeChartRows, saveDefaultSizeChartLocally } from '@/lib/sizeChart';
+import {
+  DEFAULT_SIZE_CHART_ROWS,
+  DEFAULT_SIZE_GUIDE_IMAGE,
+  getDefaultSizeChartRows,
+  saveDefaultSizeChartLocally,
+  saveSizeGuideConfigLocally,
+} from '@/lib/sizeChart';
 import type { Size, ProductColor, SizeMeasurementRow } from '@/lib/types';
-import { IconRuler } from '@/components/icons';
+import { IconRuler, IconTapeMeasure } from '@/components/icons';
+import ImageUpload from '@/components/admin/ImageUpload';
 
 const STANDARD_SIZES = [
   { name: 'XS', slug: 'xs', display_order: 1 },
@@ -41,6 +48,11 @@ export default function AdminSizesAndColorsPage() {
   const [loadingChart, setLoadingChart] = useState(true);
   const [savingChart, setSavingChart] = useState(false);
   const [chartUnit, setChartUnit] = useState<'in' | 'cm'>('in');
+
+  // How to Measure Guide Graphic State
+  const [guideImageUrl, setGuideImageUrl] = useState<string>(DEFAULT_SIZE_GUIDE_IMAGE);
+  const [guideShowOverlay, setGuideShowOverlay] = useState<boolean>(true);
+  const [savingGuideImage, setSavingGuideImage] = useState<boolean>(false);
 
 
   // Common UI State
@@ -113,10 +125,26 @@ export default function AdminSizesAndColorsPage() {
     }
   };
 
+  // Fetch Size Guide Model Graphic
+  const fetchSizeGuideGraphic = async () => {
+    try {
+      const res = await fetch('/api/size-guide');
+      const data = await res.json();
+      if (data?.imageUrl) {
+        setGuideImageUrl(data.imageUrl);
+        setGuideShowOverlay(data.showOverlay ?? true);
+        saveSizeGuideConfigLocally({ imageUrl: data.imageUrl, showOverlay: data.showOverlay ?? true });
+      }
+    } catch (err) {
+      console.warn('Error loading size guide graphic:', err);
+    }
+  };
+
   useEffect(() => {
     fetchSizes();
     fetchColors();
     fetchDefaultSizeChart();
+    fetchSizeGuideGraphic();
   }, []);
 
   // Size Form Handlers
@@ -312,6 +340,52 @@ export default function AdminSizesAndColorsPage() {
     if (confirm('Reset default size chart back to factory standard values?')) {
       setDefaultChartRows(JSON.parse(JSON.stringify(DEFAULT_SIZE_CHART_ROWS)));
       setSuccess('Reset to factory standard measurements. Remember to click "Save Default Size Chart" to apply.');
+    }
+  };
+
+  const handleSaveGuideGraphic = async () => {
+    try {
+      setSavingGuideImage(true);
+      setError(null);
+      setSuccess(null);
+
+      const res = await fetch('/api/size-guide', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageUrl: guideImageUrl,
+          showOverlay: guideShowOverlay,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to save size guide graphic');
+      }
+
+      saveSizeGuideConfigLocally({ imageUrl: guideImageUrl, showOverlay: guideShowOverlay });
+      setSuccess('Size guide "How to Measure" illustration updated successfully! Storefront will now display your custom graphic.');
+    } catch (err: any) {
+      setError(err?.message || 'Failed to save size guide graphic');
+    } finally {
+      setSavingGuideImage(false);
+    }
+  };
+
+  const handleResetGuideGraphic = () => {
+    if (confirm('Reset the "How to Measure" graphic back to factory default model illustration?')) {
+      setGuideImageUrl(DEFAULT_SIZE_GUIDE_IMAGE);
+      setGuideShowOverlay(true);
+      saveSizeGuideConfigLocally({ imageUrl: DEFAULT_SIZE_GUIDE_IMAGE, showOverlay: true });
+      fetch('/api/size-guide', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageUrl: DEFAULT_SIZE_GUIDE_IMAGE,
+          showOverlay: true,
+        }),
+      }).catch(console.error);
+      setSuccess('Reset back to factory default illustration. Click "Save Guide Graphic" to apply permanently.');
     }
   };
 
@@ -938,6 +1012,161 @@ export default function AdminSizesAndColorsPage() {
           )}
         </div>
       </div>
+
+      {/* ─── HOW TO MEASURE GUIDE GRAPHIC MANAGEMENT SECTION ─── */}
+      <div className="mt-8">
+        <div className="bg-white border border-[#E8E0D5] rounded-2xl p-6 sm:p-7 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E8E0D5]/80 pb-5 mb-6">
+            <div className="flex items-center gap-3.5">
+              <span className="w-11 h-11 rounded-xl bg-[#FAF6F0] border border-[#E2D5C7] flex items-center justify-center text-[#7B5B3A] shadow-xs">
+                <IconTapeMeasure size={22} />
+              </span>
+              <div>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <h3 className="text-lg font-serif font-bold text-[#2C1D13] tracking-wide m-0">
+                    &quot;How to Measure&quot; Guide Illustration
+                  </h3>
+                  <span className="text-[11px] font-medium tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-[#FAF6F0] text-[#7B5B3A] border border-[#E2D5C7]">
+                    Size &amp; Fit Modal Graphic
+                  </span>
+                </div>
+                <p className="text-xs text-[#7A6F66] mt-1 m-0">
+                  Update the model figure or measuring diagram shown to customers in the &quot;How to Measure&quot; tab of the Size Guide modal.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={handleResetGuideGraphic}
+                className="px-3.5 py-2 text-xs font-medium rounded-lg border border-[#E8E0D5] bg-[#FAF8F5] text-[#7A6F66] hover:text-[#2C1D13] hover:bg-[#F2ECE4] hover:border-[#D6CEC5] transition-all cursor-pointer"
+              >
+                Reset Default Model
+              </button>
+
+              <button
+                type="button"
+                disabled={savingGuideImage}
+                onClick={handleSaveGuideGraphic}
+                className="px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-[#2C1D13] text-white hover:bg-[#422C1D] active:scale-98 transition-all shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                {savingGuideImage ? 'Saving...' : 'Save Guide Graphic'}
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Left: Graphic Upload & Settings Controls */}
+            <div className="lg:col-span-7 space-y-6">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#2C1D13] mb-2">
+                  Upload New Model / Measurement Illustration
+                </label>
+                <ImageUpload
+                  value={guideImageUrl}
+                  onChange={(url) => setGuideImageUrl(url)}
+                  folder="zarish-size-guide"
+                  label="Upload Guide Image"
+                  helperText="Recommended: High-resolution PNG or JPG with clean or white background. Portrait orientation (e.g. 600x900px)."
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#2C241E] mb-1.5">
+                  Direct Image URL (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={guideImageUrl}
+                  onChange={(e) => setGuideImageUrl(e.target.value)}
+                  placeholder="https://... or /size-guide-model.jpg"
+                  className="w-full px-3.5 py-2.5 text-xs font-mono border border-[#E8E0D5] rounded-lg bg-white text-[#2C241E] focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15 outline-none transition-all shadow-2xs"
+                />
+                <p className="text-[11px] text-[#7A6F66] mt-1">
+                  You can upload a file above directly to Cloudinary, or paste any image URL here.
+                </p>
+              </div>
+
+              {/* Guideline Overlay Toggle */}
+              <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5]">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={guideShowOverlay}
+                    onChange={(e) => setGuideShowOverlay(e.target.checked)}
+                    className="w-4 h-4 rounded text-[#7B5B3A] focus:ring-[#7B5B3A] mt-0.5"
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-[#2C1D13] block">
+                      Show interactive measurement guideline overlays (Bust, Waist, Hips lines)
+                    </span>
+                    <span className="text-[11px] text-[#7A6F66] mt-0.5 block">
+                      Keep checked if using a plain model figure. Uncheck if your uploaded graphic already has measurement arrows or text baked into the artwork.
+                    </span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Right: Live Storefront Preview Box */}
+            <div className="lg:col-span-5 flex flex-col items-center">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#7B5B3A] mb-2 self-start">
+                Storefront Modal Live Preview
+              </span>
+              <div className="relative w-52 h-[370px] bg-white rounded-2xl border-2 border-[#E8E0D5] p-2 shadow-sm overflow-hidden flex items-center justify-center">
+                <div className="relative w-full h-full">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={guideImageUrl || '/size-guide-model.jpg'}
+                    alt="Guide Preview"
+                    className="w-full h-full object-contain object-center"
+                  />
+
+                  {guideShowOverlay && (
+                    <>
+                      <svg
+                        className="absolute inset-0 w-full h-full pointer-events-none"
+                        viewBox="0 0 200 370"
+                        preserveAspectRatio="none"
+                      >
+                        <line x1="35" y1="110" x2="165" y2="110" stroke="#E11D48" strokeWidth="2" strokeDasharray="4 3" />
+                        <circle cx="100" cy="110" r="3.5" fill="#E11D48" />
+
+                        <line x1="45" y1="138" x2="155" y2="138" stroke="#E11D48" strokeWidth="2" strokeDasharray="4 3" />
+                        <circle cx="100" cy="138" r="3.5" fill="#E11D48" />
+
+                        <line x1="40" y1="172" x2="160" y2="172" stroke="#E11D48" strokeWidth="2" strokeDasharray="4 3" />
+                        <circle cx="100" cy="172" r="3.5" fill="#E11D48" />
+                      </svg>
+
+                      <div className="absolute top-[28%] right-1">
+                        <span className="text-[9px] font-bold text-[#E11D48] bg-white/95 px-1.5 py-0.5 rounded-full shadow-2xs border border-[#FECDD3]">
+                          1. Bust
+                        </span>
+                      </div>
+                      <div className="absolute top-[35.5%] right-1">
+                        <span className="text-[9px] font-bold text-[#E11D48] bg-white/95 px-1.5 py-0.5 rounded-full shadow-2xs border border-[#FECDD3]">
+                          2. Waist
+                        </span>
+                      </div>
+                      <div className="absolute top-[44.5%] right-1">
+                        <span className="text-[9px] font-bold text-[#E11D48] bg-white/95 px-1.5 py-0.5 rounded-full shadow-2xs border border-[#FECDD3]">
+                          3. Hips
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+              <span className="text-[11px] text-[#7A6F66] mt-2">
+                {guideImageUrl === '/size-guide-model.jpg' ? 'Using factory default illustration' : 'Using custom uploaded illustration'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
+
