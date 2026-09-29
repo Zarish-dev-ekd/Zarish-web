@@ -52,8 +52,7 @@ export default function OrderConfirmationPage({ params }: OrderConfirmationPageP
           </h1>
 
           <p className="text-xs sm:text-sm text-[#6B5744] max-w-md mx-auto leading-relaxed mb-6">
-            Your modest garment is being prepared with exquisite care by our master artisans. We
-            have emailed your receipt and tracking details to{' '}
+            Your garment is being carefully prepared for you. We have emailed your receipt and tracking details to{' '}
             <strong className="text-[#2C1D13]">{orderData?.customer_email || 'your email'}</strong>.
           </p>
 

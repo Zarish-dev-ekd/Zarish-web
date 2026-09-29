@@ -187,7 +187,7 @@ function TrackOrderContent() {
       case 'processing':
         return {
           title: 'In Production',
-          message: 'Your modest garment is being handcrafted and prepared for shipping.',
+          message: 'Your garment is being carefully prepared for you.',
           color: '#7B5B3A',
           bgColor: '#FAF6F0',
         };

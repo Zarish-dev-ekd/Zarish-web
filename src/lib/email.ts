@@ -463,7 +463,7 @@ export async function sendOrderConfirmationEmail(
               </h1>
 
               <p style="margin: 0 auto 24px auto; max-width: 440px; font-size: 13.5px; color: #6B5E55; line-height: 1.6;">
-                Thank you, <strong>${params.customerName}</strong>. Your modest garment is being prepared with utmost care by our master artisans.
+                Thank you, <strong>${params.customerName}</strong>. Your garment is being carefully prepared for you.
               </p>
 
               <!-- View & Track Order Button (Nike / Zara style) -->
