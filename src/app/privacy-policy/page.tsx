@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   title: 'Privacy Policy | ZARISH by Nehala Mufeed',
   description:
     'Privacy Policy of ZARISH by Nehala Mufeed. Learn how we collect, protect, and handle your personal information.',
+  alternates: {
+    canonical: 'https://www.zarishbynehalamufeed.com/privacy-policy',
+  },
 };
 
 export default async function PrivacyPolicyPage() {

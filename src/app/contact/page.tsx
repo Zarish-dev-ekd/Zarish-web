@@ -7,8 +7,18 @@ import Footer from '@/components/layout/Footer';
 import { IconWhatsapp, IconMail } from '@/components/icons';
 
 export const metadata: Metadata = {
-  title: 'Contact Us | ZARISH by Nehala Mufeed',
-  description: 'Get in touch with ZARISH customer care for orders, custom sizing consultations, and unboxing verification.',
+  title: 'Contact Us & Styling Concierge | ZARISH by Nehala Mufeed',
+  description:
+    'Get in touch with ZARISH by Nehala Mufeed for garment sizing consultations, orders, bespoke inquiries, and shipping support.',
+  alternates: {
+    canonical: 'https://www.zarishbynehalamufeed.com/contact',
+  },
+  openGraph: {
+    title: 'Contact Us & Styling Concierge | ZARISH by Nehala Mufeed',
+    description: 'Get in touch with ZARISH by Nehala Mufeed.',
+    url: 'https://www.zarishbynehalamufeed.com/contact',
+    siteName: 'ZARISH by Nehala Mufeed',
+  },
 };
 
 export default async function ContactPage() {

@@ -45,37 +45,51 @@ const alexBrush = Alex_Brush({
   display: 'swap',
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zarish.in';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.zarishbynehalamufeed.com';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
 
   title: {
-    default: 'ZARISH by Nehala Mufeed | Premium Modest Fashion',
-    template: '%s | ZARISH',
+    default: 'ZARISH by Nehala Mufeed | Premium Modest Fashion & Designer Co-ords',
+    template: '%s | ZARISH by Nehala Mufeed',
   },
   description:
-    'Discover elegant modest fashion by ZARISH by Nehala Mufeed. Premium co-ord sets, party wear, and graceful everyday pieces — crafted with love, made to be remembered.',
+    'Discover exquisite modest fashion by ZARISH by Nehala Mufeed. Shop luxury designer co-ord sets, abayas, elegant party wear, and graceful everyday modest clothing. Crafted with timeless aesthetics, premium fabrics, and dispatched across India & worldwide.',
   keywords: [
-    'modest fashion India',
     'ZARISH by Nehala Mufeed',
-    'co-ord sets',
-    'modest wear Kerala',
-    'premium modest fashion',
-    'party wear women',
-    'ethnic wear online',
-    'modest kurta sets',
-    'zarish.in',
+    'ZARISH',
+    'Zarish fashion',
     'Nehala Mufeed',
+    'Nehala Mufeed modest wear',
+    'modest fashion India',
+    'luxury co-ord sets women',
+    'designer abayas Kerala',
+    'modest party wear dresses',
+    'premium modest clothing online',
+    'hijabi boutique India',
+    'modest kurta and coord sets',
+    'zarishbynehalamufeed.com',
+    'www.zarishbynehalamufeed.com',
+    'Calicut modest wear designer',
+    'modest fashion brand Kerala',
+    'contemporary modest wear',
+    'modest dresses worldwide delivery',
   ],
   authors: [{ name: 'Nehala Mufeed', url: siteUrl }],
   creator: 'Nehala Mufeed',
-  publisher: 'ZARISH',
+  publisher: 'ZARISH by Nehala Mufeed',
   category: 'Fashion & Apparel',
+  applicationName: 'ZARISH by Nehala Mufeed',
 
   // ── Canonical & alternates ──────────────────────────────────
   alternates: {
-    canonical: '/',
+    canonical: 'https://www.zarishbynehalamufeed.com',
+  },
+
+  // ── Verification (Google Search Console) ───────────────────
+  verification: {
+    google: 'eUt4QsjirkxOIAUDlcVfqWtmTtXmkQGNuJb41Ck-O2w',
   },
 
   // ── Icons / Favicon ─────────────────────────────────────────
@@ -93,9 +107,9 @@ export const metadata: Metadata = {
 
   // ── Open Graph ──────────────────────────────────────────────
   openGraph: {
-    title: 'ZARISH by Nehala Mufeed | Premium Modest Fashion',
+    title: 'ZARISH by Nehala Mufeed | Premium Modest Fashion & Designer Co-ords',
     description:
-      'Discover elegant modest fashion by ZARISH. Premium co-ord sets, party wear & everyday graceful pieces — crafted with love, made to be remembered.',
+      'Shop luxury modest wear, designer co-ord sets, abayas & elegant party wear handcrafted with love. Delivered across India & worldwide.',
     url: siteUrl,
     siteName: 'ZARISH by Nehala Mufeed',
     type: 'website',
@@ -116,16 +130,17 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'ZARISH by Nehala Mufeed | Premium Modest Fashion',
     description:
-      'Premium co-ord sets, party wear & everyday graceful pieces — crafted with love.',
+      'Luxury modest wear, designer co-ord sets & graceful pieces crafted with timeless elegance.',
     images: ['/og-image.jpg'],
-    creator: '@zarishbynehalamufeed',
-    site: '@zarishbynehalamufeed',
+    creator: '@zarishbynehala',
+    site: '@zarishbynehala',
   },
 
   // ── Robots ──────────────────────────────────────────────────
   robots: {
     index: true,
     follow: true,
+    nocache: false,
     googleBot: {
       index: true,
       follow: true,
@@ -134,10 +149,6 @@ export const metadata: Metadata = {
       'max-video-preview': -1,
     },
   },
-
-  // ── Verification ─────────────────────────────────────────────
-  // Add your Google Search Console verification token here when ready:
-  // verification: { google: 'YOUR_GOOGLE_VERIFICATION_TOKEN' },
 };
 
 export default function RootLayout({
@@ -153,36 +164,156 @@ export default function RootLayout({
       className={`${cinzel.variable} ${playfair.variable} ${inter.variable} ${alexBrush.variable} bg-white`}
     >
       <head>
+        {/* Google Search Console Verification Meta Tag */}
+        <meta name="google-site-verification" content="eUt4QsjirkxOIAUDlcVfqWtmTtXmkQGNuJb41Ck-O2w" />
+        
+        {/* Canonical link tag */}
+        <link rel="canonical" href="https://www.zarishbynehalamufeed.com" />
+
+        {/* DNS Prefetch & Preconnect for maximum Core Web Vitals performance */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+
         <script
           dangerouslySetInnerHTML={{
             __html: `try{if(sessionStorage.getItem('zarish_intro_seen')==='true'){var s=document.createElement('style');s.id='zarish-suppress-intro';s.textContent='#zarish-preintro{display:none!important}';document.head.appendChild(s);}}catch(e){}`,
           }}
         />
+
+        {/* ─── Heavy Level Organic Schema.org JSON-LD Markups ─── */}
+        {/* 1. Store / Brand Knowledge Graph Entity */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',
-              '@type': 'ClothingStore',
+              '@type': ['ClothingStore', 'OnlineStore'],
+              '@id': 'https://www.zarishbynehalamufeed.com/#store',
               name: 'ZARISH by Nehala Mufeed',
-              url: 'https://zarish.in',
-              logo: 'https://zarish.in/logo-zarish.png',
-              image: 'https://zarish.in/og-image.jpg',
+              alternateName: [
+                'ZARISH',
+                'Zarish Fashion',
+                'Zarish by Nehala',
+                'Zarish Modest Wear',
+              ],
+              url: 'https://www.zarishbynehalamufeed.com',
+              logo: {
+                '@type': 'ImageObject',
+                url: 'https://www.zarishbynehalamufeed.com/logo-zarish.png',
+                width: 500,
+                height: 160,
+              },
+              image: 'https://www.zarishbynehalamufeed.com/og-image.jpg',
               description:
-                'Premium modest fashion brand by Nehala Mufeed — co-ord sets, party wear, and everyday graceful pieces.',
+                'Premium modest fashion brand by Nehala Mufeed — luxury co-ord sets, abayas, party wear, and graceful everyday modest pieces crafted with love.',
               founder: {
                 '@type': 'Person',
                 name: 'Nehala Mufeed',
+                jobTitle: 'Founder & Creative Director',
+                sameAs: 'https://www.instagram.com/zarish_bynehala',
               },
               address: {
                 '@type': 'PostalAddress',
                 addressRegion: 'Kerala',
                 addressCountry: 'IN',
               },
+              contactPoint: {
+                '@type': 'ContactPoint',
+                telephone: '+919562292945',
+                contactType: 'customer service',
+                areaServed: ['IN', 'AE', 'SA', 'QA', 'KW', 'OM', 'BH', 'GB', 'US'],
+                availableLanguage: ['English', 'Malayalam', 'Hindi'],
+              },
               sameAs: [
                 'https://www.instagram.com/zarish_bynehala',
               ],
               priceRange: '₹₹',
+              currenciesAccepted: 'INR',
+              paymentAccepted: 'Credit Card, Debit Card, UPI, Net Banking, Razorpay',
+              hasMerchantReturnPolicy: {
+                '@type': 'MerchantReturnPolicy',
+                applicableCountry: 'IN',
+                returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+                merchantReturnDays: 7,
+                returnMethod: 'https://schema.org/ReturnByMail',
+                returnFees: 'https://schema.org/FreeReturn',
+              },
+            }),
+          }}
+        />
+
+        {/* 2. WebSite Schema with Sitelinks Searchbox */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              '@id': 'https://www.zarishbynehalamufeed.com/#website',
+              url: 'https://www.zarishbynehalamufeed.com',
+              name: 'ZARISH by Nehala Mufeed',
+              alternateName: 'ZARISH',
+              publisher: {
+                '@id': 'https://www.zarishbynehalamufeed.com/#store',
+              },
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: {
+                  '@type': 'EntryPoint',
+                  urlTemplate: 'https://www.zarishbynehalamufeed.com/products?search={search_term_string}',
+                },
+                'query-input': 'required name=search_term_string',
+              },
+            }),
+          }}
+        />
+
+        {/* 3. Site Navigation Elements for Google Sitelinks */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'ItemList',
+              itemListElement: [
+                {
+                  '@type': 'SiteNavigationElement',
+                  position: 1,
+                  name: 'Shop All Garments',
+                  url: 'https://www.zarishbynehalamufeed.com/products',
+                },
+                {
+                  '@type': 'SiteNavigationElement',
+                  position: 2,
+                  name: 'New Arrivals',
+                  url: 'https://www.zarishbynehalamufeed.com/collections/new-arrivals',
+                },
+                {
+                  '@type': 'SiteNavigationElement',
+                  position: 3,
+                  name: 'Designer Collections',
+                  url: 'https://www.zarishbynehalamufeed.com/collections',
+                },
+                {
+                  '@type': 'SiteNavigationElement',
+                  position: 4,
+                  name: 'Shop by Size',
+                  url: 'https://www.zarishbynehalamufeed.com/shop-by-size',
+                },
+                {
+                  '@type': 'SiteNavigationElement',
+                  position: 5,
+                  name: 'About Nehala Mufeed',
+                  url: 'https://www.zarishbynehalamufeed.com/about',
+                },
+                {
+                  '@type': 'SiteNavigationElement',
+                  position: 6,
+                  name: 'Track Order',
+                  url: 'https://www.zarishbynehalamufeed.com/track-order',
+                },
+              ],
             }),
           }}
         />

@@ -21,12 +21,31 @@ export async function generateMetadata({ params }: CollectionSlugPageProps): Pro
   const { slug } = await params;
   const isNewArrivals = slug === 'new-arrivals';
   const title = isNewArrivals ? 'New Arrivals' : slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  const canonicalUrl = `https://www.zarishbynehalamufeed.com/collections/${slug}`;
+  const desc = isNewArrivals
+    ? 'Explore newly launched modest fashion silhouettes, luxury co-ord sets, and fresh seasonal arrivals by ZARISH by Nehala Mufeed.'
+    : `Shop the latest ${title.toLowerCase()} modest fashion collection from ZARISH by Nehala Mufeed.`;
 
   return {
     title: `${title} | ZARISH by Nehala Mufeed`,
-    description: isNewArrivals
-      ? 'Explore our newly launched modest fashion silhouettes and fresh arrivals by ZARISH.'
-      : `Shop the latest ${title.toLowerCase()} collection from ZARISH.`,
+    description: desc,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title: `${title} | ZARISH by Nehala Mufeed`,
+      description: desc,
+      url: canonicalUrl,
+      siteName: 'ZARISH by Nehala Mufeed',
+      type: 'website',
+      images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} | ZARISH by Nehala Mufeed`,
+      description: desc,
+      images: ['/og-image.jpg'],
+    },
   };
 }
 

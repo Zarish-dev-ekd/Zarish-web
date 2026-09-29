@@ -8,7 +8,10 @@ import Footer from '@/components/layout/Footer';
 
 export const metadata: Metadata = {
   title: 'Refund & Return Policy | ZARISH by Nehala Mufeed',
-  description: 'Detailed Refund and Return Policy of ZARISH. Learn about our unboxing verification and timeline.',
+  description: 'Detailed Refund and Return Policy of ZARISH by Nehala Mufeed. Learn about our verification process, exchange eligibility, and refund timeline.',
+  alternates: {
+    canonical: 'https://www.zarishbynehalamufeed.com/refund-policy',
+  },
 };
 
 export const revalidate = 0; // Fresh policy on load
@@ -25,7 +28,7 @@ export default async function RefundPolicyPage() {
   const eyebrow = policy?.eyebrow || 'Customer Assurance & Guidelines';
   const title = policy?.title || 'Refund & Return Policy';
   const lastUpdated =
-    policy?.last_updated || 'Last updated: September 2026 • Valid for all online purchases on zarish.in';
+    policy?.last_updated || 'Last updated: September 2026 • Valid for all online purchases on zarishbynehalamufeed.com';
 
   const highlightBox = policy?.highlight_box || {
     title: 'Mandatory Unboxing Video Requirement',

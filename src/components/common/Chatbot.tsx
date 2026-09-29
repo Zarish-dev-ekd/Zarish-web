@@ -187,7 +187,7 @@ export default function Chatbot() {
           'Hi ZARISH, I would like to speak with customer support.'
         )}`;
         return {
-          text: `Our client styling & support team is here to assist:\n\n• WhatsApp: +91 9562292945\n• Email: info@zarish.in\n• Support Hours: Mon–Sat, 10:00 AM – 7:00 PM IST`,
+          text: `Our client styling & support team is here to assist:\n\n• WhatsApp: +91 9562292945\n• Email: info@zarishbynehalamufeed.com\n• Support Hours: Mon–Sat, 10:00 AM – 7:00 PM IST`,
           action: {
             label: 'Open WhatsApp Chat (9562292945)',
             href: contactWaUrl,

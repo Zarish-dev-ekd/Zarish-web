@@ -15,8 +15,27 @@ export const revalidate = 0;
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'About ZARISH by Nehala Mufeed | The Brand Story',
-  description: 'Learn about the vision, craftsmanship, and modest fashion philosophy of ZARISH by Nehala Mufeed.',
+  title: 'About Nehala Mufeed & ZARISH | Brand Story & Philosophy',
+  description:
+    'Discover the story of ZARISH by Nehala Mufeed. Rooted in modesty, tailored for contemporary elegance. Learn about our fabric curation, craftsmanship, and brand vision.',
+  alternates: {
+    canonical: 'https://www.zarishbynehalamufeed.com/about',
+  },
+  openGraph: {
+    title: 'About Nehala Mufeed & ZARISH | Brand Story & Philosophy',
+    description:
+      'Discover the story of ZARISH by Nehala Mufeed. Rooted in modesty, tailored for contemporary elegance.',
+    url: 'https://www.zarishbynehalamufeed.com/about',
+    siteName: 'ZARISH by Nehala Mufeed',
+    type: 'website',
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'About ZARISH' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'About Nehala Mufeed & ZARISH | Brand Story & Philosophy',
+    description: 'The story and vision of ZARISH by Nehala Mufeed.',
+    images: ['/og-image.jpg'],
+  },
 };
 
 export default async function AboutPage() {

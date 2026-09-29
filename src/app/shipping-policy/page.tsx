@@ -7,7 +7,10 @@ import Footer from '@/components/layout/Footer';
 
 export const metadata: Metadata = {
   title: 'Shipping & Delivery Policy | ZARISH by Nehala Mufeed',
-  description: 'Shipping rates, transit timelines, and delivery information across Kerala and India for ZARISH orders.',
+  description: 'Shipping rates, courier partners (DTDC, EMS Speed Post, India Post), timelines, and delivery information across India and worldwide for ZARISH orders.',
+  alternates: {
+    canonical: 'https://www.zarishbynehalamufeed.com/shipping-policy',
+  },
 };
 
 export default async function ShippingPolicyPage() {

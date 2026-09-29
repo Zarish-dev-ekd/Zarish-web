@@ -16,7 +16,17 @@ export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: 'Shop by Size | ZARISH by Nehala Mufeed',
-  description: 'Find modest luxury pieces tailored for your fit and proportion. Filter ready-to-wear garments by size at ZARISH.',
+  description:
+    'Find modest luxury pieces tailored for your fit and proportion. Filter ready-to-wear garments by size at ZARISH by Nehala Mufeed.',
+  alternates: {
+    canonical: 'https://www.zarishbynehalamufeed.com/shop-by-size',
+  },
+  openGraph: {
+    title: 'Shop by Size | ZARISH by Nehala Mufeed',
+    description: 'Find modest luxury pieces tailored for your fit and proportion.',
+    url: 'https://www.zarishbynehalamufeed.com/shop-by-size',
+    siteName: 'ZARISH by Nehala Mufeed',
+  },
 };
 
 interface ShopBySizePageProps {

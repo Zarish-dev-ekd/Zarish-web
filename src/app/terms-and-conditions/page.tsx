@@ -7,7 +7,10 @@ import Footer from '@/components/layout/Footer';
 
 export const metadata: Metadata = {
   title: 'Terms & Conditions | ZARISH by Nehala Mufeed',
-  description: 'Terms and Conditions governing the use of ZARISH e-commerce website and purchases.',
+  description: 'Terms and Conditions governing the use of ZARISH by Nehala Mufeed e-commerce website and purchases.',
+  alternates: {
+    canonical: 'https://www.zarishbynehalamufeed.com/terms-and-conditions',
+  },
 };
 
 export default async function TermsAndConditionsPage() {

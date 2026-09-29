@@ -40,7 +40,7 @@ interface RefundPolicyForm {
 const DEFAULT_REFUND_POLICY: RefundPolicyForm = {
   eyebrow: 'Customer Assurance & Guidelines',
   title: 'Refund & Return Policy',
-  last_updated: 'Last updated: September 2026 • Valid for all online purchases on zarish.in',
+  last_updated: 'Last updated: September 2026 • Valid for all online purchases on zarishbynehalamufeed.com',
   highlight_box: {
     title: 'Mandatory Unboxing Video Requirement',
     main_rule: 'Refunds are applicable only for damaged or defective products received by the customer.',

@@ -12,8 +12,27 @@ import Footer from '@/components/layout/Footer';
 import { IconArrowRight } from '@/components/icons';
 
 export const metadata: Metadata = {
-  title: 'All Collections | ZARISH by Nehala Mufeed',
-  description: 'Explore the curated modest fashion collections by ZARISH.',
+  title: 'Curated Modest Fashion Collections | ZARISH by Nehala Mufeed',
+  description:
+    'Explore signature modest fashion collections by ZARISH by Nehala Mufeed. Discover designer abayas, co-ord sets, festive silhouettes, and everyday graceful pieces.',
+  alternates: {
+    canonical: 'https://www.zarishbynehalamufeed.com/collections',
+  },
+  openGraph: {
+    title: 'Curated Modest Fashion Collections | ZARISH by Nehala Mufeed',
+    description:
+      'Explore signature modest fashion collections by ZARISH by Nehala Mufeed. Designer abayas, co-ords, and festive luxury.',
+    url: 'https://www.zarishbynehalamufeed.com/collections',
+    siteName: 'ZARISH by Nehala Mufeed',
+    type: 'website',
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'ZARISH Collections' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Curated Modest Fashion Collections | ZARISH by Nehala Mufeed',
+    description: 'Explore signature modest collections by ZARISH by Nehala Mufeed.',
+    images: ['/og-image.jpg'],
+  },
 };
 
 export default async function CollectionsPage() {

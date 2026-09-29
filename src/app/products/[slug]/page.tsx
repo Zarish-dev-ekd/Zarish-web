@@ -24,19 +24,39 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
   if (!product) {
     return {
-      title: 'Garment Not Found | ZARISH',
+      title: 'Garment Not Found | ZARISH by Nehala Mufeed',
     };
   }
 
   const primaryImg = product.images?.find((img) => img.role === 'primary') || product.images?.[0];
+  const allImages = (product.images || []).map((img) => img.secure_url).filter(Boolean);
+  const canonicalUrl = `https://www.zarishbynehalamufeed.com/products/${slug}`;
+  const metaDesc =
+    product.short_description ||
+    product.description ||
+    `Shop ${product.name} by ZARISH by Nehala Mufeed. Elegant modest fashion silhouette handcrafted with luxury fabrics.`;
 
   return {
     title: `${product.name} | ZARISH by Nehala Mufeed`,
-    description: product.short_description || product.description || 'Premium modest fashion garment by ZARISH.',
+    description: metaDesc,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
-      title: `${product.name} | ZARISH`,
-      description: product.short_description || undefined,
-      images: primaryImg ? [{ url: primaryImg.secure_url }] : [],
+      title: `${product.name} | ZARISH by Nehala Mufeed`,
+      description: metaDesc,
+      url: canonicalUrl,
+      siteName: 'ZARISH by Nehala Mufeed',
+      type: 'website',
+      images: allImages.length > 0 ? allImages.map((url) => ({ url })) : [{ url: '/og-image.jpg' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${product.name} | ZARISH by Nehala Mufeed`,
+      description: metaDesc,
+      images: primaryImg ? [primaryImg.secure_url] : ['/og-image.jpg'],
+      creator: '@zarishbynehala',
+      site: '@zarishbynehala',
     },
   };
 }
@@ -58,8 +78,82 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
   const relatedProducts = await getRelatedProducts(product.category_id, product.id, 4);
 
+  const productImages = (product.images || []).map((img) => img.secure_url).filter(Boolean);
+  const primaryImg = product.images?.find((img) => img.role === 'primary') || product.images?.[0];
+  const canonicalUrl = `https://www.zarishbynehalamufeed.com/products/${product.slug}`;
+
+  // Product Schema (Merchant Listings & Rich Snippet)
+  const productSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    image: productImages.length > 0 ? productImages : ['https://www.zarishbynehalamufeed.com/og-image.jpg'],
+    description:
+      product.short_description ||
+      product.description ||
+      `Designer modest garment ${product.name} by ZARISH by Nehala Mufeed.`,
+    sku: product.sku || product.slug,
+    mpn: product.id,
+    brand: {
+      '@type': 'Brand',
+      name: 'ZARISH by Nehala Mufeed',
+    },
+    offers: {
+      '@type': 'Offer',
+      url: canonicalUrl,
+      priceCurrency: 'INR',
+      price: product.price,
+      priceValidUntil: '2027-12-31',
+      itemCondition: 'https://schema.org/NewCondition',
+      availability:
+        product.stock_quantity > 0
+          ? 'https://schema.org/InStock'
+          : 'https://schema.org/OutOfStock',
+      seller: {
+        '@type': 'Organization',
+        name: 'ZARISH by Nehala Mufeed',
+      },
+    },
+  };
+
+  // BreadcrumbList Schema
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: 'https://www.zarishbynehalamufeed.com',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'All Garments',
+        item: 'https://www.zarishbynehalamufeed.com/products',
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: product.name,
+        item: canonicalUrl,
+      },
+    ],
+  };
+
   return (
     <>
+      {/* ─── Heavy Level Organic SEO JSON-LD Schemas ─── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+
       <AnnouncementBar announcements={announcements} />
       <Header navigationItems={navigationItems} cartItemCount={0} />
 

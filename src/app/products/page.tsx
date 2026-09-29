@@ -18,8 +18,27 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: 'All Garments | ZARISH by Nehala Mufeed',
-  description: 'Explore the complete modest collection of abayas, dresses, and co-ords by ZARISH.',
+  title: 'All Modest Garments & Co-ord Sets | ZARISH by Nehala Mufeed',
+  description:
+    'Explore the complete ZARISH modest fashion collection by Nehala Mufeed. Shop designer co-ord sets, abayas, elegant dresses, luxury party wear, and everyday modest wear handcrafted with love.',
+  alternates: {
+    canonical: 'https://www.zarishbynehalamufeed.com/products',
+  },
+  openGraph: {
+    title: 'All Modest Garments & Co-ord Sets | ZARISH by Nehala Mufeed',
+    description:
+      'Shop designer co-ord sets, abayas, elegant party wear and everyday modest fashion by ZARISH by Nehala Mufeed.',
+    url: 'https://www.zarishbynehalamufeed.com/products',
+    siteName: 'ZARISH by Nehala Mufeed',
+    type: 'website',
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'ZARISH Garments Catalog' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'All Modest Garments & Co-ord Sets | ZARISH by Nehala Mufeed',
+    description: 'Explore luxury modest wear, designer co-ord sets & graceful pieces.',
+    images: ['/og-image.jpg'],
+  },
 };
 
 interface ProductsPageProps {
@@ -82,6 +101,49 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   return (
     <>
+      {/* ─── Heavy Level Organic SEO JSON-LD: CollectionPage & BreadcrumbList ─── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            name: 'All Modest Garments | ZARISH by Nehala Mufeed',
+            description:
+              'Complete collection of designer modest wear, co-ord sets, abayas, and luxury party garments.',
+            url: 'https://www.zarishbynehalamufeed.com/products',
+            isPartOf: {
+              '@type': 'WebSite',
+              url: 'https://www.zarishbynehalamufeed.com',
+              name: 'ZARISH by Nehala Mufeed',
+            },
+          }),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: 'https://www.zarishbynehalamufeed.com',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'All Garments',
+                item: 'https://www.zarishbynehalamufeed.com/products',
+              },
+            ],
+          }),
+        }}
+      />
+
       <AnnouncementBar announcements={announcements} />
       <Header navigationItems={navigationItems} cartItemCount={0} />
 
