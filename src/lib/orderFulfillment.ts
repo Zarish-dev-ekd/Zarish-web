@@ -180,12 +180,10 @@ export async function fulfillPaidOrder(params: FulfillOrderParams): Promise<Fulf
         notes: order.notes,
       };
 
-      Promise.all([
+      await Promise.allSettled([
         sendOrderConfirmationEmail(emailPayload),
         sendAdminNewOrderEmail(emailPayload),
-      ]).catch((emailErr) => {
-        console.error('[Order Fulfillment] Background email delivery error:', emailErr);
-      });
+      ]);
     } catch (emailPrepErr) {
       console.error('[Order Fulfillment] Error preparing emails:', emailPrepErr);
     }

@@ -37,7 +37,7 @@ export default async function AdminLayout({
       <AdminSidebar />
       <div className="flex-1 flex flex-col min-w-0 relative">
         <AdminHeader />
-        <main className="p-8 flex-1 max-w-[1280px] w-full max-md:p-4">{children}</main>
+        <main className="p-3.5 sm:p-6 md:p-8 flex-1 max-w-[1280px] w-full mx-auto">{children}</main>
       </div>
     </div>
   );

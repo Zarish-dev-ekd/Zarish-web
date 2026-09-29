@@ -150,18 +150,25 @@ function TrackOrderContent() {
     }
   };
 
-  // Helper to calculate expected date (5-7 days from order date)
-  const getExpectedDate = (createdAt: string, status: string) => {
+  // Helper to calculate expected date based on chosen delivery method
+  const getExpectedDate = (createdAt: string, status: string, deliveryTime?: string) => {
     try {
       const orderDate = new Date(createdAt);
       if (status === 'delivered') {
         return `Delivered on ${formatDate(createdAt)}`;
       }
+      let daysToAdd = 5;
+      if (deliveryTime) {
+        const numbers = deliveryTime.match(/\d+/g);
+        if (numbers && numbers.length > 0) {
+          daysToAdd = Math.max(...numbers.map(Number));
+        }
+      }
       const expected = new Date(orderDate);
-      expected.setDate(expected.getDate() + 7);
+      expected.setDate(expected.getDate() + daysToAdd);
       return `Expected by ${formatDate(expected.toISOString())}`;
     } catch {
-      return 'Expected in 5-7 business days';
+      return 'Expected in 3-5 business days';
     }
   };
 
@@ -392,7 +399,11 @@ function TrackOrderContent() {
               return (
                 <div className="bg-white rounded-2xl p-5 sm:p-6 border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
                   <h2 className="text-base sm:text-lg font-bold text-[#111111] tracking-tight mb-4">
-                    {getExpectedDate(selectedOrder.created_at, selectedOrder.order_status)}
+                    {getExpectedDate(
+                      selectedOrder.created_at,
+                      selectedOrder.order_status,
+                      selectedOrder.shipping_address?.deliveryTime || selectedOrder.shipping_address?.deliveryMethodTitle
+                    )}
                   </h2>
 
                   <div className="flex items-start gap-3">

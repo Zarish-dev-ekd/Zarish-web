@@ -638,7 +638,21 @@ export async function sendAdminNewOrderEmail(
 
   if (!apiKey || !senderEmail) return { success: false, error: 'Brevo not configured' };
 
-  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || senderEmail;
+  const rawAdminEmails =
+    process.env.ADMIN_NOTIFICATION_EMAIL ||
+    process.env.ADMIN_EMAILS ||
+    senderEmail;
+
+  const adminRecipients = Array.from(
+    new Set(
+      rawAdminEmails
+        .split(',')
+        .map((e) => e.trim().toLowerCase())
+        .filter((e) => e.length > 0 && e.includes('@'))
+    )
+  ).map((email) => ({ email }));
+
+  const toList = adminRecipients.length > 0 ? adminRecipients : [{ email: senderEmail }];
   const subject = `[NEW ORDER] #${params.orderNumber} - ₹${Number(params.totalAmount).toLocaleString('en-IN')} by ${params.customerName}`;
   const adminOrdersUrl = `${SITE_URL}/admin/orders`;
 
@@ -763,13 +777,23 @@ export async function sendAdminNewOrderEmail(
       },
       body: JSON.stringify({
         sender: { name: senderName, email: senderEmail },
-        to: [{ email: adminEmail }],
+        to: toList,
         subject,
         htmlContent: html,
       }),
     });
 
-    return { success: response.ok };
+    if (!response.ok) {
+      const errBody = await response.text();
+      console.error('[Brevo Email] Failed to send admin new order notification:', {
+        status: response.status,
+        error: errBody,
+      });
+      return { success: false, error: errBody };
+    }
+
+    console.log('[Brevo Email] Admin new order notification dispatched successfully to:', toList);
+    return { success: true };
   } catch (error: any) {
     console.error('[Brevo Email] Error notifying admin of new order:', error);
     return { success: false, error: error?.message };

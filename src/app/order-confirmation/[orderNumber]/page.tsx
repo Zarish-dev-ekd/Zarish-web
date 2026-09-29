@@ -10,6 +10,23 @@ interface OrderConfirmationPageProps {
   params: Promise<{ orderNumber: string }>;
 }
 
+function formatDeliveryEstimate(time?: string | null): string {
+  if (!time) return '3 - 5 Business Days';
+  const trimmed = time.trim();
+  if (/business\s*days/i.test(trimmed)) {
+    return trimmed.replace(/(\d+)\s*-\s*(\d+)/, '$1 - $2');
+  }
+  if (/days/i.test(trimmed)) {
+    return trimmed
+      .replace(/(\d+)\s*-\s*(\d+)/, '$1 - $2')
+      .replace(/days/i, 'Business Days');
+  }
+  if (/^\d+\s*-\s*\d+$/.test(trimmed)) {
+    return `${trimmed.replace(/\s*-\s*/, ' - ')} Business Days`;
+  }
+  return trimmed;
+}
+
 export default function OrderConfirmationPage({ params }: OrderConfirmationPageProps) {
   const { orderNumber } = use(params);
   const [orderData, setOrderData] = useState<any>(null);
@@ -30,7 +47,59 @@ export default function OrderConfirmationPage({ params }: OrderConfirmationPageP
     loadOrder();
   }, [orderNumber]);
 
-  const paymentDisplay = 'Online Payment (Verified)';
+  const shippingAddress = typeof orderData?.shipping_address === 'string'
+    ? (() => {
+        try {
+          return JSON.parse(orderData.shipping_address);
+        } catch {
+          return {};
+        }
+      })()
+    : (orderData?.shipping_address || {});
+
+  const isKerala =
+    shippingAddress?.state?.toLowerCase().trim() === 'kerala' ||
+    !shippingAddress?.state;
+
+  const rawDeliveryTime =
+    shippingAddress?.deliveryTime ||
+    (shippingAddress?.deliveryMethodTitle
+      ? shippingAddress.deliveryMethodTitle.match(/\(([^)]+)\)/)?.[1]
+      : null);
+
+  let resolvedDeliveryTime = rawDeliveryTime;
+  if (!resolvedDeliveryTime && shippingAddress?.deliveryMethod) {
+    const method = String(shippingAddress.deliveryMethod).toLowerCase();
+    if (method.includes('dtdc')) {
+      resolvedDeliveryTime = '1-2 Days';
+    } else if (method.includes('speed') || method.includes('ems')) {
+      resolvedDeliveryTime = isKerala ? '1-3 Days' : '2-5 Days';
+    } else if (method.includes('india_post') || method.includes('parcel')) {
+      resolvedDeliveryTime = '3-5 Days';
+    }
+  }
+
+  const deliveryEstimate = orderData
+    ? formatDeliveryEstimate(resolvedDeliveryTime || (isKerala ? '3-5 Days' : '2-5 Days'))
+    : '3 - 5 Business Days';
+
+  const courierName =
+    shippingAddress?.deliveryMethodTitle
+      ? shippingAddress.deliveryMethodTitle.replace(/\s*\([^)]*\)/, '').trim()
+      : shippingAddress?.deliveryMethod
+      ? shippingAddress.deliveryMethod === 'ems_speed_post'
+        ? 'EMS Speed Post'
+        : shippingAddress.deliveryMethod === 'dtdc'
+        ? 'DTDC Express'
+        : shippingAddress.deliveryMethod === 'india_post_parcel'
+        ? 'India Post Parcel'
+        : shippingAddress.deliveryMethod
+      : null;
+
+  const paymentDisplay =
+    orderData?.payment_method === 'cod'
+      ? 'Cash on Delivery (Pending)'
+      : 'Online Payment (Verified)';
 
   return (
     <div className="min-h-screen bg-[#FAF6F0] flex flex-col">
@@ -64,13 +133,19 @@ export default function OrderConfirmationPage({ params }: OrderConfirmationPageP
                 #{orderNumber}
               </strong>
             </div>
+            {courierName && (
+              <div className="flex justify-between items-center text-xs sm:text-sm">
+                <span className="text-[#8C7B6B]">Delivery Courier:</span>
+                <span className="font-semibold text-[#2C1D13]">{courierName}</span>
+              </div>
+            )}
             <div className="flex justify-between items-center text-xs sm:text-sm">
               <span className="text-[#8C7B6B]">Payment Method:</span>
               <span className="font-semibold text-[#2C1D13]">{paymentDisplay}</span>
             </div>
             <div className="flex justify-between items-center text-xs sm:text-sm">
               <span className="text-[#8C7B6B]">Delivery Estimate:</span>
-              <span className="font-semibold text-[#0E7064]">3 - 5 Business Days</span>
+              <span className="font-semibold text-[#0E7064]">{deliveryEstimate}</span>
             </div>
           </div>
 
