@@ -124,16 +124,13 @@ export default function ShopBySizeClient({
   return (
     <div className="w-full">
       {/* ─── Hero / Header ────────────────────────────────────────────── */}
-      <div className="text-center my-6 sm:my-0">
+      <div className="text-center my-6 sm:my-0 mb-6 sm:mb-8">
         <span className="text-[11px] tracking-[0.18em] uppercase text-[#7B5B3A] font-semibold">
           PERFECT FIT
         </span>
         <h1 className="font-display my-2 text-2xl sm:text-4xl font-bold text-[#2C1D13] tracking-tight">
           Shop by Size
         </h1>
-        <p className="text-xs sm:text-sm  text-[#8C7B6B] max-w-[540px] mx-auto leading-relaxed px-4">
-          Discover modest silhouettes crafted to complement your height and proportions with timeless elegance.
-        </p>
       </div>
 
       {/* ─── Size Filter Pills Bar ─────────────────────────────────────── */}
@@ -178,25 +175,19 @@ export default function ShopBySizeClient({
         </div>
       </div>
 
-      {/* ─── Controls Bar: Results Count + Sort ───────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-6 border-b border-[#E2D5C7]">
-        <div className="text-[13px] text-[#8C7B6B]">
-          {selectedSize ? (
-            <span className="flex items-center gap-2">
-              Showing <strong className="text-[#2C1D13] font-semibold">{filteredProducts.length}</strong>{' '}
-              {filteredProducts.length === 1 ? 'garment' : 'garments'} available in{' '}
-              <span className="font-semibold text-[#613B24]">Size {selectedSizeLabel}</span>
+      {/* ─── Controls Bar: Active Filter + Sort ───────────────────────── */}
+      <div className="flex items-center justify-between gap-3 pb-4 mb-6 border-b border-[#E2D5C7]">
+        <div>
+          {selectedSize && (
+            <span className="flex items-center gap-2 text-[13px] text-[#8C7B6B]">
+              <span>Active Filter: <strong className="font-semibold text-[#613B24]">Size {selectedSizeLabel}</strong></span>
               <button
                 type="button"
                 onClick={() => handleSelectSize('')}
-                className="ml-2 text-xs text-[#7B5B3A] underline hover:text-[#2C1D13] cursor-pointer"
+                className="ml-1 text-xs text-[#7B5B3A] underline hover:text-[#2C1D13] cursor-pointer"
               >
                 Clear
               </button>
-            </span>
-          ) : (
-            <span>
-              Showing <strong className="text-[#2C1D13] font-semibold">{filteredProducts.length}</strong> garments across all sizes
             </span>
           )}
         </div>
@@ -316,34 +307,6 @@ export default function ShopBySizeClient({
         </div>
       )}
 
-      {/* ─── Sizing Atelier Banner ────────────────────────────────────── */}
-      <div className="mt-16 sm:mt-20 p-6 sm:p-10 rounded-2xl bg-gradient-to-br from-[#FAF7F2] to-[#F5EDE4] border border-[#EDE4DC] flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="max-w-[620px] text-center md:text-left">
-          <span className="text-[11px] font-semibold tracking-[0.18em] uppercase text-[#7B5B3A]">
-            BESPOKE FIT & LENGTHS
-          </span>
-          <h2 className="font-display text-xl sm:text-2xl font-bold text-[#2C1D13] mt-1 mb-2">
-            Need Height or Modesty Adjustments?
-          </h2>
-          <p className="text-xs sm:text-sm text-[#8C7B6B] leading-relaxed">
-            Every ZARISH piece is designed to celebrate individuality. If you need bespoke height alterations, extra flare, or specialized tailoring, our team provides personalized consultations.
-          </p>
-        </div>
-
-        {whatsappPhone && (
-          <a
-            href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(
-              'Hello ZARISH, I would like guidance on sizing and custom fit adjustments.'
-            )}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full bg-[#613B24] text-white text-xs font-bold tracking-wider uppercase hover:bg-[#4E2F1C] transition-all shadow-md shrink-0"
-          >
-            <IconWhatsapp size={16} />
-            <span>Chat With Stylist</span>
-          </a>
-        )}
-      </div>
     </div>
   );
 }
