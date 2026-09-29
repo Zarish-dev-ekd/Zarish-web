@@ -69,7 +69,7 @@ export default function Footer({ brandDescription, socialLinks = {} }: FooterPro
           {/* Brand & Story Column (2 cols wide on desktop) */}
           <div className="lg:col-span-2 flex flex-col justify-between">
             <div>
-              <Link href="/" className="inline-block mb-2.5" aria-label="ZARISH - Home">
+              <Link href="/" className="inline-block mb-4" aria-label="ZARISH - Home">
                 <span className="relative inline-flex items-start">
                   <Image
                     src="/logo-zarish.png"
@@ -83,14 +83,6 @@ export default function Footer({ brandDescription, socialLinks = {} }: FooterPro
                   </span>
                 </span>
               </Link>
-
-              <p className="text-xs text-[#9E8E7E] leading-relaxed max-w-sm mb-3.5">
-                {brandDescription ||
-                  'ZARISH by Nehala Mufeed celebrates modesty as effortless grace. Thoughtfully tailored silhouettes designed for your sacred moments and everyday confidence.'}
-              </p>
-
-              {/* WhatsApp Styling Concierge Box */}
-   
             </div>
 
             {/* Social Icons */}
