@@ -152,9 +152,29 @@ export async function POST(request: Request) {
       }
     }
 
+    // Fetch dynamic courier delivery settings if configured in admin panel
+    let customDeliveryConfig = null;
+    try {
+      const { data: policyData } = await supabase
+        .from('store_policies')
+        .select('content')
+        .eq('slug', 'delivery-settings')
+        .maybeSingle();
+
+      if (policyData?.content) {
+        customDeliveryConfig =
+          typeof policyData.content === 'string'
+            ? JSON.parse(policyData.content)
+            : policyData.content;
+      }
+    } catch {
+      // Fallback to defaults
+    }
+
     const deliveryDetails = resolveDeliveryDetails(
       shippingAddress?.state || '',
-      body.deliveryMethod || shippingAddress?.deliveryMethod
+      body.deliveryMethod || shippingAddress?.deliveryMethod,
+      customDeliveryConfig
     );
     const deliveryFee = deliveryDetails.deliveryFee;
     const finalPayableTotal = Math.max(1, calculatedTotal - discountAmount + deliveryFee);

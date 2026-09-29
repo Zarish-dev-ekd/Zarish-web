@@ -1,13 +1,19 @@
 'use client';
 
 import { useMemo, useEffect } from 'react';
-import { getDeliveryOptions, type DeliveryMethodId, type DeliveryOption } from '@/lib/delivery';
+import {
+  getDeliveryOptions,
+  type DeliveryMethodId,
+  type DeliveryOption,
+  type DeliveryConfig,
+} from '@/lib/delivery';
 
 interface DeliveryMethodSelectorProps {
   stateName: string;
   selectedMethod: DeliveryMethodId;
   onSelectMethod: (method: DeliveryMethodId) => void;
   className?: string;
+  config?: DeliveryConfig | null;
 }
 
 export default function DeliveryMethodSelector({
@@ -15,10 +21,11 @@ export default function DeliveryMethodSelector({
   selectedMethod,
   onSelectMethod,
   className = '',
+  config,
 }: DeliveryMethodSelectorProps) {
   const { isKerala, options, defaultMethodId } = useMemo(
-    () => getDeliveryOptions(stateName),
-    [stateName]
+    () => getDeliveryOptions(stateName, config),
+    [stateName, config]
   );
 
   // Automatically adjust selection if current selection is not valid for the state
@@ -70,7 +77,7 @@ export default function DeliveryMethodSelector({
               </div>
 
               <div className="shrink-0 text-right">
-                {option.isBlinkingFree ? (
+                {option.isBlinkingFree || option.price === 0 ? (
                   <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10.5px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
                     <span className="animate-pulse">FREE</span>
@@ -83,7 +90,7 @@ export default function DeliveryMethodSelector({
                         : 'bg-[#F2ECE4] text-[#2C1D13]'
                     }`}
                   >
-                    {option.priceLabel}
+                    {option.priceLabel || `+₹${option.price}`}
                   </span>
                 )}
               </div>

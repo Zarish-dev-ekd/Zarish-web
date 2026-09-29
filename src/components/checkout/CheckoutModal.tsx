@@ -7,7 +7,13 @@ import { loadRazorpayScript } from '@/lib/loadRazorpay';
 import { formatPrice } from '@/lib/utils';
 import { INDIAN_STATES } from '@/lib/constants';
 import DeliveryMethodSelector from './DeliveryMethodSelector';
-import { resolveDeliveryDetails, type DeliveryMethodId } from '@/lib/delivery';
+import {
+  resolveDeliveryDetails,
+  getLocalDeliveryConfig,
+  saveDeliveryConfigLocally,
+  type DeliveryMethodId,
+  type DeliveryConfig,
+} from '@/lib/delivery';
 import type { Product } from '@/lib/types';
 
 interface CheckoutModalProps {
@@ -42,6 +48,21 @@ export default function CheckoutModal({
   const [stateName, setStateName] = useState('Kerala');
   const [postalCode, setPostalCode] = useState('');
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethodId>('india_post_parcel');
+  const [deliveryConfig, setDeliveryConfig] = useState<DeliveryConfig>(getLocalDeliveryConfig());
+
+  // Load dynamic courier delivery settings
+  useEffect(() => {
+    if (!isOpen) return;
+    fetch('/api/delivery-settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.kerala) && Array.isArray(data.otherStates)) {
+          setDeliveryConfig(data);
+          saveDeliveryConfigLocally(data);
+        }
+      })
+      .catch((err) => console.warn('Could not load delivery settings:', err));
+  }, [isOpen]);
 
   // Coupon state
   const [couponInput, setCouponInput] = useState('');
@@ -83,7 +104,7 @@ export default function CheckoutModal({
 
   const subtotal = product.price * quantity;
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
-  const deliveryDetails = resolveDeliveryDetails(stateName || 'Kerala', deliveryMethod);
+  const deliveryDetails = resolveDeliveryDetails(stateName || 'Kerala', deliveryMethod, deliveryConfig);
   const deliveryFee = deliveryDetails.deliveryFee;
   const isKerala = deliveryDetails.isKerala;
   const finalPrice = Math.max(1, subtotal - discountAmount + deliveryFee);
@@ -304,7 +325,7 @@ export default function CheckoutModal({
                   {formatPrice(finalPrice)}
                 </div>
                 <span className="text-[10px] text-[#0E7064] font-semibold uppercase tracking-wider block">
-                  {deliveryFee === 0 ? `Free (${deliveryDetails.deliveryMethodTitle})` : `${deliveryDetails.deliveryMethodTitle}: +₹50`}
+                  {deliveryFee === 0 ? `Free (${deliveryDetails.deliveryMethodTitle})` : `${deliveryDetails.deliveryMethodTitle}: +₹${deliveryFee}`}
                 </span>
               </div>
             )}
@@ -498,6 +519,7 @@ export default function CheckoutModal({
               stateName={stateName || 'Kerala'}
               selectedMethod={deliveryMethod}
               onSelectMethod={(method) => setDeliveryMethod(method)}
+              config={deliveryConfig}
             />
           </div>
 

@@ -12,7 +12,13 @@ import { IconArrowRight, IconShield, IconTruck, IconShoppingBag } from '@/compon
 import { INDIAN_STATES } from '@/lib/constants';
 import { loadRazorpayScript } from '@/lib/loadRazorpay';
 import DeliveryMethodSelector from '@/components/checkout/DeliveryMethodSelector';
-import { resolveDeliveryDetails, type DeliveryMethodId } from '@/lib/delivery';
+import {
+  resolveDeliveryDetails,
+  getLocalDeliveryConfig,
+  saveDeliveryConfigLocally,
+  type DeliveryMethodId,
+  type DeliveryConfig,
+} from '@/lib/delivery';
 import type { Product } from '@/lib/types';
 
 function CheckoutContent() {
@@ -40,6 +46,20 @@ function CheckoutContent() {
   const [postalCode, setPostalCode] = useState('');
   const [orderNotes, setOrderNotes] = useState('');
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethodId>('india_post_parcel');
+  const [deliveryConfig, setDeliveryConfig] = useState<DeliveryConfig>(getLocalDeliveryConfig());
+
+  // Load dynamic courier delivery settings
+  useEffect(() => {
+    fetch('/api/delivery-settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.kerala) && Array.isArray(data.otherStates)) {
+          setDeliveryConfig(data);
+          saveDeliveryConfigLocally(data);
+        }
+      })
+      .catch((err) => console.warn('Could not load delivery settings:', err));
+  }, []);
 
   // Payment method: 100% Online Payment
   const paymentMethod = 'online';
@@ -114,7 +134,7 @@ function CheckoutContent() {
     : cartSubtotal;
 
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
-  const deliveryDetails = resolveDeliveryDetails(stateName || 'Kerala', deliveryMethod);
+  const deliveryDetails = resolveDeliveryDetails(stateName || 'Kerala', deliveryMethod, deliveryConfig);
   const deliveryFee = deliveryDetails.deliveryFee;
   const isKerala = deliveryDetails.isKerala;
   const finalTotal = Math.max(1, subtotal - discountAmount + deliveryFee);
@@ -492,6 +512,7 @@ function CheckoutContent() {
                     stateName={stateName || 'Kerala'}
                     selectedMethod={deliveryMethod}
                     onSelectMethod={(method) => setDeliveryMethod(method)}
+                    config={deliveryConfig}
                   />
                 </div>
 
