@@ -248,7 +248,6 @@ export default function ProductSizeChartEditor({
                   <tr className="bg-[#FAF7F2] border-b border-[#E8E0D5] text-[#6E6259] font-bold uppercase tracking-wider text-[11px]">
                     <th className="py-3 px-4 w-28">Size</th>
                     <th className="py-3 px-4">Bust ({unitPreview})</th>
-                    <th className="py-3 px-4">Front Length ({unitPreview})</th>
                     <th className="py-3 px-4">Waist ({unitPreview})</th>
                     <th className="py-3 px-4">Hips ({unitPreview})</th>
                   </tr>
@@ -258,7 +257,6 @@ export default function ProductSizeChartEditor({
                     <tr key={row.size} className="hover:bg-[#FAF6F0]/60 transition-colors">
                       <td className="py-2.5 px-4 font-bold text-[#2C1D13]">{row.size}</td>
                       <td className="py-2.5 px-4 font-mono font-medium">{formatVal(row.bustIn)}</td>
-                      <td className="py-2.5 px-4 font-mono font-medium">{formatVal(row.lengthIn)}</td>
                       <td className="py-2.5 px-4 font-mono font-medium">{row.waistIn ? formatVal(row.waistIn) : '—'}</td>
                       <td className="py-2.5 px-4 font-mono font-medium">{row.hipsIn ? formatVal(row.hipsIn) : '—'}</td>
                     </tr>
@@ -270,12 +268,11 @@ export default function ProductSizeChartEditor({
             /* Editable Custom Size Chart Table */
             <div className="space-y-3">
               <div className="overflow-x-auto border border-[#E8E0D5] rounded-xl shadow-2xs">
-                <table className="w-full text-left border-collapse text-sm min-w-[650px]">
+                <table className="w-full text-left border-collapse text-sm min-w-[550px]">
                   <thead>
                     <tr className="bg-[#FAF7F2] border-b border-[#E8E0D5] text-[#6E6259] font-bold uppercase tracking-wider text-[11px]">
                       <th className="py-3 px-4 w-32">Size Label</th>
                       <th className="py-3 px-4">Bust (in)</th>
-                      <th className="py-3 px-4">Front Length (in)</th>
                       <th className="py-3 px-4">Waist (in)</th>
                       <th className="py-3 px-4">Hips (in)</th>
                       <th className="py-3 px-4 text-right w-24">Action</th>
@@ -305,22 +302,6 @@ export default function ProductSizeChartEditor({
                             {unitPreview === 'cm' && (
                               <span className="text-[11px] text-[#7A6F66] font-mono whitespace-nowrap">
                                 ({(row.bustIn * 2.54).toFixed(1)}cm)
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-2.5 px-4 align-middle">
-                          <div className="flex items-center gap-1.5">
-                            <input
-                              type="number"
-                              step="0.5"
-                              value={row.lengthIn}
-                              onChange={(e) => handleUpdateCustomRow(idx, 'lengthIn', e.target.value)}
-                              className="w-24 h-9 px-3 text-xs font-mono font-medium text-[#2C1D13] bg-white border border-[#E8E0D5] rounded-lg focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15 outline-none transition-all shadow-2xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            />
-                            {unitPreview === 'cm' && (
-                              <span className="text-[11px] text-[#7A6F66] font-mono whitespace-nowrap">
-                                ({(row.lengthIn * 2.54).toFixed(1)}cm)
                               </span>
                             )}
                           </div>

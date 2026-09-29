@@ -78,9 +78,6 @@ export default function SizeGuideModal({
     return inches.toFixed(1);
   };
 
-  const hasWaist = measurementRows.some((r) => r.waistIn && r.waistIn > 0);
-  const hasHips = measurementRows.some((r) => r.hipsIn && r.hipsIn > 0);
-
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-[#1A120B]/65 backdrop-blur-md transition-all duration-300 animate-in fade-in"
@@ -267,9 +264,8 @@ export default function SizeGuideModal({
                         <th className="py-3.5 px-4 w-12 text-center"></th>
                         <th className="py-3.5 px-4">Size</th>
                         <th className="py-3.5 px-4">Bust ({unit})</th>
-                        <th className="py-3.5 px-4">Length ({unit})</th>
-                        {hasWaist && <th className="py-3.5 px-4">Waist ({unit})</th>}
-                        {hasHips && <th className="py-3.5 px-4">Hips ({unit})</th>}
+                        <th className="py-3.5 px-4">Waist ({unit})</th>
+                        <th className="py-3.5 px-4">Hip ({unit})</th>
                         <th className="py-3.5 px-4 text-right">Status</th>
                       </tr>
                     </thead>
@@ -321,18 +317,11 @@ export default function SizeGuideModal({
                               {formatMeasurement(row.bustIn)}
                             </td>
                             <td className="py-3.5 px-4 font-mono font-medium text-[#4A3B30]">
-                              {formatMeasurement(row.lengthIn)}
+                              {row.waistIn ? formatMeasurement(row.waistIn) : '—'}
                             </td>
-                            {hasWaist && (
-                              <td className="py-3.5 px-4 font-mono font-medium text-[#4A3B30]">
-                                {row.waistIn ? formatMeasurement(row.waistIn) : '—'}
-                              </td>
-                            )}
-                            {hasHips && (
-                              <td className="py-3.5 px-4 font-mono font-medium text-[#4A3B30]">
-                                {row.hipsIn ? formatMeasurement(row.hipsIn) : '—'}
-                              </td>
-                            )}
+                            <td className="py-3.5 px-4 font-mono font-medium text-[#4A3B30]">
+                              {row.hipsIn ? formatMeasurement(row.hipsIn) : '—'}
+                            </td>
                             <td className="py-3.5 px-4 text-right">
                               {matchedVariantSize && !isAvailable ? (
                                 <span className="text-[11px] font-medium text-[#DC2626] bg-[#FEF2F2] px-2 py-0.5 rounded-full">

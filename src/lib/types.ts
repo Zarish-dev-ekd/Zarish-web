@@ -124,7 +124,7 @@ export interface Size {
 export interface SizeMeasurementRow {
   size: string;
   bustIn: number;
-  lengthIn: number;
+  lengthIn?: number;
   waistIn?: number;
   hipsIn?: number;
 }

@@ -882,9 +882,6 @@ export default function AdminSizesAndColorsPage() {
                         Bust ({chartUnit === 'in' ? 'in' : 'cm'})
                       </th>
                       <th className="px-4 py-3.5 font-bold text-xs uppercase tracking-[0.06em] text-[#6E6259]">
-                        Front Length ({chartUnit === 'in' ? 'in' : 'cm'})
-                      </th>
-                      <th className="px-4 py-3.5 font-bold text-xs uppercase tracking-[0.06em] text-[#6E6259]">
                         Waist ({chartUnit === 'in' ? 'in' : 'cm'})
                       </th>
                       <th className="px-4 py-3.5 font-bold text-xs uppercase tracking-[0.06em] text-[#6E6259]">
@@ -898,7 +895,6 @@ export default function AdminSizesAndColorsPage() {
                   <tbody className="divide-y divide-[#EFE9E1]">
                     {defaultChartRows.map((row, idx) => {
                       const displayBust = chartUnit === 'cm' ? (row.bustIn * 2.54).toFixed(1) : row.bustIn;
-                      const displayLength = chartUnit === 'cm' ? (row.lengthIn * 2.54).toFixed(1) : row.lengthIn;
                       const displayWaist = row.waistIn ? (chartUnit === 'cm' ? (row.waistIn * 2.54).toFixed(1) : row.waistIn) : '';
                       const displayHips = row.hipsIn ? (chartUnit === 'cm' ? (row.hipsIn * 2.54).toFixed(1) : row.hipsIn) : '';
 
@@ -925,22 +921,6 @@ export default function AdminSizesAndColorsPage() {
                               {chartUnit === 'cm' && (
                                 <span className="text-[11px] text-[#7A6F66] font-mono whitespace-nowrap">
                                   ({displayBust}cm)
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 align-middle">
-                            <div className="flex items-center gap-1.5">
-                              <input
-                                type="number"
-                                step="0.5"
-                                value={row.lengthIn}
-                                onChange={(e) => handleUpdateChartRow(idx, 'lengthIn', e.target.value)}
-                                className="w-24 h-9 px-3 text-xs font-mono font-medium text-[#2C1D13] bg-white border border-[#E8E0D5] rounded-lg focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15 outline-none transition-all shadow-2xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                              />
-                              {chartUnit === 'cm' && (
-                                <span className="text-[11px] text-[#7A6F66] font-mono whitespace-nowrap">
-                                  ({displayLength}cm)
                                 </span>
                               )}
                             </div>
