@@ -356,17 +356,14 @@ export default function SizeGuideModal({
                 </div>
               </div>
 
-              {/* Bespoke Sizing Note */}
-              <div className="bg-[#FAF7F2] border border-[#E8E0D5] rounded-2xl p-4 flex items-start gap-3 text-xs text-[#6E6259]">
-                <span className="w-5 h-5 rounded-full bg-[#F2ECE4] border border-[#E2D5C7] flex items-center justify-center text-[#7B5B3A] shrink-0 mt-0.5 text-xs">
+              {/* Sizing Recommendation Note */}
+              <div className="bg-[#FAF7F2] border border-[#E8E0D5] rounded-xl sm:rounded-2xl p-3.5 sm:p-4 flex items-center gap-3 text-xs text-[#5C4D42]">
+                <span className="w-5 h-5 rounded-full bg-[#F2ECE4] border border-[#E2D5C7] flex items-center justify-center text-[#7B5B3A] shrink-0 text-xs">
                   ✦
                 </span>
-                <div>
-                  <h4 className="font-bold text-[#2C1D13] mb-0.5">Atelier Fit Recommendation</h4>
-                  <p className="leading-relaxed m-0">
-                    Zarish garments are designed for an elegant, modest drape. If your measurements fall between standard sizes, we recommend choosing the larger size for the most graceful silhouette.
-                  </p>
-                </div>
+                <p className="leading-relaxed m-0 text-xs text-[#5C4D42] font-medium">
+                  If you are between two sizes, we recommend choosing the larger size for a more graceful drape.
+                </p>
               </div>
             </div>
           ) : (
