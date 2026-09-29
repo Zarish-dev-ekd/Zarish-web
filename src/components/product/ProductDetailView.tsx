@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { formatPrice, getDiscountPercent, optimizeCloudinaryUrl } from '@/lib/utils';
+import { formatPrice, optimizeCloudinaryUrl } from '@/lib/utils';
 import { IconArrowRight, IconTruck, IconShield, IconPackage, IconShoppingBag, IconRuler, IconTapeMeasure } from '@/components/icons';
 import Badge from './Badge';
 import WishlistButton from './WishlistButton';
@@ -201,9 +201,6 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
   const images = displayedImages;
   const activeImage = images[activeImageIndex];
   const hasDiscount = product.compare_at_price && product.compare_at_price > product.price;
-  const discountPercent = hasDiscount
-    ? getDiscountPercent(product.price, product.compare_at_price!)
-    : 0;
 
   const handlePrevImage = useCallback(() => {
     setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
@@ -439,14 +436,9 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
               {formatPrice(product.price)}
             </span>
             {hasDiscount && (
-              <>
-                <span className="font-sans text-base sm:text-lg text-[#8C7B6B] line-through font-normal">
-                  {formatPrice(product.compare_at_price!)}
-                </span>
-                <span className="font-sans px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#8B4E5A] text-white">
-                  {discountPercent}% OFF
-                </span>
-              </>
+              <span className="font-sans text-base sm:text-lg text-[#8C7B6B] line-through font-normal">
+                {formatPrice(product.compare_at_price!)}
+              </span>
             )}
           </div>
           <p className="text-[11px] text-[#8C7B6B] mb-5">Taxes included. Worldwide dispatch.</p>
