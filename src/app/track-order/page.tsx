@@ -474,11 +474,20 @@ function TrackOrderContent() {
                 </div>
 
                 <div className="flex items-center justify-between text-[#3F3F46]">
-                  <span>Shipping</span>
+                  <div>
+                    <span>Shipping</span>
+                    {selectedOrder.shipping_address?.deliveryMethodTitle && (
+                      <span className="block text-[11px] text-[#71717A]">
+                        {selectedOrder.shipping_address.deliveryMethodTitle}
+                      </span>
+                    )}
+                  </div>
                   <span className="font-medium text-[#111111]">
-                    {selectedOrder.shipping_address?.state?.toLowerCase() === 'kerala'
+                    {selectedOrder.shipping_address?.deliveryFee === 0 ||
+                    (!selectedOrder.shipping_address?.deliveryFee &&
+                      selectedOrder.shipping_address?.state?.toLowerCase() === 'kerala')
                       ? 'Free'
-                      : '₹50.00'}
+                      : formatPrice(selectedOrder.shipping_address?.deliveryFee || 50)}
                   </span>
                 </div>
 

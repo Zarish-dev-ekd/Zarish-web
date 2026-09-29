@@ -61,13 +61,31 @@ export default async function ShippingPolicyPage() {
                   </thead>
                   <tbody className="divide-y divide-[#E2D5C7] text-xs">
                     <tr>
-                      <td className="p-3 font-semibold text-[#2C1D13]">Across Kerala</td>
+                      <td className="p-3 font-semibold text-[#2C1D13]">
+                        Across Kerala — India Post Parcel
+                      </td>
                       <td className="p-3 text-[#0E7064] font-medium">3 to 5 Business Days</td>
                       <td className="p-3 text-[#0E7064] font-bold">FREE Delivery</td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-semibold text-[#2C1D13]">Rest of India (All States)</td>
-                      <td className="p-3 text-[#5C4A3E]">5 to 7 Business Days</td>
+                      <td className="p-3 font-semibold text-[#2C1D13]">
+                        Across Kerala — EMS Speed Post
+                      </td>
+                      <td className="p-3 text-[#5C4A3E] font-medium">1 to 3 Business Days</td>
+                      <td className="p-3 text-[#2C1D13] font-medium">Flat ₹50</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-semibold text-[#2C1D13]">
+                        Across Kerala — DTDC Express
+                      </td>
+                      <td className="p-3 text-[#5C4A3E] font-medium">1 to 2 Business Days</td>
+                      <td className="p-3 text-[#2C1D13] font-medium">Flat ₹50</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-semibold text-[#2C1D13]">
+                        Rest of India (All States) — EMS Speed Post
+                      </td>
+                      <td className="p-3 text-[#5C4A3E]">2 to 5 Business Days</td>
                       <td className="p-3 text-[#2C1D13] font-medium">Flat ₹50</td>
                     </tr>
                   </tbody>

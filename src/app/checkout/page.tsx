@@ -11,6 +11,8 @@ import Footer from '@/components/layout/Footer';
 import { IconArrowRight, IconShield, IconTruck, IconShoppingBag } from '@/components/icons';
 import { INDIAN_STATES } from '@/lib/constants';
 import { loadRazorpayScript } from '@/lib/loadRazorpay';
+import DeliveryMethodSelector from '@/components/checkout/DeliveryMethodSelector';
+import { resolveDeliveryDetails, type DeliveryMethodId } from '@/lib/delivery';
 import type { Product } from '@/lib/types';
 
 function CheckoutContent() {
@@ -37,6 +39,7 @@ function CheckoutContent() {
   const [stateName, setStateName] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [orderNotes, setOrderNotes] = useState('');
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethodId>('india_post_parcel');
 
   // Payment method: 100% Online Payment
   const paymentMethod = 'online';
@@ -111,8 +114,9 @@ function CheckoutContent() {
     : cartSubtotal;
 
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
-  const isKerala = stateName?.trim().toLowerCase() === 'kerala';
-  const deliveryFee = stateName ? (isKerala ? 0 : 50) : 0;
+  const deliveryDetails = resolveDeliveryDetails(stateName || 'Kerala', deliveryMethod);
+  const deliveryFee = stateName ? deliveryDetails.deliveryFee : 0;
+  const isKerala = deliveryDetails.isKerala;
   const finalTotal = Math.max(1, subtotal - discountAmount + deliveryFee);
 
   const handleApplyCoupon = async () => {
@@ -192,6 +196,7 @@ function CheckoutContent() {
           phone: phone.trim(),
         },
         paymentMethod,
+        deliveryMethod: deliveryDetails.methodId,
         couponCode: appliedCoupon?.code || null,
         notes: orderNotes.trim() || null,
       };
@@ -481,6 +486,15 @@ function CheckoutContent() {
                   </div>
                 </div>
 
+                {/* ─── Courier Delivery Partner Selection (Kerala: 3 Options, Other: 1 Option) ─── */}
+                <div className="pt-2">
+                  <DeliveryMethodSelector
+                    stateName={stateName || 'Kerala'}
+                    selectedMethod={deliveryMethod}
+                    onSelectMethod={(method) => setDeliveryMethod(method)}
+                  />
+                </div>
+
                 <div>
                   <label className="block text-xs font-semibold text-[#3D2B1F] mb-1.5">
                     Order Notes / Special Instructions (Optional)
@@ -622,15 +636,18 @@ function CheckoutContent() {
                 )}
 
                 <div className="flex justify-between items-center text-[#6B5744]">
-                  <span>Delivery Charge</span>
-                  {stateName ? (
-                    isKerala ? (
-                      <span className="font-bold text-[#0E7064]">FREE SHIPPING</span>
-                    ) : (
-                      <span className="font-bold text-[#2C1D13]">{formatPrice(deliveryFee)}</span>
-                    )
+                  <div>
+                    <span className="block font-medium">Delivery Charge</span>
+                    <span className="text-[11px] text-[#8C7B6B] block">
+                      {deliveryDetails.deliveryMethodTitle}
+                    </span>
+                  </div>
+                  {deliveryFee === 0 ? (
+                    <span className="font-bold text-[#0E7064] bg-[#E8F5E9] px-2 py-0.5 rounded-full text-xs">
+                      FREE SHIPPING
+                    </span>
                   ) : (
-                    <span className="text-[11px] text-[#8C7B6B]">FREE in Kerala / ₹50 Other States</span>
+                    <span className="font-bold text-[#2C1D13]">{formatPrice(deliveryFee)}</span>
                   )}
                 </div>
 
@@ -671,7 +688,11 @@ function CheckoutContent() {
               <div className="mt-5 pt-4 border-t border-[#F2ECE4] space-y-2 text-[11px] text-[#8C7B6B]">
                 <div className="flex items-center gap-2">
                   <IconTruck size={14} className="text-[#7B5B3A] shrink-0" />
-                  <span>Free delivery across Kerala • ₹50 for other states</span>
+                  <span>
+                    {deliveryDetails.isKerala
+                      ? 'Free with India Post Parcel • Express Speed Post / DTDC for ₹50'
+                      : 'Fast Express via EMS Speed Post across India'}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <IconShield size={14} className="text-[#7B5B3A] shrink-0" />

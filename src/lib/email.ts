@@ -354,6 +354,10 @@ export interface SendOrderEmailParams {
     state?: string;
     postalCode?: string;
     phone?: string;
+    deliveryMethod?: string;
+    deliveryMethodTitle?: string;
+    deliveryFee?: number;
+    deliveryTime?: string;
   };
   items: OrderEmailItem[];
   subtotal: number;
@@ -493,7 +497,11 @@ export async function sendOrderConfirmationEmail(
                 <tr>
                   <td style="padding: 4px 0; color: #71717A; font-size: 13px;">Shipping</td>
                   <td style="padding: 4px 0; text-align: right; color: #0E7064; font-size: 13px; font-weight: 600;">
-                    ${params.shippingAddress.state?.toLowerCase() === 'kerala' ? 'COMPLIMENTARY' : '₹50'}
+                    ${
+                      params.shippingAddress.deliveryFee === 0 || (!params.shippingAddress.deliveryFee && params.shippingAddress.state?.toLowerCase() === 'kerala')
+                        ? `FREE (${params.shippingAddress.deliveryMethodTitle || 'India Post Parcel'})`
+                        : `₹${params.shippingAddress.deliveryFee || 50} (${params.shippingAddress.deliveryMethodTitle || 'EMS Speed Post'})`
+                    }
                   </td>
                 </tr>
                 ${
@@ -527,7 +535,8 @@ export async function sendOrderConfirmationEmail(
                       <strong>${params.customerName}</strong><br>
                       ${params.shippingAddress.addressLine1 || ''}<br>
                       ${params.shippingAddress.city || ''}, ${params.shippingAddress.state || ''} ${params.shippingAddress.postalCode || ''}<br>
-                      ${params.customerPhone || params.shippingAddress.phone ? `📞 ${params.customerPhone || params.shippingAddress.phone}` : ''}
+                      ${params.customerPhone || params.shippingAddress.phone ? `📞 ${params.customerPhone || params.shippingAddress.phone}<br>` : ''}
+                      ${params.shippingAddress.deliveryMethodTitle ? `<span style="color: #7B5B3A; font-weight: 600; font-size: 11.5px;">🚚 Courier: ${params.shippingAddress.deliveryMethodTitle}</span>` : ''}
                     </p>
                   </td>
                   <td style="vertical-align: top; width: 50%; padding-left: 12px; border-left: 1px solid #EADBCE;">

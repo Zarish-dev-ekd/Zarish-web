@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { createRazorpayOrder, getRazorpayKeyId } from '@/lib/razorpay';
+import { resolveDeliveryDetails } from '@/lib/delivery';
 
 export async function POST(request: Request) {
   try {
@@ -151,10 +152,20 @@ export async function POST(request: Request) {
       }
     }
 
-    const stateStr = String(shippingAddress?.state || '').trim().toLowerCase();
-    const isKerala = stateStr === 'kerala';
-    const deliveryFee = isKerala ? 0 : 50;
+    const deliveryDetails = resolveDeliveryDetails(
+      shippingAddress?.state || '',
+      body.deliveryMethod || shippingAddress?.deliveryMethod
+    );
+    const deliveryFee = deliveryDetails.deliveryFee;
     const finalPayableTotal = Math.max(1, calculatedTotal - discountAmount + deliveryFee);
+
+    const enrichedShippingAddress = {
+      ...shippingAddress,
+      deliveryMethod: deliveryDetails.methodId,
+      deliveryMethodTitle: deliveryDetails.deliveryMethodTitle,
+      deliveryFee: deliveryDetails.deliveryFee,
+      deliveryTime: deliveryDetails.deliveryTime,
+    };
 
     // Generate readable order number: ZR-XXXXXX
     const orderNumber = `ZR-${Date.now().toString().slice(-6)}-${Math.floor(
@@ -172,6 +183,8 @@ export async function POST(request: Request) {
         customerName: customer.fullName,
         orderNumber,
         couponCode: appliedCouponCode || 'none',
+        deliveryMethod: deliveryDetails.deliveryMethodTitle,
+        deliveryFee: String(deliveryDetails.deliveryFee),
       },
     });
 
@@ -185,7 +198,7 @@ export async function POST(request: Request) {
           customer_name: customer.fullName.trim(),
           customer_email: customer.email.trim().toLowerCase(),
           customer_phone: customer.phone || shippingAddress?.phone || null,
-          shipping_address: shippingAddress,
+          shipping_address: enrichedShippingAddress,
           total_amount: finalPayableTotal,
           currency: 'INR',
           payment_method: 'razorpay',

@@ -252,6 +252,11 @@ export default function AdminOrdersPage() {
                             📍 {order.shipping_address.city}, {order.shipping_address.state}
                           </div>
                         )}
+                        {order.shipping_address?.deliveryMethodTitle && (
+                          <div className="text-[10px] font-bold text-[#7B5B3A] bg-[#FAF6F0] px-2 py-0.5 rounded-md border border-[#E2D5C7] inline-block mt-1">
+                            🚚 {order.shipping_address.deliveryMethodTitle}
+                          </div>
+                        )}
                       </td>
 
                       <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle">

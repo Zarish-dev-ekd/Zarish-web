@@ -6,6 +6,8 @@ import { createClient } from '@/utils/supabase/client';
 import { loadRazorpayScript } from '@/lib/loadRazorpay';
 import { formatPrice } from '@/lib/utils';
 import { INDIAN_STATES } from '@/lib/constants';
+import DeliveryMethodSelector from './DeliveryMethodSelector';
+import { resolveDeliveryDetails, type DeliveryMethodId } from '@/lib/delivery';
 import type { Product } from '@/lib/types';
 
 interface CheckoutModalProps {
@@ -39,6 +41,7 @@ export default function CheckoutModal({
   const [city, setCity] = useState('');
   const [stateName, setStateName] = useState('');
   const [postalCode, setPostalCode] = useState('');
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethodId>('india_post_parcel');
 
   // Coupon state
   const [couponInput, setCouponInput] = useState('');
@@ -80,8 +83,9 @@ export default function CheckoutModal({
 
   const subtotal = product.price * quantity;
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
-  const isKerala = stateName?.trim().toLowerCase() === 'kerala';
-  const deliveryFee = stateName ? (isKerala ? 0 : 50) : 0;
+  const deliveryDetails = resolveDeliveryDetails(stateName || 'Kerala', deliveryMethod);
+  const deliveryFee = stateName ? deliveryDetails.deliveryFee : 0;
+  const isKerala = deliveryDetails.isKerala;
   const finalPrice = Math.max(1, subtotal - discountAmount + deliveryFee);
 
   const primaryImg =
@@ -162,6 +166,7 @@ export default function CheckoutModal({
             postalCode: postalCode.trim(),
             country: 'India',
           },
+          deliveryMethod: deliveryDetails.methodId,
           couponCode: appliedCoupon ? appliedCoupon.code : undefined,
         }),
       });
@@ -299,7 +304,7 @@ export default function CheckoutModal({
                   {formatPrice(finalPrice)}
                 </div>
                 <span className="text-[10px] text-[#0E7064] font-semibold uppercase tracking-wider block">
-                  {stateName ? (isKerala ? 'Free Shipping (Kerala)' : 'Delivery Charge: ₹50') : 'Free in Kerala / ₹50 Other States'}
+                  {deliveryFee === 0 ? `Free (${deliveryDetails.deliveryMethodTitle})` : `${deliveryDetails.deliveryMethodTitle}: +₹50`}
                 </span>
               </div>
             )}
@@ -485,6 +490,15 @@ export default function CheckoutModal({
                 className="w-full h-10 px-3 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-xs sm:text-sm text-[#2C1D13] focus:outline-none focus:border-[#7B5B3A] focus:bg-white"
               />
             </div>
+          </div>
+
+          {/* Courier Delivery Partner Selection */}
+          <div className="pt-1">
+            <DeliveryMethodSelector
+              stateName={stateName || 'Kerala'}
+              selectedMethod={deliveryMethod}
+              onSelectMethod={(method) => setDeliveryMethod(method)}
+            />
           </div>
 
           {/* Trust badges */}

@@ -334,6 +334,10 @@ export interface ShippingAddress {
   state: string;
   postalCode: string;
   country: string;
+  deliveryMethod?: string;
+  deliveryMethodTitle?: string;
+  deliveryFee?: number;
+  deliveryTime?: string;
 }
 
 export interface OrderItem {
