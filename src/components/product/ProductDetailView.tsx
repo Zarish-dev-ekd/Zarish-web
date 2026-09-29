@@ -758,7 +758,7 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
               className="w-full h-12 flex items-center justify-center gap-2.5 rounded-xl bg-[#25D366] hover:bg-[#20BA5A] text-white text-[14px] sm:text-[15px] font-medium transition-all duration-200 shadow-[0_3px_12px_rgba(37,211,102,0.28)] hover:shadow-[0_5px_18px_rgba(37,211,102,0.38)] active:scale-[0.99] cursor-pointer select-none"
             >
               <IconWhatsapp size={22} className="text-white shrink-0" />
-              <span>Or order this via WhatsApp now!</span>
+              <span>Or Shop via WhatsApp</span>
             </button>
           </div>
 
