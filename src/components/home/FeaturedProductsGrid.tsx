@@ -15,7 +15,7 @@ interface PaginatedResult {
 }
 
 const PAGE_SIZE = 10;
-const LOW_STOCK_THRESHOLD = 5;
+const LOW_STOCK_THRESHOLD = 3;
 
 /* ─── Helpers ───────────────────────────────────────────────── */
 function getTotalStock(product: Product): number {

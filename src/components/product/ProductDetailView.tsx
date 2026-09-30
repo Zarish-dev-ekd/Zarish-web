@@ -640,13 +640,13 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
                   <span className="text-xs sm:text-sm font-medium text-[#DC2626]">
                     Out of stock
                   </span>
-                ) : currentStock < 5 ? (
+                ) : currentStock <= 3 ? (
                   <span className="text-xs sm:text-sm font-medium text-[#EA580C]">
                     Only {currentStock} left in stock
                   </span>
                 ) : (
                   <span className="text-xs sm:text-sm font-medium text-[#16A34A]">
-                    In stock {currentStock} available
+                    In stock
                   </span>
                 )}
               </div>
@@ -661,13 +661,13 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
                   <span className="text-xs sm:text-sm font-medium text-[#DC2626]">
                     Out of stock
                   </span>
-                ) : currentStock < 5 ? (
+                ) : currentStock <= 3 ? (
                   <span className="text-xs sm:text-sm font-medium text-[#EA580C]">
-                    Only {currentStock} left in stock!
+                    Only {currentStock} left in stock
                   </span>
                 ) : (
                   <span className="text-xs sm:text-sm font-medium text-[#16A34A]">
-                    In stock ({currentStock} available)
+                    In stock
                   </span>
                 )}
               </div>
