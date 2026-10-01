@@ -97,6 +97,16 @@ export default async function AdminDashboardPage() {
         <h3 className="text-lg font-semibold m-0 mb-4 text-[#2C241E]">Quick Management Actions</h3>
         <div className="flex flex-wrap gap-3">
           <Link
+            href="/admin/analytics"
+            className="inline-flex items-center justify-center gap-2 px-[18px] py-2.5 text-sm font-semibold rounded-md border border-[#7B5B3A] bg-[#7B5B3A]/10 text-[#7B5B3A] hover:bg-[#7B5B3A] hover:text-white transition-all shadow-xs"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+              <polyline points="16 7 22 7 22 13" />
+            </svg>
+            <span>View Store Analytics</span>
+          </Link>
+          <Link
             href="/admin/products/new"
             className="inline-flex items-center justify-center gap-2 px-[18px] py-2.5 text-sm font-medium rounded-md border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors"
           >
