@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin';
+import { createClient } from '@/utils/supabase/server';
+import { isAdminUser } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import type { CustomerComment } from '@/lib/types';
 import fs from 'fs';
@@ -228,6 +230,18 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const supabaseUser = await createClient();
+    const {
+      data: { user },
+    } = await supabaseUser.auth.getUser();
+
+    if (!user || !isAdminUser(user)) {
+      return NextResponse.json(
+        { error: 'Unauthorized. Admin privileges required.' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     let id = searchParams.get('id');
 

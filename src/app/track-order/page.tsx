@@ -48,20 +48,17 @@ function TrackOrderContent() {
 
         let resolvedOrder: Order | null = null;
 
-        // 1. If a specific order is requested via URL query, always query DB for it first
+        // 1. If a specific order is requested via URL query, fetch via secure server API
         if (queryOrderNumber && queryOrderNumber.trim()) {
-          const { data: specificOrder } = await supabase
-            .from('orders')
-            .select(`
-              *,
-              items:order_items(*)
-            `)
-            .ilike('order_number', queryOrderNumber.trim())
-            .maybeSingle();
-
-          if (!isCancelled && specificOrder) {
-            resolvedOrder = specificOrder as Order;
-            setSelectedOrder(resolvedOrder);
+          try {
+            const res = await fetch(`/api/track-order?orderNumber=${encodeURIComponent(queryOrderNumber.trim())}`);
+            const data = await res.json();
+            if (!isCancelled && res.ok && data.success && data.order) {
+              resolvedOrder = data.order as Order;
+              setSelectedOrder(resolvedOrder);
+            }
+          } catch (e) {
+            console.warn('Track order lookup error:', e);
           }
         }
 
@@ -113,21 +110,16 @@ function TrackOrderContent() {
     setGuestError(null);
 
     try {
-      let query = supabase
-        .from('orders')
-        .select(`
-          *,
-          items:order_items(*)
-        `)
-        .eq('order_number', guestOrderNumber.trim());
+      const res = await fetch(`/api/track-order?orderNumber=${encodeURIComponent(guestOrderNumber.trim())}`);
+      const json = await res.json();
 
-      const { data: foundOrder, error } = await query.maybeSingle();
-
-      if (error || !foundOrder) {
-        setGuestError('Order not found. Please check your order number or log in.');
+      if (!res.ok || !json.success || !json.order) {
+        setGuestError(json?.error || 'Order not found. Please verify your order number.');
         setGuestSearching(false);
         return;
       }
+
+      const foundOrder = json.order;
 
       // If contact provided, verify match
       if (guestContact.trim()) {
@@ -555,7 +547,11 @@ function TrackOrderContent() {
                   <div className="grid grid-cols-[80px_1fr] sm:grid-cols-[100px_1fr] text-xs sm:text-sm">
                     <span className="text-[#71717A]">Contact</span>
                     <span className="text-[#111111] font-medium break-all">
-                      {selectedOrder.customer_email}
+                      {user && (user.id === selectedOrder.user_id || user.email?.toLowerCase() === selectedOrder.customer_email?.toLowerCase())
+                        ? selectedOrder.customer_email
+                        : selectedOrder.customer_email
+                        ? `${selectedOrder.customer_email.slice(0, 2)}•••@${selectedOrder.customer_email.split('@')[1] || ''}`
+                        : '••••••••'}
                     </span>
                   </div>
 
@@ -566,8 +562,20 @@ function TrackOrderContent() {
                       <p className="font-semibold text-[#111111]">
                         {shippingAddr.fullName || selectedOrder.customer_name}
                       </p>
-                      {shippingAddr.addressLine1 && <p>{shippingAddr.addressLine1}</p>}
-                      {shippingAddr.addressLine2 && <p>{shippingAddr.addressLine2}</p>}
+                      {shippingAddr.addressLine1 && (
+                        <p>
+                          {user && (user.id === selectedOrder.user_id || user.email?.toLowerCase() === selectedOrder.customer_email?.toLowerCase())
+                            ? shippingAddr.addressLine1
+                            : `${shippingAddr.addressLine1.slice(0, 4)}••••••••`}
+                        </p>
+                      )}
+                      {shippingAddr.addressLine2 && (
+                        <p>
+                          {user && (user.id === selectedOrder.user_id || user.email?.toLowerCase() === selectedOrder.customer_email?.toLowerCase())
+                            ? shippingAddr.addressLine2
+                            : '••••••••'}
+                        </p>
+                      )}
                       <p>
                         {[shippingAddr.city, shippingAddr.state, shippingAddr.postalCode]
                           .filter(Boolean)
@@ -576,7 +584,10 @@ function TrackOrderContent() {
                       <p>{shippingAddr.country || 'India'}</p>
                       {(shippingAddr.phone || selectedOrder.customer_phone) && (
                         <p className="pt-1 font-mono text-xs text-[#52525B]">
-                          📞 {shippingAddr.phone || selectedOrder.customer_phone}
+                          📞{' '}
+                          {user && (user.id === selectedOrder.user_id || user.email?.toLowerCase() === selectedOrder.customer_email?.toLowerCase())
+                            ? (shippingAddr.phone || selectedOrder.customer_phone)
+                            : (shippingAddr.phone || selectedOrder.customer_phone)?.slice(0, 4) + '••••••'}
                         </p>
                       )}
                     </div>

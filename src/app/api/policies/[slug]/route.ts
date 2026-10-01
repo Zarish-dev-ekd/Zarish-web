@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPolicy, savePolicy } from '@/lib/policies';
+import { createClient } from '@/utils/supabase/server';
+import { isAdminUser } from '@/lib/auth';
 
 export async function GET(
   request: NextRequest,
@@ -22,6 +24,18 @@ export async function POST(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user || !isAdminUser(user)) {
+      return NextResponse.json(
+        { error: 'Unauthorized. Admin privileges required.' },
+        { status: 401 }
+      );
+    }
+
     const { slug } = await params;
     const body = await request.json();
     const result = await savePolicy(slug, body);

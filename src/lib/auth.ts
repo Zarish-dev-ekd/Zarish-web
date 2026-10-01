@@ -34,18 +34,10 @@ export function isAdminUser(user: UserLike | null | undefined): boolean {
     return true;
   }
 
-  // 2. Check Supabase app_metadata (set only by server/service role)
+  // 2. Check Supabase app_metadata (strictly set only by server/service role)
   if (
     user.app_metadata?.role === 'admin' ||
     user.app_metadata?.is_admin === true
-  ) {
-    return true;
-  }
-
-  // 3. Check Supabase user_metadata
-  if (
-    user.user_metadata?.role === 'admin' ||
-    user.user_metadata?.is_admin === true
   ) {
     return true;
   }

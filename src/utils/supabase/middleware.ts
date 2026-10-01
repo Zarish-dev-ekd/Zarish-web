@@ -35,6 +35,17 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
+  // ── STRICT ADMIN API GUARD ──
+  // Protect all /api/admin/* endpoints from unauthorized requests
+  if (pathname.startsWith('/api/admin')) {
+    if (!user || !isAdminUser(user)) {
+      return NextResponse.json(
+        { error: 'Unauthorized. Admin privileges required.' },
+        { status: 401 }
+      );
+    }
+  }
+
   // ── STRICT ADMIN ACCESS GUARD ──
   // Only users with admin credentials/role can enter /admin
   if (pathname.startsWith('/admin')) {

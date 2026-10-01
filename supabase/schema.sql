@@ -360,16 +360,83 @@ ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Public read own orders" ON public.orders FOR SELECT USING (true);
-CREATE POLICY "Public insert orders" ON public.orders FOR INSERT WITH CHECK (true);
-CREATE POLICY "Admin manage orders" ON public.orders FOR ALL TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Public read own orders" ON public.orders;
+DROP POLICY IF EXISTS "Public insert orders" ON public.orders;
+DROP POLICY IF EXISTS "Admin manage orders" ON public.orders;
+DROP POLICY IF EXISTS "Customers view own orders" ON public.orders;
+DROP POLICY IF EXISTS "Admins manage orders" ON public.orders;
+DROP POLICY IF EXISTS "Allow order creation" ON public.orders;
 
-CREATE POLICY "Public read order items" ON public.order_items FOR SELECT USING (true);
-CREATE POLICY "Public insert order items" ON public.order_items FOR INSERT WITH CHECK (true);
-CREATE POLICY "Admin manage order items" ON public.order_items FOR ALL TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Public read order items" ON public.order_items;
+DROP POLICY IF EXISTS "Public insert order items" ON public.order_items;
+DROP POLICY IF EXISTS "Admin manage order items" ON public.order_items;
+DROP POLICY IF EXISTS "Customers view own order items" ON public.order_items;
+DROP POLICY IF EXISTS "Admins manage order items" ON public.order_items;
+DROP POLICY IF EXISTS "Allow order items creation" ON public.order_items;
 
-CREATE POLICY "Public read active coupons" ON public.coupons FOR SELECT USING (true);
-CREATE POLICY "Admin manage coupons" ON public.coupons FOR ALL TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Public read active coupons" ON public.coupons;
+DROP POLICY IF EXISTS "Admin manage coupons" ON public.coupons;
+DROP POLICY IF EXISTS "Read active coupons" ON public.coupons;
+DROP POLICY IF EXISTS "Admins manage coupons" ON public.coupons;
+
+-- 1. ORDERS: Customers only see their own orders; Admins manage all; Public can create
+CREATE POLICY "Customers view own orders" ON public.orders
+  FOR SELECT TO authenticated
+  USING (
+    auth.uid() = user_id 
+    OR (auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com')
+  );
+
+CREATE POLICY "Admins manage orders" ON public.orders
+  FOR ALL TO authenticated
+  USING (
+    (auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com')
+  )
+  WITH CHECK (
+    (auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com')
+  );
+
+CREATE POLICY "Allow order creation" ON public.orders
+  FOR INSERT WITH CHECK (true);
+
+-- 2. ORDER ITEMS: Customers only see their own order items; Admins manage all; Public can create
+CREATE POLICY "Customers view own order items" ON public.order_items
+  FOR SELECT TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.orders o
+      WHERE o.id = order_items.order_id
+      AND (
+        o.user_id = auth.uid()
+        OR (auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com')
+      )
+    )
+  );
+
+CREATE POLICY "Admins manage order items" ON public.order_items
+  FOR ALL TO authenticated
+  USING (
+    (auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com')
+  )
+  WITH CHECK (
+    (auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com')
+  );
+
+CREATE POLICY "Allow order items creation" ON public.order_items
+  FOR INSERT WITH CHECK (true);
+
+-- 3. COUPONS: Anyone can view active coupons; Only verified Admins can create/edit/delete
+CREATE POLICY "Read active coupons" ON public.coupons
+  FOR SELECT USING (is_active = true);
+
+CREATE POLICY "Admins manage coupons" ON public.coupons
+  FOR ALL TO authenticated
+  USING (
+    (auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com')
+  )
+  WITH CHECK (
+    (auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com')
+  );
 
 -- Optional Migrations (if updating existing production database):
 ALTER TABLE public.site_settings ADD COLUMN IF NOT EXISTS default_size_chart JSONB DEFAULT NULL;
@@ -394,9 +461,15 @@ CREATE INDEX IF NOT EXISTS idx_comments_created_at ON public.customer_comments(c
 
 ALTER TABLE public.customer_comments ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Public read approved comments" ON public.customer_comments;
+DROP POLICY IF EXISTS "Public insert comments" ON public.customer_comments;
+DROP POLICY IF EXISTS "Admin manage comments" ON public.customer_comments;
+
 CREATE POLICY "Public read approved comments" ON public.customer_comments FOR SELECT USING (status = 'approved');
 CREATE POLICY "Public insert comments" ON public.customer_comments FOR INSERT WITH CHECK (true);
-CREATE POLICY "Admin manage comments" ON public.customer_comments FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admins manage comments" ON public.customer_comments FOR ALL TO authenticated 
+  USING ((auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com'))
+  WITH CHECK ((auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com'));
 
 
 

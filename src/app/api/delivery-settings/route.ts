@@ -3,6 +3,7 @@ import { createAdminClient } from '@/utils/supabase/admin';
 import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { DEFAULT_DELIVERY_CONFIG, type DeliveryConfig } from '@/lib/delivery';
+import { isAdminUser } from '@/lib/auth';
 
 export async function GET() {
   try {
@@ -40,6 +41,18 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const userClient = await createClient();
+    const {
+      data: { user },
+    } = await userClient.auth.getUser();
+
+    if (!user || !isAdminUser(user)) {
+      return NextResponse.json(
+        { error: 'Unauthorized. Admin privileges required.' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const config: DeliveryConfig = body.config || body;
 

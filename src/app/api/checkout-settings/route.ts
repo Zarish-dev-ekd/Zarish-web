@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { isAdminUser } from '@/lib/auth';
 import fs from 'fs';
 import path from 'path';
 
@@ -72,6 +73,18 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const userClient = await createClient();
+    const {
+      data: { user },
+    } = await userClient.auth.getUser();
+
+    if (!user || !isAdminUser(user)) {
+      return NextResponse.json(
+        { error: 'Unauthorized. Admin privileges required.' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const enable_coupons = Boolean(body.enable_coupons);
 

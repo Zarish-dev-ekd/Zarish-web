@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadImage } from '@/lib/cloudinary';
 import { createClient } from '@/utils/supabase/server';
+import { isAdminUser } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,9 +11,9 @@ export async function POST(request: NextRequest) {
       error: authErr,
     } = await supabase.auth.getUser();
 
-    if (authErr || !user) {
+    if (authErr || !user || !isAdminUser(user)) {
       return NextResponse.json(
-        { error: 'Unauthorized. Authentication required to upload files.' },
+        { error: 'Unauthorized. Admin privileges required to upload files.' },
         { status: 401 }
       );
     }
