@@ -113,10 +113,135 @@ export function getDeliveryOptions(
   };
 }
 
+export interface DeliveryFeeCalculation {
+  fee: number;
+  priceLabel: string;
+  isBlinkingFree: boolean;
+  rateHint?: string;
+}
+
+export function calculateDeliveryFee(
+  methodId: string,
+  stateName: string,
+  quantity = 1,
+  config?: DeliveryConfig | null
+): DeliveryFeeCalculation {
+  const normState = (stateName || '').trim().toLowerCase();
+  const isKerala = normState === 'kerala';
+  const q = Math.max(1, Math.round(Number(quantity) || 1));
+  const normId = (methodId || '').toLowerCase();
+
+  // 1. KERALA RULES
+  if (isKerala) {
+    // 1A. India Post Parcel: ALWAYS FREE for all quantities
+    if (normId.includes('parcel') || normId.includes('india_post')) {
+      return {
+        fee: 0,
+        priceLabel: 'FREE',
+        isBlinkingFree: true,
+        rateHint: 'Free delivery',
+      };
+    }
+
+    // 1B. EMS Speed Post:
+    // 1 pc: ₹50, 2 pcs: ₹80, 3+ pcs: ₹35 per pc (e.g. 3 pcs = ₹105, 4 pcs = ₹140)
+    if (normId.includes('speed') || normId.includes('ems')) {
+      if (q === 1) {
+        return {
+          fee: 50,
+          priceLabel: '+₹50',
+          isBlinkingFree: false,
+          rateHint: '₹50 for 1 pc',
+        };
+      }
+      if (q === 2) {
+        return {
+          fee: 80,
+          priceLabel: '+₹80',
+          isBlinkingFree: false,
+          rateHint: '₹80 for 2 pcs',
+        };
+      }
+      const fee = q * 35;
+      return {
+        fee,
+        priceLabel: `+₹${fee}`,
+        isBlinkingFree: false,
+        rateHint: `₹35/pc (${q} pcs)`,
+      };
+    }
+
+    // 1C. DTDC Express:
+    // ₹50 per pc (e.g. 1 pc = ₹50, 2 pcs = ₹100, 3 pcs = ₹150)
+    if (normId.includes('dtdc')) {
+      const fee = q * 50;
+      return {
+        fee,
+        priceLabel: `+₹${fee}`,
+        isBlinkingFree: false,
+        rateHint: q === 1 ? '₹50/pc' : `₹50/pc (${q} pcs)`,
+      };
+    }
+  } else {
+    // 2. OTHER STATES RULES (All outside Kerala)
+    // 2A. EMS Speed Post:
+    // 1 pc: ₹50, 2+ pcs: ₹40 per pc (e.g. 2 pcs = ₹80, 3 pcs = ₹120, 4 pcs = ₹160)
+    if (normId.includes('speed') || normId.includes('ems')) {
+      if (q === 1) {
+        return {
+          fee: 50,
+          priceLabel: '+₹50',
+          isBlinkingFree: false,
+          rateHint: '₹50 for 1 pc',
+        };
+      }
+      const fee = q * 40;
+      return {
+        fee,
+        priceLabel: `+₹${fee}`,
+        isBlinkingFree: false,
+        rateHint: `₹40/pc (${q} pcs)`,
+      };
+    }
+
+    // DTDC Express if present in other states: ₹50 per pc
+    if (normId.includes('dtdc')) {
+      const fee = q * 50;
+      return {
+        fee,
+        priceLabel: `+₹${fee}`,
+        isBlinkingFree: false,
+        rateHint: `₹50/pc (${q} pcs)`,
+      };
+    }
+  }
+
+  // Fallback to configured price if available
+  const { options } = getDeliveryOptions(stateName, config);
+  const matched = options.find((opt) => opt.id === methodId);
+  const basePrice = matched ? Number(matched.price) || 0 : 50;
+  if (basePrice === 0) {
+    return {
+      fee: 0,
+      priceLabel: 'FREE',
+      isBlinkingFree: true,
+      rateHint: 'Free delivery',
+    };
+  }
+
+  const fee = basePrice;
+  return {
+    fee,
+    priceLabel: `+₹${fee}`,
+    isBlinkingFree: false,
+  };
+}
+
 export function resolveDeliveryDetails(
   stateName: string,
   selectedMethodId?: string,
-  config?: DeliveryConfig | null
+  config?: DeliveryConfig | null,
+  quantity = 1
 ): {
   isKerala: boolean;
   methodId: string;
@@ -124,41 +249,27 @@ export function resolveDeliveryDetails(
   deliveryTime: string;
   deliveryFee: number;
   deliveryMethodTitle: string;
+  priceLabel: string;
+  rateHint?: string;
 } {
   const { isKerala, options, defaultMethodId } = getDeliveryOptions(stateName, config);
 
   const matched = options.find((opt) => opt.id === selectedMethodId) || options[0];
+  const activeMethodId = matched?.id || defaultMethodId || (isKerala ? 'india_post_parcel' : 'ems_speed_post');
+  const methodName = matched?.name || (isKerala ? 'India Post Parcel' : 'EMS Speed Post');
+  const deliveryTime = matched?.deliveryTime || (isKerala ? '3-5 Days' : '2-5 Days');
 
-  if (matched) {
-    const fee = Number(matched.price) || 0;
-    return {
-      isKerala,
-      methodId: matched.id,
-      methodName: matched.name,
-      deliveryTime: matched.deliveryTime,
-      deliveryFee: fee,
-      deliveryMethodTitle: `${matched.name} (${matched.deliveryTime})`,
-    };
-  }
-
-  // Fallback defaults
-  if (isKerala) {
-    return {
-      isKerala: true,
-      methodId: 'india_post_parcel',
-      methodName: 'India Post Parcel',
-      deliveryTime: '3-5 Days',
-      deliveryFee: 0,
-      deliveryMethodTitle: 'India Post Parcel (3-5 Days)',
-    };
-  }
+  const calc = calculateDeliveryFee(activeMethodId, stateName, quantity, config);
 
   return {
-    isKerala: false,
-    methodId: 'ems_speed_post',
-    methodName: 'EMS Speed Post',
-    deliveryTime: '2-5 Days',
-    deliveryFee: 50,
-    deliveryMethodTitle: 'EMS Speed Post (2-5 Days)',
+    isKerala,
+    methodId: activeMethodId,
+    methodName,
+    deliveryTime,
+    deliveryFee: calc.fee,
+    deliveryMethodTitle: `${methodName} (${deliveryTime})`,
+    priceLabel: calc.priceLabel,
+    rateHint: calc.rateHint,
   };
 }
+

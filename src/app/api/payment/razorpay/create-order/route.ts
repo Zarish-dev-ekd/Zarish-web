@@ -179,10 +179,14 @@ export async function POST(request: Request) {
       // Fallback to defaults
     }
 
+    const totalPieces =
+      orderItemsToInsert.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0) || 1;
+
     const deliveryDetails = resolveDeliveryDetails(
       shippingAddress?.state || '',
       body.deliveryMethod || shippingAddress?.deliveryMethod,
-      customDeliveryConfig
+      customDeliveryConfig,
+      totalPieces
     );
     const deliveryFee = deliveryDetails.deliveryFee;
     const finalPayableTotal = Math.max(1, calculatedTotal - discountAmount + deliveryFee);

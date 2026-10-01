@@ -186,12 +186,16 @@ function CheckoutContent() {
 
   // Calculate prices
   const isDirect = Boolean(productId && directProduct);
+  const totalItemCount = isDirect
+    ? Math.max(1, quantityParam)
+    : (cartItems || []).reduce((sum, it) => sum + Math.max(1, Number(it.quantity || 1)), 0);
+
   const subtotal = isDirect
     ? Number(directProduct!.price) * Math.max(1, quantityParam)
     : cartSubtotal;
 
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
-  const deliveryDetails = resolveDeliveryDetails(stateName || 'Kerala', deliveryMethod, deliveryConfig);
+  const deliveryDetails = resolveDeliveryDetails(stateName || 'Kerala', deliveryMethod, deliveryConfig, totalItemCount);
   const deliveryFee = deliveryDetails.deliveryFee;
   const isKerala = deliveryDetails.isKerala;
   const finalTotal = Math.max(1, subtotal - discountAmount + deliveryFee);
@@ -570,6 +574,7 @@ function CheckoutContent() {
                     selectedMethod={deliveryMethod}
                     onSelectMethod={(method) => setDeliveryMethod(method)}
                     config={deliveryConfig}
+                    quantity={totalItemCount}
                   />
                 </div>
 

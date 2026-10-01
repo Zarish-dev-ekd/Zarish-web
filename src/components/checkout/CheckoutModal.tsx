@@ -118,7 +118,7 @@ export default function CheckoutModal({
 
   const subtotal = product.price * quantity;
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
-  const deliveryDetails = resolveDeliveryDetails(stateName || 'Kerala', deliveryMethod, deliveryConfig);
+  const deliveryDetails = resolveDeliveryDetails(stateName || 'Kerala', deliveryMethod, deliveryConfig, quantity);
   const deliveryFee = deliveryDetails.deliveryFee;
   const isKerala = deliveryDetails.isKerala;
   const finalPrice = Math.max(1, subtotal - discountAmount + deliveryFee);
@@ -536,6 +536,7 @@ export default function CheckoutModal({
               selectedMethod={deliveryMethod}
               onSelectMethod={(method) => setDeliveryMethod(method)}
               config={deliveryConfig}
+              quantity={quantity}
             />
           </div>
 
