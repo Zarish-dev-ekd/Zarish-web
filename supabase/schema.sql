@@ -384,16 +384,16 @@ CREATE POLICY "Customers view own orders" ON public.orders
   FOR SELECT TO authenticated
   USING (
     auth.uid() = user_id 
-    OR (auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com')
+    OR (auth.jwt() ->> 'email') = 'zarish2025co@gmail.com'
   );
 
 CREATE POLICY "Admins manage orders" ON public.orders
   FOR ALL TO authenticated
   USING (
-    (auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com')
+    (auth.jwt() ->> 'email') = 'zarish2025co@gmail.com'
   )
   WITH CHECK (
-    (auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com')
+    (auth.jwt() ->> 'email') = 'zarish2025co@gmail.com'
   );
 
 CREATE POLICY "Allow order creation" ON public.orders
@@ -408,7 +408,7 @@ CREATE POLICY "Customers view own order items" ON public.order_items
       WHERE o.id = order_items.order_id
       AND (
         o.user_id = auth.uid()
-        OR (auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com')
+        OR (auth.jwt() ->> 'email') = 'zarish2025co@gmail.com'
       )
     )
   );
@@ -416,10 +416,10 @@ CREATE POLICY "Customers view own order items" ON public.order_items
 CREATE POLICY "Admins manage order items" ON public.order_items
   FOR ALL TO authenticated
   USING (
-    (auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com')
+    (auth.jwt() ->> 'email') = 'zarish2025co@gmail.com'
   )
   WITH CHECK (
-    (auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com')
+    (auth.jwt() ->> 'email') = 'zarish2025co@gmail.com'
   );
 
 CREATE POLICY "Allow order items creation" ON public.order_items
@@ -432,10 +432,10 @@ CREATE POLICY "Read active coupons" ON public.coupons
 CREATE POLICY "Admins manage coupons" ON public.coupons
   FOR ALL TO authenticated
   USING (
-    (auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com')
+    (auth.jwt() ->> 'email') = 'zarish2025co@gmail.com'
   )
   WITH CHECK (
-    (auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com')
+    (auth.jwt() ->> 'email') = 'zarish2025co@gmail.com'
   );
 
 -- Optional Migrations (if updating existing production database):
@@ -468,8 +468,8 @@ DROP POLICY IF EXISTS "Admin manage comments" ON public.customer_comments;
 CREATE POLICY "Public read approved comments" ON public.customer_comments FOR SELECT USING (status = 'approved');
 CREATE POLICY "Public insert comments" ON public.customer_comments FOR INSERT WITH CHECK (true);
 CREATE POLICY "Admins manage comments" ON public.customer_comments FOR ALL TO authenticated 
-  USING ((auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com'))
-  WITH CHECK ((auth.jwt() ->> 'email') IN ('zarish2025co@gmail.com', 'mrithulmridhu@gmail.com', 'eethanop@gmail.com'));
+  USING ((auth.jwt() ->> 'email') = 'zarish2025co@gmail.com')
+  WITH CHECK ((auth.jwt() ->> 'email') = 'zarish2025co@gmail.com');
 
 
 
