@@ -28,6 +28,14 @@ function TrackOrderContent() {
   const [guestSearching, setGuestSearching] = useState(false);
 
   useEffect(() => {
+    if (queryOrderNumber) {
+      setGuestOrderNumber(queryOrderNumber);
+    }
+  }, [queryOrderNumber]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
     async function loadData() {
       try {
         setLoading(true);
@@ -35,10 +43,30 @@ function TrackOrderContent() {
           data: { user: authUser },
         } = await supabase.auth.getUser();
 
+        if (isCancelled) return;
         setUser(authUser);
 
+        let resolvedOrder: Order | null = null;
+
+        // 1. If a specific order is requested via URL query, always query DB for it first
+        if (queryOrderNumber && queryOrderNumber.trim()) {
+          const { data: specificOrder } = await supabase
+            .from('orders')
+            .select(`
+              *,
+              items:order_items(*)
+            `)
+            .ilike('order_number', queryOrderNumber.trim())
+            .maybeSingle();
+
+          if (!isCancelled && specificOrder) {
+            resolvedOrder = specificOrder as Order;
+            setSelectedOrder(resolvedOrder);
+          }
+        }
+
+        // 2. If logged in, fetch user's own orders for their account history
         if (authUser) {
-          // Fetch orders belonging to this user
           const { data: userOrders } = await supabase
             .from('orders')
             .select(`
@@ -48,42 +76,29 @@ function TrackOrderContent() {
             .or(`user_id.eq.${authUser.id},customer_email.eq.${authUser.email}`)
             .order('created_at', { ascending: false });
 
-          if (userOrders && userOrders.length > 0) {
+          if (!isCancelled && userOrders && userOrders.length > 0) {
             setOrders(userOrders as Order[]);
 
-            // If a specific order was requested in URL query, select it
-            if (queryOrderNumber) {
-              const matched = userOrders.find(
-                (o) => o.order_number.toLowerCase() === queryOrderNumber.toLowerCase()
-              );
-              setSelectedOrder((matched as Order) || (userOrders[0] as Order));
-            } else {
+            // If no specific order was provided or found, default to their latest order
+            if (!resolvedOrder) {
               setSelectedOrder(userOrders[0] as Order);
             }
-          }
-        } else if (queryOrderNumber) {
-          // Guest lookup from URL query
-          const { data: singleOrder } = await supabase
-            .from('orders')
-            .select(`
-              *,
-              items:order_items(*)
-            `)
-            .eq('order_number', queryOrderNumber.trim())
-            .maybeSingle();
-
-          if (singleOrder) {
-            setSelectedOrder(singleOrder as Order);
           }
         }
       } catch (err) {
         console.error('Error loading track order:', err);
       } finally {
-        setLoading(false);
+        if (!isCancelled) {
+          setLoading(false);
+        }
       }
     }
 
     loadData();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [supabase, queryOrderNumber]);
 
   // Handle Guest Lookup submit
