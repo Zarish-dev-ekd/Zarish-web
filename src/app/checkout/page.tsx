@@ -48,6 +48,31 @@ function CheckoutContent() {
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethodId>('india_post_parcel');
   const [deliveryConfig, setDeliveryConfig] = useState<DeliveryConfig>(getLocalDeliveryConfig());
 
+  // Saved Address for returning customers
+  const SAVED_ADDRESS_KEY = 'zarish_saved_checkout_address';
+  const [saveAddressLocally, setSaveAddressLocally] = useState(true);
+  const [hasLoadedSavedAddress, setHasLoadedSavedAddress] = useState(false);
+
+  // Load saved address from local storage on device
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(SAVED_ADDRESS_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.fullName) setFullName(parsed.fullName);
+        if (parsed.email) setEmail(parsed.email);
+        if (parsed.phone) setPhone(parsed.phone);
+        if (parsed.addressLine1) setAddressLine1(parsed.addressLine1);
+        if (parsed.city) setCity(parsed.city);
+        if (parsed.stateName) setStateName(parsed.stateName);
+        if (parsed.postalCode) setPostalCode(parsed.postalCode);
+        setHasLoadedSavedAddress(true);
+      }
+    } catch (e) {
+      console.warn('Could not read saved address from localStorage:', e);
+    }
+  }, []);
+
   // Load dynamic courier delivery settings
   useEffect(() => {
     fetch('/api/delivery-settings')
@@ -262,6 +287,30 @@ function CheckoutContent() {
 
     setSubmitting(true);
 
+    // Save address locally if enabled for repeat orders
+    if (saveAddressLocally) {
+      try {
+        localStorage.setItem(
+          SAVED_ADDRESS_KEY,
+          JSON.stringify({
+            fullName: fullName.trim(),
+            email: email.trim(),
+            phone: phone.trim(),
+            addressLine1: addressLine1.trim(),
+            city: city.trim(),
+            stateName: stateName.trim(),
+            postalCode: postalCode.trim(),
+          })
+        );
+      } catch (e) {
+        console.warn('Could not save address to local storage:', e);
+      }
+    } else {
+      try {
+        localStorage.removeItem(SAVED_ADDRESS_KEY);
+      } catch {}
+    }
+
     try {
       const payload: any = {
         customer: {
@@ -437,6 +486,35 @@ function CheckoutContent() {
             
             {/* 1. Contact Info */}
             <div className="bg-white border border-[#E8E0D5] rounded-2xl p-5 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+              {hasLoadedSavedAddress && (
+                <div className="flex items-center justify-between bg-[#FBF9F6] border border-[#E8E0D5] px-3.5 py-2.5 rounded-xl mb-4 text-xs">
+                  <div className="flex items-center gap-2 text-[#7B5B3A] font-medium">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span className="text-[#3D2B1F]">Prefilled from your saved address</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFullName('');
+                      setEmail('');
+                      setPhone('');
+                      setAddressLine1('');
+                      setCity('');
+                      setPostalCode('');
+                      setHasLoadedSavedAddress(false);
+                      try {
+                        localStorage.removeItem(SAVED_ADDRESS_KEY);
+                      } catch {}
+                    }}
+                    className="text-[#7B5B3A] hover:text-[#5E4225] font-semibold text-xs transition-colors cursor-pointer"
+                  >
+                    Clear Fields
+                  </button>
+                </div>
+              )}
+
               <h2 className="text-base font-bold text-[#2C1D13] uppercase tracking-wider mb-4 pb-2 border-b border-[#F2ECE4]">
                 1. Contact Information
               </h2>
@@ -565,6 +643,19 @@ function CheckoutContent() {
                       className="w-full px-4 py-2.5 text-xs sm:text-sm border border-[#E2D5C7] rounded-xl bg-white text-[#2C1D13] placeholder-[#8C7B6B] focus:border-[#7B5B3A] focus:outline-hidden transition-colors"
                     />
                   </div>
+                </div>
+
+                {/* Save Address Toggle */}
+                <div className="pt-1">
+                  <label className="flex items-center gap-2.5 cursor-pointer text-xs text-[#5C4A3C] select-none hover:text-[#2C1D13] transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={saveAddressLocally}
+                      onChange={(e) => setSaveAddressLocally(e.target.checked)}
+                      className="w-4 h-4 rounded text-[#7B5B3A] accent-[#7B5B3A] border-[#D5C9BC] focus:ring-0 cursor-pointer"
+                    />
+                    <span className="font-medium">Save this address on this device for faster checkout next time</span>
+                  </label>
                 </div>
 
                 {/* ─── Courier Delivery Partner Selection (Kerala: 3 Options, Other: 1 Option) ─── */}
