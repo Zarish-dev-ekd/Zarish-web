@@ -52,13 +52,13 @@ async function syncToStorePolicies(comments: CustomerComment[]) {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const isAdmin = searchParams.get('admin') === 'true';
+    const onlyApproved = searchParams.get('onlyApproved') === 'true';
 
     // 1. Try reading from Supabase customer_comments table
     try {
       const supabase = await createClient();
       let query = supabase.from('customer_comments').select('*').order('created_at', { ascending: false });
-      if (!isAdmin) {
+      if (onlyApproved) {
         query = query.eq('status', 'approved');
       }
       const { data, error } = await query;
@@ -81,8 +81,7 @@ export async function GET(request: NextRequest) {
       if (data?.content) {
         const parsed = typeof data.content === 'string' ? JSON.parse(data.content) : data.content;
         if (Array.isArray(parsed)) {
-          const filtered = isAdmin ? parsed : parsed.filter((c: CustomerComment) => c.status === 'approved');
-          // Keep local in sync
+          const filtered = onlyApproved ? parsed.filter((c: CustomerComment) => c.status === 'approved') : parsed;
           saveLocalComments(parsed);
           return NextResponse.json({ success: true, comments: filtered });
         }
@@ -96,7 +95,7 @@ export async function GET(request: NextRequest) {
     const sorted = [...local].sort(
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
-    const filtered = isAdmin ? sorted : sorted.filter((c) => c.status === 'approved');
+    const filtered = onlyApproved ? sorted.filter((c) => c.status === 'approved') : sorted;
 
     return NextResponse.json({ success: true, comments: filtered });
   } catch (err: any) {

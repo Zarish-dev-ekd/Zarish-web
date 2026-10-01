@@ -98,7 +98,7 @@ export default function LeaveCommentForm({
               Thank you for your comment!
             </h4>
             <p className="text-xs text-[#7A6F66] mt-1 max-w-sm mx-auto leading-relaxed">
-              Your feedback has been received and will be visible once approved by our team.
+              Your message has been received directly by the Zarish team.
             </p>
           </div>
           <button
@@ -157,7 +157,7 @@ export default function LeaveCommentForm({
           </div>
 
           <p className="text-[11px] sm:text-xs text-[#7A6F66] leading-relaxed pt-0.5">
-            Please note, comments need to be approved before they are published.
+            Your comments and feedback are sent directly to the Zarish team.
           </p>
 
           <div className="pt-1">
