@@ -8,6 +8,7 @@ import { IconArrowRight, IconMenu, IconX } from '@/components/icons';
 
 const adminNav = [
   { label: 'Overview', href: '/admin', icon: '📊' },
+  { label: 'Analytics', href: '/admin/analytics', icon: '📈' },
   { label: 'Orders', href: '/admin/orders', icon: '📦' },
   { label: 'Comments', href: '/admin/comments', icon: '💬' },
   { label: 'Coupons', href: '/admin/coupons', icon: '🏷️' },
