@@ -65,6 +65,7 @@ export default function CheckoutModal({
   }, [isOpen]);
 
   // Coupon state
+  const [couponsEnabled, setCouponsEnabled] = useState(true);
   const [couponInput, setCouponInput] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
   const [appliedCoupon, setAppliedCoupon] = useState<{
@@ -74,6 +75,19 @@ export default function CheckoutModal({
     discountValue: number;
   } | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
+
+  // Load checkout settings (coupons enabled / disabled)
+  useEffect(() => {
+    if (!isOpen) return;
+    fetch('/api/checkout-settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (typeof data?.enable_coupons === 'boolean') {
+          setCouponsEnabled(data.enable_coupons);
+        }
+      })
+      .catch((err) => console.warn('Could not load checkout settings:', err));
+  }, [isOpen]);
 
   // Pre-fill if authenticated
   useEffect(() => {
@@ -333,69 +347,71 @@ export default function CheckoutModal({
         </div>
 
         {/* Coupon Code Section */}
-        <div className="px-5 py-3.5 sm:px-6 bg-white border-b border-[#E2D5C7]">
-          {appliedCoupon ? (
-            <div className="flex items-center justify-between bg-[#EBF8F2] border border-[#A7F3D0] rounded-xl px-3.5 py-2.5">
-              <div className="flex items-center gap-2.5">
-                <span className="text-sm text-[#0E7064]">★</span>
-                <div>
-                  <div className="text-xs font-bold text-[#065F46] font-mono tracking-wider">
-                    {appliedCoupon.code} APPLIED
+        {couponsEnabled && (
+          <div className="px-5 py-3.5 sm:px-6 bg-white border-b border-[#E2D5C7]">
+            {appliedCoupon ? (
+              <div className="flex items-center justify-between bg-[#EBF8F2] border border-[#A7F3D0] rounded-xl px-3.5 py-2.5">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-sm text-[#0E7064]">★</span>
+                  <div>
+                    <div className="text-xs font-bold text-[#065F46] font-mono tracking-wider">
+                      {appliedCoupon.code} APPLIED
+                    </div>
+                    <p className="text-[11px] text-[#047857]">
+                      You save {formatPrice(appliedCoupon.discountAmount)} (
+                      {appliedCoupon.discountType === 'percentage'
+                        ? `${appliedCoupon.discountValue}% OFF`
+                        : 'Flat Discount'}
+                      )
+                    </p>
                   </div>
-                  <p className="text-[11px] text-[#047857]">
-                    You save {formatPrice(appliedCoupon.discountAmount)} (
-                    {appliedCoupon.discountType === 'percentage'
-                      ? `${appliedCoupon.discountValue}% OFF`
-                      : 'Flat Discount'}
-                    )
-                  </p>
                 </div>
-              </div>
-              <button
-                type="button"
-                onClick={handleRemoveCoupon}
-                className="text-xs font-semibold text-[#991B1B] hover:text-[#DC2626] transition-colors px-2 py-1"
-              >
-                ✕ Remove
-              </button>
-            </div>
-          ) : (
-            <div>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={couponInput}
-                  onChange={(e) => {
-                    setCouponInput(e.target.value.toUpperCase());
-                    setCouponError(null);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleApplyCoupon();
-                    }
-                  }}
-                  placeholder="Have a coupon code? (e.g. WELCOME10)"
-                  className="flex-1 h-10 px-3 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-xs sm:text-sm font-mono uppercase text-[#2C1D13] placeholder-[#A89887] focus:outline-none focus:border-[#7B5B3A] focus:bg-white"
-                />
                 <button
                   type="button"
-                  onClick={handleApplyCoupon}
-                  disabled={couponLoading || !couponInput.trim()}
-                  className="px-4 h-10 rounded-xl bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-xs font-bold tracking-wider uppercase transition-all disabled:opacity-50 whitespace-nowrap"
+                  onClick={handleRemoveCoupon}
+                  className="text-xs font-semibold text-[#991B1B] hover:text-[#DC2626] transition-colors px-2 py-1"
                 >
-                  {couponLoading ? 'Checking...' : 'Apply'}
+                  ✕ Remove
                 </button>
               </div>
+            ) : (
+              <div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={couponInput}
+                    onChange={(e) => {
+                      setCouponInput(e.target.value.toUpperCase());
+                      setCouponError(null);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleApplyCoupon();
+                      }
+                    }}
+                    placeholder="Have a coupon code? (e.g. WELCOME10)"
+                    className="flex-1 h-10 px-3 rounded-xl border border-[#D9C9B8] bg-[#FAF8F5] text-xs sm:text-sm font-mono uppercase text-[#2C1D13] placeholder-[#A89887] focus:outline-none focus:border-[#7B5B3A] focus:bg-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyCoupon}
+                    disabled={couponLoading || !couponInput.trim()}
+                    className="px-4 h-10 rounded-xl bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-xs font-bold tracking-wider uppercase transition-all disabled:opacity-50 whitespace-nowrap"
+                  >
+                    {couponLoading ? 'Checking...' : 'Apply'}
+                  </button>
+                </div>
 
-              {couponError && (
-                <p className="text-xs text-[#991B1B] mt-1.5 flex items-center gap-1">
-                  <span>⚠</span> {couponError}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
+                {couponError && (
+                  <p className="text-xs text-[#991B1B] mt-1.5 flex items-center gap-1">
+                    <span>⚠</span> {couponError}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleCheckout} className="p-5 sm:p-6 space-y-4">

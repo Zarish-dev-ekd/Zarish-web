@@ -35,6 +35,10 @@ function SettingsContent() {
   const [metaTitle, setMetaTitle] = useState('ZARISH by Nehala Mufeed | Premium Modest Fashion');
   const [metaDescription, setMetaDescription] = useState('Discover elegant modest fashion by ZARISH.');
 
+  // Checkout Settings (Coupon box toggle)
+  const [enableCoupons, setEnableCoupons] = useState(true);
+  const [couponToggleLoading, setCouponToggleLoading] = useState(false);
+
   // Delivery Settings State
   const [deliveryConfig, setDeliveryConfig] = useState<DeliveryConfig>(DEFAULT_DELIVERY_CONFIG);
   const [deliveryLoading, setDeliveryLoading] = useState(true);
@@ -107,6 +111,43 @@ function SettingsContent() {
     }
     loadDeliverySettings();
   }, []);
+
+  // Load checkout settings (coupons enabled / disabled)
+  useEffect(() => {
+    fetch('/api/checkout-settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (typeof data?.enable_coupons === 'boolean') {
+          setEnableCoupons(data.enable_coupons);
+        }
+      })
+      .catch((err) => console.warn('Could not load checkout settings:', err));
+  }, []);
+
+  const handleToggleCoupons = async () => {
+    try {
+      setCouponToggleLoading(true);
+      const nextVal = !enableCoupons;
+      const res = await fetch('/api/checkout-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enable_coupons: nextVal }),
+      });
+      const data = await res.json();
+      if (data?.success) {
+        setEnableCoupons(nextVal);
+        setSuccess(
+          nextVal
+            ? 'Checkout Coupon Code Box is now ENABLED on customer checkout.'
+            : 'Checkout Coupon Code Box is now DISABLED and hidden from customer checkout.'
+        );
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Failed to update checkout setting');
+    } finally {
+      setCouponToggleLoading(false);
+    }
+  };
 
   // Update preview selection if options change
   useEffect(() => {
@@ -381,6 +422,57 @@ function SettingsContent() {
               {success}
             </div>
           )}
+
+          {/* Checkout Feature: Coupon Code Box Visibility */}
+          <div className="max-w-[840px] bg-white border border-[#E8E0D5] rounded-xl p-5 sm:p-6 mb-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-xl border transition-colors ${
+                  enableCoupons
+                    ? 'bg-[#E8F5E9] border-[#C8E6C9] text-[#2E7D32]'
+                    : 'bg-[#FFEBEE] border-[#FFCDD2] text-[#C62828]'
+                }`}>
+                  🎟️
+                </div>
+                <div>
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <h3 className="text-base font-semibold text-[#2C241E] m-0">
+                      Checkout Coupon Code Box
+                    </h3>
+                    <span className={`text-[11px] font-mono px-2.5 py-0.5 rounded-full font-bold uppercase ${
+                      enableCoupons
+                        ? 'bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]'
+                        : 'bg-[#FFEBEE] text-[#C62828] border border-[#FFCDD2]'
+                    }`}>
+                      {enableCoupons ? '● Visible on Checkout' : '○ Hidden from Checkout'}
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-[13px] text-[#7A6F66] mt-1 leading-relaxed">
+                    Controls whether customers see the &quot;Have a Coupon Code?&quot; box and Apply button on the Checkout page.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleToggleCoupons}
+                disabled={couponToggleLoading}
+                className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-50 whitespace-nowrap self-end sm:self-center flex items-center gap-2 ${
+                  enableCoupons
+                    ? 'bg-[#C62828] hover:bg-[#B71C1C] text-white shadow-[#C62828]/20'
+                    : 'bg-[#2E7D32] hover:bg-[#1B5E20] text-white shadow-[#2E7D32]/20'
+                }`}
+              >
+                {couponToggleLoading ? (
+                  <span>Saving...</span>
+                ) : enableCoupons ? (
+                  <span>Hide on Checkout</span>
+                ) : (
+                  <span>Show on Checkout</span>
+                )}
+              </button>
+            </div>
+          </div>
 
           <form onSubmit={handleSubmit} className="max-w-[840px]">
             <div className="bg-white border border-[#E8E0D5] rounded-lg p-6 mb-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">

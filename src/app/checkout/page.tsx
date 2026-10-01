@@ -65,6 +65,7 @@ function CheckoutContent() {
   const paymentMethod = 'online';
 
   // Coupon state
+  const [couponsEnabled, setCouponsEnabled] = useState(true);
   const [couponInput, setCouponInput] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
   const [appliedCoupon, setAppliedCoupon] = useState<{
@@ -74,6 +75,18 @@ function CheckoutContent() {
     discountValue: number;
   } | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
+
+  // Load checkout settings (coupons enabled / disabled)
+  useEffect(() => {
+    fetch('/api/checkout-settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (typeof data?.enable_coupons === 'boolean') {
+          setCouponsEnabled(data.enable_coupons);
+        }
+      })
+      .catch((err) => console.warn('Could not load checkout settings:', err));
+  }, []);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -601,46 +614,48 @@ function CheckoutContent() {
               </div>
 
               {/* Coupon Box */}
-              <div className="mb-5 pb-5 border-b border-[#F2ECE4]">
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-[#7B5B3A] mb-1.5">
-                  Have a Coupon Code?
-                </label>
-                {appliedCoupon ? (
-                  <div className="flex items-center justify-between p-2.5 px-3.5 bg-[#E8F5E9] border border-[#C8E6C9] rounded-xl">
-                    <span className="text-xs font-mono font-bold text-[#2E7D32]">
-                      ✓ {appliedCoupon.code} applied {formatPrice(appliedCoupon.discountAmount)}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handleRemoveCoupon}
-                      className="text-xs text-[#D32F2F] hover:underline font-semibold"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Coupon code"
-                      value={couponInput}
-                      onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                      className="flex-1 px-3.5 py-2 text-xs border border-[#E2D5C7] rounded-xl uppercase font-mono bg-white text-[#2C1D13]"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleApplyCoupon}
-                      disabled={couponLoading || !couponInput.trim()}
-                      className="px-4 py-2 rounded-xl bg-[#7B5B3A] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#613B24] transition-colors disabled:opacity-50"
-                    >
-                      {couponLoading ? '...' : 'Apply'}
-                    </button>
-                  </div>
-                )}
-                {couponError && (
-                  <p className="text-[11px] text-[#D32F2F] mt-1.5">{couponError}</p>
-                )}
-              </div>
+              {couponsEnabled && (
+                <div className="mb-5 pb-5 border-b border-[#F2ECE4]">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[#7B5B3A] mb-1.5">
+                    Have a Coupon Code?
+                  </label>
+                  {appliedCoupon ? (
+                    <div className="flex items-center justify-between p-2.5 px-3.5 bg-[#E8F5E9] border border-[#C8E6C9] rounded-xl">
+                      <span className="text-xs font-mono font-bold text-[#2E7D32]">
+                        ✓ {appliedCoupon.code} applied {formatPrice(appliedCoupon.discountAmount)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoupon}
+                        className="text-xs text-[#D32F2F] hover:underline font-semibold"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Coupon code"
+                        value={couponInput}
+                        onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                        className="flex-1 px-3.5 py-2 text-xs border border-[#E2D5C7] rounded-xl uppercase font-mono bg-white text-[#2C1D13]"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyCoupon}
+                        disabled={couponLoading || !couponInput.trim()}
+                        className="px-4 py-2 rounded-xl bg-[#7B5B3A] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#613B24] transition-colors disabled:opacity-50"
+                      >
+                        {couponLoading ? '...' : 'Apply'}
+                      </button>
+                    </div>
+                  )}
+                  {couponError && (
+                    <p className="text-[11px] text-[#D32F2F] mt-1.5">{couponError}</p>
+                  )}
+                </div>
+              )}
 
               {/* Price Calculation */}
               <div className="space-y-2 mb-6 text-xs sm:text-sm">
