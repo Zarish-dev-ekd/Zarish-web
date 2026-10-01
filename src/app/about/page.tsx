@@ -127,10 +127,9 @@ export default async function AboutPage() {
                 </Link>
               </div>
 
-              {/* Customer Leave a Comment Form */}
+              {/* Customer Feedback Form */}
               <div className="mt-8 pt-6 border-t border-[#F0E6DC]">
                 <LeaveCommentForm
-                  title="Leave a comment"
                   description="Your feedback means a lot to us. Share your experience and let us know what you think!"
                 />
               </div>

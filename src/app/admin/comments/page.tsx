@@ -277,14 +277,18 @@ CREATE POLICY "Admin view comments" ON public.customer_comments FOR ALL TO authe
                       </h4>
 
                       <div className="flex items-center gap-2 mt-0.5 text-xs text-[#7A6F66] flex-wrap">
-                        <a
-                          href={`mailto:${comment.email}`}
-                          className="hover:text-[#7B5B3A] underline decoration-dotted text-[#7B5B3A] font-medium"
-                          title="Click to email customer"
-                        >
-                          {comment.email}
-                        </a>
-                        <span>•</span>
+                        {comment.email ? (
+                          <>
+                            <a
+                              href={`mailto:${comment.email}`}
+                              className="hover:text-[#7B5B3A] underline decoration-dotted text-[#7B5B3A] font-medium"
+                              title="Click to email customer"
+                            >
+                              {comment.email}
+                            </a>
+                            <span>•</span>
+                          </>
+                        ) : null}
                         <span>{formattedDate}</span>
                       </div>
                     </div>

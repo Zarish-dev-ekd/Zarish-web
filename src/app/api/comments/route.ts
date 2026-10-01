@@ -117,21 +117,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Please enter your name.' }, { status: 400 });
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email || !emailRegex.test(email)) {
-      return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 });
-    }
-
-    if (!message || message.length < 3) {
+    if (!message || message.length < 2) {
       return NextResponse.json({ error: 'Please enter a message or comment.' }, { status: 400 });
     }
 
     const newComment: CustomerComment = {
       id: crypto.randomUUID(),
       name,
-      email,
+      email: email || undefined,
       message,
-      status: 'pending',
+      status: 'approved',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -151,9 +146,8 @@ export async function POST(request: NextRequest) {
         {
           id: newComment.id,
           name: newComment.name,
-          email: newComment.email,
+          email: newComment.email || null,
           message: newComment.message,
-          status: newComment.status,
           created_at: newComment.created_at,
           updated_at: newComment.updated_at,
         },
@@ -164,7 +158,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Thank you! Your comment has been submitted and is awaiting approval.',
+      message: 'Thank you! Your comment has been received.',
       comment: newComment,
     });
   } catch (err: any) {

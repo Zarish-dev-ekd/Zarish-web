@@ -4,17 +4,14 @@ import { useState } from 'react';
 
 interface LeaveCommentFormProps {
   className?: string;
-  title?: string;
   description?: string;
 }
 
 export default function LeaveCommentForm({
   className = '',
-  title = 'Leave a comment',
-  description,
+  description = 'Your feedback means a lot to us. Share your experience and let us know what you think!',
 }: LeaveCommentFormProps) {
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,16 +22,10 @@ export default function LeaveCommentForm({
     setError(null);
 
     const trimmedName = name.trim();
-    const trimmedEmail = email.trim();
     const trimmedMessage = message.trim();
 
     if (!trimmedName) {
       setError('Please enter your name.');
-      return;
-    }
-
-    if (!trimmedEmail) {
-      setError('Please enter your email.');
       return;
     }
 
@@ -50,7 +41,6 @@ export default function LeaveCommentForm({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: trimmedName,
-          email: trimmedEmail,
           message: trimmedMessage,
         }),
       });
@@ -63,7 +53,6 @@ export default function LeaveCommentForm({
 
       setSubmitted(true);
       setName('');
-      setEmail('');
       setMessage('');
     } catch (err: any) {
       console.error('Error submitting comment:', err);
@@ -77,16 +66,13 @@ export default function LeaveCommentForm({
     <div
       className={`p-5 sm:p-7 rounded-2xl bg-[#FAF6F0] border border-[#EADCCB] shadow-[0_4px_24px_rgba(44,29,19,0.04)] relative transition-all ${className}`}
     >
-      <div className="mb-4">
-        <h3 className="font-display text-xl sm:text-2xl font-bold text-[#2C1D13] tracking-tight">
-          {title}
-        </h3>
-        {description && (
-          <p className="text-xs sm:text-[13px] text-[#7A6F66] mt-1 leading-relaxed">
+      {description && (
+        <div className="mb-4">
+          <p className="text-xs sm:text-[13px] text-[#6B5744] font-medium leading-relaxed m-0">
             {description}
           </p>
-        )}
-      </div>
+        </div>
+      )}
 
       {submitted ? (
         <div className="py-6 px-4 text-center rounded-xl bg-white border border-[#E2D5C7] space-y-3 animate-fade-in">
@@ -98,7 +84,7 @@ export default function LeaveCommentForm({
               Thank you for your comment!
             </h4>
             <p className="text-xs text-[#7A6F66] mt-1 max-w-sm mx-auto leading-relaxed">
-              Your message has been received directly by the Zarish team.
+              Your feedback has been received directly by our team.
             </p>
           </div>
           <button
@@ -131,19 +117,6 @@ export default function LeaveCommentForm({
           </div>
 
           <div>
-            <input
-              type="email"
-              name="email"
-              id="comment-email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              required
-              className="w-full px-3.5 py-2.5 text-xs sm:text-sm border border-[#D9C9B8] rounded-xl bg-white text-[#2C1D13] placeholder-[#8C7B6B] focus:outline-none focus:border-[#7B5B3A] focus:ring-1 focus:ring-[#7B5B3A]/20 transition-all shadow-2xs"
-            />
-          </div>
-
-          <div>
             <textarea
               name="message"
               id="comment-message"
@@ -155,10 +128,6 @@ export default function LeaveCommentForm({
               className="w-full px-3.5 py-2.5 text-xs sm:text-sm border border-[#D9C9B8] rounded-xl bg-white text-[#2C1D13] placeholder-[#8C7B6B] focus:outline-none focus:border-[#7B5B3A] focus:ring-1 focus:ring-[#7B5B3A]/20 transition-all resize-y shadow-2xs"
             />
           </div>
-
-          <p className="text-[11px] sm:text-xs text-[#7A6F66] leading-relaxed pt-0.5">
-            Your comments and feedback are sent directly to the Zarish team.
-          </p>
 
           <div className="pt-1">
             <button

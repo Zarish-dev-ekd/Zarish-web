@@ -406,9 +406,9 @@ export interface ProductColor {
 export interface CustomerComment {
   id: string;
   name: string;
-  email: string;
+  email?: string;
   message: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status?: string;
   admin_reply?: string | null;
   created_at: string;
   updated_at?: string;
