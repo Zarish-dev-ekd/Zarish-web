@@ -91,30 +91,74 @@ function CheckoutContent() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load direct product if query has product ID
+  // Load direct product if query has product ID or slug
   useEffect(() => {
+    let isCancelled = false;
+
     async function loadDirectProduct() {
-      if (!productId) return;
+      if (!productId || !productId.trim()) {
+        setProductLoading(false);
+        return;
+      }
+
       try {
         setProductLoading(true);
-        const { data, error: err } = await supabase
-          .from('products')
-          .select(`*, images:product_images(*)`)
-          .eq('id', productId)
-          .single();
+        const cleanId = productId.trim();
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanId);
 
-        if (err || !data) {
-          console.error('Error fetching checkout product:', err);
+        let query = supabase
+          .from('products')
+          .select(`*, images:product_images(*), variants:product_variants(*, size:sizes(*))`);
+
+        if (isUUID) {
+          query = query.eq('id', cleanId);
         } else {
-          setDirectProduct(data as Product);
+          query = query.eq('slug', cleanId);
         }
-      } catch (e) {
-        console.error(e);
+
+        const { data, error: err } = await query.maybeSingle();
+
+        if (isCancelled) return;
+
+        if (data) {
+          setDirectProduct(data as Product);
+        } else if (!isUUID) {
+          // If not found by exact slug, try fallback partial match
+          const { data: fallbackData } = await supabase
+            .from('products')
+            .select(`*, images:product_images(*), variants:product_variants(*, size:sizes(*))`)
+            .ilike('slug', `%${cleanId}%`)
+            .limit(1)
+            .maybeSingle();
+
+          if (!isCancelled && fallbackData) {
+            setDirectProduct(fallbackData as Product);
+          } else {
+            setDirectProduct(null);
+          }
+        } else {
+          if (err) {
+            console.warn('Could not fetch direct product:', err.message || err);
+          }
+          setDirectProduct(null);
+        }
+      } catch (e: any) {
+        if (!isCancelled) {
+          console.warn('Checkout product lookup error:', e?.message || e);
+          setDirectProduct(null);
+        }
       } finally {
-        setProductLoading(false);
+        if (!isCancelled) {
+          setProductLoading(false);
+        }
       }
     }
+
     loadDirectProduct();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [productId, supabase]);
 
   // Pre-fill user profile if logged in

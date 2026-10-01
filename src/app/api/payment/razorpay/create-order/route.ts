@@ -54,11 +54,15 @@ export async function POST(request: Request) {
 
     // Case 1: Single direct purchase (from Product detail page)
     if (productId) {
-      const { data: product, error: prodErr } = await supabase
-        .from('products')
-        .select(`*, images:product_images(*)`)
-        .eq('id', productId)
-        .single();
+      const cleanId = String(productId).trim();
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanId);
+      let query = supabase.from('products').select(`*, images:product_images(*)`);
+      if (isUUID) {
+        query = query.eq('id', cleanId);
+      } else {
+        query = query.eq('slug', cleanId);
+      }
+      const { data: product, error: prodErr } = await query.maybeSingle();
 
       if (prodErr || !product) {
         return NextResponse.json({ error: 'Product not found.' }, { status: 404 });
@@ -87,11 +91,15 @@ export async function POST(request: Request) {
     } else if (Array.isArray(items) && items.length > 0) {
       // Case 2: Multi-item cart purchase
       for (const it of items) {
-        const { data: prod } = await supabase
-          .from('products')
-          .select(`*, images:product_images(*)`)
-          .eq('id', it.productId)
-          .single();
+        const cleanProdId = String(it.productId).trim();
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanProdId);
+        let prodQuery = supabase.from('products').select(`*, images:product_images(*)`);
+        if (isUUID) {
+          prodQuery = prodQuery.eq('id', cleanProdId);
+        } else {
+          prodQuery = prodQuery.eq('slug', cleanProdId);
+        }
+        const { data: prod } = await prodQuery.maybeSingle();
 
         if (prod) {
           // Security: Validate price strictly from the database product record
