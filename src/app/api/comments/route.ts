@@ -48,7 +48,7 @@ async function syncToStorePolicies(comments: CustomerComment[]) {
       { onConflict: 'slug' }
     );
     if (error) {
-      console.error('store_policies upsert error:', error);
+      console.error('store_policies upsert error:', error.message);
     }
   } catch (err) {
     console.error('syncToStorePolicies exception:', err);
@@ -56,7 +56,11 @@ async function syncToStorePolicies(comments: CustomerComment[]) {
 }
 
 async function getAllCommentsFromDb(): Promise<CustomerComment[]> {
-  // 1. Try Supabase customer_comments table
+  let listFromTable: CustomerComment[] = [];
+  let listFromPolicy: CustomerComment[] = [];
+  const localList = getLocalComments();
+
+  // 1. Try reading from Supabase customer_comments table
   try {
     const supabase = createAdminClient();
     const { data, error } = await supabase
@@ -64,15 +68,14 @@ async function getAllCommentsFromDb(): Promise<CustomerComment[]> {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (!error && Array.isArray(data) && data.length > 0) {
-      saveLocalComments(data);
-      return data;
+    if (!error && Array.isArray(data)) {
+      listFromTable = data;
     }
   } catch {
-    // table might not exist yet
+    // Table may not exist yet
   }
 
-  // 2. Try Supabase store_policies (cloud backup)
+  // 2. Try reading from Supabase store_policies backup
   try {
     const supabase = createAdminClient();
     const { data, error } = await supabase
@@ -83,17 +86,37 @@ async function getAllCommentsFromDb(): Promise<CustomerComment[]> {
 
     if (!error && data?.content) {
       const parsed = typeof data.content === 'string' ? JSON.parse(data.content) : data.content;
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        saveLocalComments(parsed);
-        return parsed;
+      if (Array.isArray(parsed)) {
+        listFromPolicy = parsed;
       }
     }
   } catch {
-    // fallback
+    // ignore
   }
 
-  // 3. Fallback to local comments.json
-  return getLocalComments();
+  // Merge all unique comments by ID so NO comment is ever lost
+  const commentMap = new Map<string, CustomerComment>();
+  for (const c of [...listFromTable, ...listFromPolicy, ...localList]) {
+    if (c && c.id && !commentMap.has(c.id)) {
+      commentMap.set(c.id, {
+        ...c,
+        name: c.name || 'Anonymous',
+        email: c.email || '',
+        message: c.message || '',
+        created_at: c.created_at || new Date().toISOString(),
+      });
+    }
+  }
+
+  const all = Array.from(commentMap.values()).sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+
+  if (all.length > 0) {
+    saveLocalComments(all);
+  }
+
+  return all;
 }
 
 export async function GET(request: NextRequest) {
@@ -143,38 +166,41 @@ export async function POST(request: NextRequest) {
     const newComment: CustomerComment = {
       id: crypto.randomUUID(),
       name,
-      email: email || undefined,
+      email: email || '',
       message,
       status: 'approved',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 
-    // 1. Fetch current comments from DB
+    // 1. Fetch current comments and prepend new comment
     const current = await getAllCommentsFromDb();
     const updated = [newComment, ...current.filter((c) => c.id !== newComment.id)];
 
     // 2. Save locally
     saveLocalComments(updated);
 
-    // 3. Save to Supabase store_policies (always works across all cloud serverless instances)
+    // 3. Save to Supabase store_policies (cloud shared backup)
     await syncToStorePolicies(updated);
 
-    // 4. Also insert into customer_comments table if table was created in Supabase
+    // 4. Also insert into customer_comments table if created in Supabase
     try {
       const supabase = createAdminClient();
-      await supabase.from('customer_comments').insert([
+      const { error: insErr } = await supabase.from('customer_comments').insert([
         {
           id: newComment.id,
           name: newComment.name,
-          email: newComment.email || null,
+          email: newComment.email || '',
           message: newComment.message,
           created_at: newComment.created_at,
           updated_at: newComment.updated_at,
         },
       ]);
+      if (insErr) {
+        console.warn('customer_comments table insert notice:', insErr.message);
+      }
     } catch {
-      // table might not exist yet
+      // Table may not exist yet
     }
 
     revalidatePath('/admin/comments');
