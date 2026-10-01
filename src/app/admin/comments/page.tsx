@@ -16,7 +16,13 @@ export default function AdminCommentsPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('/api/comments?admin=true');
+      const res = await fetch(`/api/comments?admin=true&_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache',
+        },
+      });
       const data = await res.json();
       if (res.ok && data.comments) {
         setComments(data.comments);

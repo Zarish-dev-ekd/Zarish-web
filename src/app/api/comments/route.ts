@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin';
-import { createClient } from '@/utils/supabase/server';
+import { revalidatePath } from 'next/cache';
 import type { CustomerComment } from '@/lib/types';
 import fs from 'fs';
 import path from 'path';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const LOCAL_FILE = path.join(process.cwd(), 'src', 'data', 'comments.json');
 
@@ -35,7 +38,7 @@ function saveLocalComments(comments: CustomerComment[]): void {
 async function syncToStorePolicies(comments: CustomerComment[]) {
   try {
     const supabase = createAdminClient();
-    await supabase.from('store_policies').upsert(
+    const { error } = await supabase.from('store_policies').upsert(
       {
         slug: 'customer-comments',
         title: 'Customer Comments & Feedback Data',
@@ -44,9 +47,53 @@ async function syncToStorePolicies(comments: CustomerComment[]) {
       },
       { onConflict: 'slug' }
     );
-  } catch {
-    // ignore
+    if (error) {
+      console.error('store_policies upsert error:', error);
+    }
+  } catch (err) {
+    console.error('syncToStorePolicies exception:', err);
   }
+}
+
+async function getAllCommentsFromDb(): Promise<CustomerComment[]> {
+  // 1. Try Supabase customer_comments table
+  try {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from('customer_comments')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && Array.isArray(data) && data.length > 0) {
+      saveLocalComments(data);
+      return data;
+    }
+  } catch {
+    // table might not exist yet
+  }
+
+  // 2. Try Supabase store_policies (cloud backup)
+  try {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from('store_policies')
+      .select('content')
+      .eq('slug', 'customer-comments')
+      .maybeSingle();
+
+    if (!error && data?.content) {
+      const parsed = typeof data.content === 'string' ? JSON.parse(data.content) : data.content;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        saveLocalComments(parsed);
+        return parsed;
+      }
+    }
+  } catch {
+    // fallback
+  }
+
+  // 3. Fallback to local comments.json
+  return getLocalComments();
 }
 
 export async function GET(request: NextRequest) {
@@ -54,50 +101,22 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const onlyApproved = searchParams.get('onlyApproved') === 'true';
 
-    // 1. Try reading from Supabase customer_comments table
-    try {
-      const supabase = await createClient();
-      let query = supabase.from('customer_comments').select('*').order('created_at', { ascending: false });
-      if (onlyApproved) {
-        query = query.eq('status', 'approved');
-      }
-      const { data, error } = await query;
-      if (!error && Array.isArray(data) && data.length > 0) {
-        return NextResponse.json({ success: true, comments: data });
-      }
-    } catch {
-      // Table may not exist yet, fallback to store_policies or local file
-    }
-
-    // 2. Try reading from store_policies backup
-    try {
-      const supabase = await createClient();
-      const { data } = await supabase
-        .from('store_policies')
-        .select('content')
-        .eq('slug', 'customer-comments')
-        .maybeSingle();
-
-      if (data?.content) {
-        const parsed = typeof data.content === 'string' ? JSON.parse(data.content) : data.content;
-        if (Array.isArray(parsed)) {
-          const filtered = onlyApproved ? parsed.filter((c: CustomerComment) => c.status === 'approved') : parsed;
-          saveLocalComments(parsed);
-          return NextResponse.json({ success: true, comments: filtered });
-        }
-      }
-    } catch {
-      // Fallback to local
-    }
-
-    // 3. Fallback to local comments.json
-    const local = getLocalComments();
-    const sorted = [...local].sort(
+    const all = await getAllCommentsFromDb();
+    const sorted = [...all].sort(
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
     const filtered = onlyApproved ? sorted.filter((c) => c.status === 'approved') : sorted;
 
-    return NextResponse.json({ success: true, comments: filtered });
+    return NextResponse.json(
+      { success: true, comments: filtered },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+      }
+    );
   } catch (err: any) {
     return NextResponse.json(
       { error: err?.message || 'Failed to fetch comments' },
@@ -131,15 +150,17 @@ export async function POST(request: NextRequest) {
       updated_at: new Date().toISOString(),
     };
 
-    // 1. Save to local file
-    const local = getLocalComments();
-    const updated = [newComment, ...local.filter((c) => c.id !== newComment.id)];
+    // 1. Fetch current comments from DB
+    const current = await getAllCommentsFromDb();
+    const updated = [newComment, ...current.filter((c) => c.id !== newComment.id)];
+
+    // 2. Save locally
     saveLocalComments(updated);
 
-    // 2. Sync to Supabase store_policies backup
+    // 3. Save to Supabase store_policies (always works across all cloud serverless instances)
     await syncToStorePolicies(updated);
 
-    // 3. Try inserting into Supabase customer_comments table if present
+    // 4. Also insert into customer_comments table if table was created in Supabase
     try {
       const supabase = createAdminClient();
       await supabase.from('customer_comments').insert([
@@ -153,68 +174,27 @@ export async function POST(request: NextRequest) {
         },
       ]);
     } catch {
-      // customer_comments table might not exist yet, store_policies & local file already safe
+      // table might not exist yet
     }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Thank you! Your comment has been received.',
-      comment: newComment,
-    });
+    revalidatePath('/admin/comments');
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Thank you! Your comment has been received.',
+        comment: newComment,
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+        },
+      }
+    );
   } catch (err: any) {
     console.error('Error posting comment:', err);
     return NextResponse.json(
       { error: err?.message || 'Failed to submit comment. Please try again.' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function PATCH(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { id, status, admin_reply } = body;
-
-    if (!id) {
-      return NextResponse.json({ error: 'Comment ID is required' }, { status: 400 });
-    }
-
-    const local = getLocalComments();
-    const targetIdx = local.findIndex((c) => c.id === id);
-
-    if (targetIdx === -1) {
-      return NextResponse.json({ error: 'Comment not found' }, { status: 404 });
-    }
-
-    const updatedComment: CustomerComment = {
-      ...local[targetIdx],
-      ...(status ? { status } : {}),
-      ...(admin_reply !== undefined ? { admin_reply } : {}),
-      updated_at: new Date().toISOString(),
-    };
-
-    local[targetIdx] = updatedComment;
-    saveLocalComments(local);
-    await syncToStorePolicies(local);
-
-    try {
-      const supabase = createAdminClient();
-      await supabase
-        .from('customer_comments')
-        .update({
-          ...(status ? { status } : {}),
-          ...(admin_reply !== undefined ? { admin_reply } : {}),
-          updated_at: updatedComment.updated_at,
-        })
-        .eq('id', id);
-    } catch {
-      // ignore
-    }
-
-    return NextResponse.json({ success: true, comment: updatedComment });
-  } catch (err: any) {
-    return NextResponse.json(
-      { error: err?.message || 'Failed to update comment' },
       { status: 500 }
     );
   }
@@ -238,8 +218,9 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Comment ID is required' }, { status: 400 });
     }
 
-    const local = getLocalComments();
-    const filtered = local.filter((c) => c.id !== id);
+    const current = await getAllCommentsFromDb();
+    const filtered = current.filter((c) => c.id !== id);
+
     saveLocalComments(filtered);
     await syncToStorePolicies(filtered);
 
@@ -249,6 +230,8 @@ export async function DELETE(request: NextRequest) {
     } catch {
       // ignore
     }
+
+    revalidatePath('/admin/comments');
 
     return NextResponse.json({ success: true, message: 'Comment deleted successfully' });
   } catch (err: any) {
