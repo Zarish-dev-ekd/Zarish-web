@@ -377,4 +377,26 @@ ALTER TABLE public.products ADD COLUMN IF NOT EXISTS size_chart JSONB DEFAULT NU
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS sku TEXT DEFAULT NULL;
 CREATE INDEX IF NOT EXISTS idx_products_sku ON public.products(sku);
 
+-- 15. Customer Comments & Feedback Table
+CREATE TABLE IF NOT EXISTS public.customer_comments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  message TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending', -- 'pending', 'approved', 'rejected'
+  admin_reply TEXT,
+  created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW()),
+  updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
+);
+
+CREATE INDEX IF NOT EXISTS idx_comments_status ON public.customer_comments(status);
+CREATE INDEX IF NOT EXISTS idx_comments_created_at ON public.customer_comments(created_at);
+
+ALTER TABLE public.customer_comments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public read approved comments" ON public.customer_comments FOR SELECT USING (status = 'approved');
+CREATE POLICY "Public insert comments" ON public.customer_comments FOR INSERT WITH CHECK (true);
+CREATE POLICY "Admin manage comments" ON public.customer_comments FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+
 

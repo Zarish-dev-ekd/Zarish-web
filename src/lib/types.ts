@@ -402,3 +402,16 @@ export interface ProductColor {
   updated_at: string;
 }
 
+// ─── Customer Comments & Feedback ───────────────────────────
+export interface CustomerComment {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  status: 'pending' | 'approved' | 'rejected';
+  admin_reply?: string | null;
+  created_at: string;
+  updated_at?: string;
+}
+
+

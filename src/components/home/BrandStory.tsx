@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { BrandStoryData } from '@/lib/types';
-import { IconWhatsapp } from '@/components/icons';
+import LeaveCommentForm from './LeaveCommentForm';
 
 interface BrandStoryProps {
   story?: BrandStoryData | null;
@@ -96,50 +96,12 @@ export default function BrandStory({ story }: BrandStoryProps) {
               </div>
             )}
 
-            {/* Customer Feedback Callout */}
+            {/* Customer Leave a Comment Form */}
             <div className="mt-8 pt-6 border-t border-[#F0E6DC]">
-              <div className="p-5 sm:p-6 rounded-2xl bg-[#FAF6F0] border border-[#EADCCB] shadow-[0_4px_20px_rgba(44,29,19,0.03)] relative overflow-hidden">
-                <div className="flex items-start gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-white border border-[#E2D5C7] flex items-center justify-center shrink-0 text-[#7B5B3A] shadow-2xs">
-                    <svg
-                      className="w-5 h-5 text-[#7B5B3A]"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-display text-base sm:text-lg font-bold text-[#2C1D13] tracking-tight">
-                      We’re Waiting to Hear From You
-                    </h3>
-                    <p className="text-xs sm:text-[13px] text-[#6B5744] leading-relaxed mt-1">
-                      Your feedback means a lot to us. Share your experience and let us know what you think!
-                    </p>
-                    <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
-                      <a
-                        href="https://wa.me/919562292945?text=Hello%20ZARISH%2C%20I%20would%20like%20to%20share%20my%20feedback%20%26%20experience%20with%20you%3A"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#25D366] hover:bg-[#20BA5A] text-white text-xs font-semibold tracking-wide transition-all shadow-2xs hover:shadow-xs active:scale-95"
-                      >
-                        <IconWhatsapp size={14} className="text-white shrink-0" />
-                        <span>Share on WhatsApp</span>
-                      </a>
-                      <Link
-                        href="/contact"
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-[#F2ECE4] text-[#3D2B1F] border border-[#D6CEC5] text-xs font-medium transition-all active:scale-95"
-                      >
-                        <span>Contact Us</span>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <LeaveCommentForm
+                title="Leave a comment"
+                description="Your feedback means a lot to us. Share your experience and let us know what you think!"
+              />
             </div>
           </div>
         </div>
