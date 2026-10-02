@@ -38,13 +38,14 @@ CREATE POLICY "Admin manage badges" ON public.product_badges
 ALTER TABLE public.products 
   ADD COLUMN IF NOT EXISTS badge_id UUID REFERENCES public.product_badges(id) ON DELETE SET NULL;
 
--- 4. Seed initial luxury badges
+-- 4. Seed initial corner ribbon badges
 INSERT INTO public.product_badges (name, text, style, bg_color, text_color, display_order)
 VALUES
-  ('Bestseller (Gold Ribbon)', 'BESTSELLER', 'corner_ribbon', '#D4AF37', '#FFFFFF', 1),
-  ('New Arrival (Emerald Ribbon)', 'NEW', 'corner_ribbon', '#0E7064', '#FFFFFF', 2),
-  ('50% OFF (Hanging Flag)', '50% OFF', 'hanging_flag', '#C44D4D', '#FFFFFF', 3),
-  ('Special Offer (Gold Rosette)', 'SPECIAL OFFER', 'rosette', '#E5A93C', '#2C241E', 4),
-  ('Trending Now (Side Tag)', 'TRENDING', 'side_tag', '#7B5B3A', '#FFFFFF', 5),
-  ('Limited Edition (Luxury Pill)', 'LIMITED EDITION', 'luxury_pill', '#2C241E', '#F8F5F0', 6)
+  ('NEW (Yellow Corner Ribbon)', 'NEW', 'corner_ribbon', '#FFD200', '#000000', 1),
+  ('BEST (Yellow Corner Ribbon)', 'BEST', 'corner_ribbon', '#FFD200', '#000000', 2),
+  ('SALE (Yellow Corner Ribbon)', 'SALE', 'corner_ribbon', '#FFD200', '#000000', 3),
+  ('BESTSELLER (Gold Corner Ribbon)', 'BESTSELLER', 'corner_ribbon', '#D4AF37', '#FFFFFF', 4),
+  ('50% OFF (Yellow Corner Ribbon)', '50% OFF', 'corner_ribbon', '#FFD200', '#000000', 5),
+  ('NEW ARRIVAL (Emerald Ribbon)', 'NEW', 'corner_ribbon', '#0E7064', '#FFFFFF', 6),
+  ('SPECIAL OFFER (Red Ribbon)', 'SPECIAL', 'corner_ribbon', '#C44D4D', '#FFFFFF', 7)
 ON CONFLICT DO NOTHING;
