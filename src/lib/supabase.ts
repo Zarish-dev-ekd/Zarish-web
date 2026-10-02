@@ -362,8 +362,14 @@ export async function getFilteredProducts(options?: {
     }
 
     if (options?.sizeSlug) {
+      const targetSlug = options.sizeSlug.toLowerCase();
       filtered = filtered.filter((p) =>
-        p.variants?.some((v) => v.size?.slug === options.sizeSlug)
+        p.variants?.some(
+          (v) =>
+            (v.size?.slug?.toLowerCase() === targetSlug || v.size?.name?.toLowerCase() === targetSlug) &&
+            (v.stock_quantity ?? 0) > 0 &&
+            v.is_active !== false
+        )
       );
     }
 

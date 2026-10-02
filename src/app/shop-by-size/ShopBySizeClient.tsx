@@ -57,26 +57,37 @@ export default function ShopBySizeClient({
     }
   }, [searchParams]);
 
-  // Compute count of products per size
+  // Compute count of products per size (only counting items in stock)
   const sizeCounts = useMemo(() => {
     const map = new Map<string, number>();
     sizes.forEach((s) => {
       const slug = s.slug.toLowerCase();
       const count = products.filter((p) =>
-        p.variants?.some((v) => v.size?.slug?.toLowerCase() === slug)
+        p.variants?.some(
+          (v) =>
+            (v.size?.slug?.toLowerCase() === slug || v.size?.name?.toLowerCase() === slug) &&
+            (v.stock_quantity ?? 0) > 0 &&
+            v.is_active !== false
+        )
       ).length;
       map.set(slug, count);
     });
     return map;
   }, [sizes, products]);
 
-  // Filter products based on selected size
+  // Filter products based on selected size (only show products with that size in stock)
   const filteredProducts = useMemo(() => {
     let result = products;
 
     if (selectedSize) {
+      const targetSlug = selectedSize.toLowerCase();
       result = result.filter((p) =>
-        p.variants?.some((v) => v.size?.slug?.toLowerCase() === selectedSize)
+        p.variants?.some(
+          (v) =>
+            (v.size?.slug?.toLowerCase() === targetSlug || v.size?.name?.toLowerCase() === targetSlug) &&
+            (v.stock_quantity ?? 0) > 0 &&
+            v.is_active !== false
+        )
       );
     }
 
