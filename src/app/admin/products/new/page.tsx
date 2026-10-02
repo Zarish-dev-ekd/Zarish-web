@@ -8,6 +8,7 @@ import ColorImageUploader from '@/components/admin/ColorImageUploader';
 import MultiImageUpload, { UploadedImageItem } from '@/components/admin/MultiImageUpload';
 import ProductSizeChartEditor from '@/components/admin/ProductSizeChartEditor';
 import type { Category, Size, ProductColor, SizeChartConfig } from '@/lib/types';
+import { resolveUniqueProductSlug } from '@/lib/utils';
 
 export default function AdminNewProductPage() {
   const router = useRouter();
@@ -320,10 +321,16 @@ export default function AdminNewProductPage() {
       const parsedPrice = parseFloat(price) || 0;
       const parsedComparePrice = comparePrice ? parseFloat(comparePrice) : null;
 
+      // Resolve unique slug to prevent duplicate key constraint violations
+      const finalSlug = await resolveUniqueProductSlug(
+        supabase,
+        slug.trim() || name.trim()
+      );
+
       // 1. Insert product row
       const insertPayload: any = {
         name: name.trim(),
-        slug: slug.trim() || name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        slug: finalSlug,
         category_id: categoryId || null,
         price: parsedPrice,
         compare_at_price: parsedComparePrice,
@@ -356,6 +363,18 @@ export default function AdminNewProductPage() {
           .single();
         product = retry.data;
         prodErr = retry.error;
+      }
+
+      // Graceful fallback if unexpected slug collision still occurs
+      if (prodErr && (prodErr.message?.includes('products_slug_key') || prodErr.code === '23505')) {
+        insertPayload.slug = `${finalSlug}-${Date.now().toString(36).slice(-4)}`;
+        const retrySlug = await supabase
+          .from('products')
+          .insert([insertPayload])
+          .select()
+          .single();
+        product = retrySlug.data;
+        prodErr = retrySlug.error;
       }
 
       if (prodErr || !product) {
@@ -486,7 +505,11 @@ export default function AdminNewProductPage() {
       router.push('/admin/products');
     } catch (err: any) {
       console.error('Error creating product:', err);
-      setError(err?.message || 'Failed to create product. Please try again.');
+      let errMsg = err?.message || 'Failed to create product. Please try again.';
+      if (errMsg.includes('products_slug_key') || err?.code === '23505') {
+        errMsg = 'A product with this URL slug already exists. Please adjust the URL slug and try again.';
+      }
+      setError(errMsg);
       setSubmitting(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -613,6 +636,9 @@ export default function AdminNewProductPage() {
                     value={slug}
                     onChange={(e) => setSlug(e.target.value)}
                   />
+                  <p className="text-[11px] text-[#7A6F66] mt-1 m-0">
+                    Auto-generated from title. If a duplicate exists, a unique suffix (-2, etc.) is added automatically.
+                  </p>
                 </div>
               </div>
 

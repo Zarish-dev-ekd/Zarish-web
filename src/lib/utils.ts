@@ -101,3 +101,49 @@ export function truncate(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength).trimEnd() + '…';
 }
+
+/**
+ * Resolves a unique slug for a product by checking existing slugs in Supabase.
+ * If baseSlug (e.g. "german-rayon-co-ord-set") is taken, appends -2, -3, etc.
+ */
+export async function resolveUniqueProductSlug(
+  supabaseClient: any,
+  baseTextOrSlug: string,
+  excludeProductId?: string
+): Promise<string> {
+  const clean = slugify(baseTextOrSlug) || 'product';
+
+  try {
+    let query = supabaseClient
+      .from('products')
+      .select('id, slug')
+      .ilike('slug', `${clean}%`);
+
+    if (excludeProductId) {
+      query = query.neq('id', excludeProductId);
+    }
+
+    const { data, error } = await query;
+    if (error || !data || data.length === 0) {
+      return clean;
+    }
+
+    const existingSlugs = new Set(
+      data.map((p: any) => (p.slug ? p.slug.toLowerCase().trim() : ''))
+    );
+
+    if (!existingSlugs.has(clean)) {
+      return clean;
+    }
+
+    let counter = 2;
+    while (existingSlugs.has(`${clean}-${counter}`)) {
+      counter++;
+    }
+
+    return `${clean}-${counter}`;
+  } catch {
+    return clean;
+  }
+}
+
