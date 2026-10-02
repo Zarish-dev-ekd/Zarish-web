@@ -38,20 +38,31 @@ export default function ProductCard({ product }: ProductCardProps) {
             <div className="w-full h-full bg-gradient-to-br from-[#F5EDE4] to-[#EAE0D5] flex items-center justify-center" aria-hidden="true" />
           )}
 
-          {/* Custom Styled Ribbon / Badge */}
-          {customBadge && <Badge badge={customBadge} />}
+          {/* Top-Left: Custom Ribbon OR Fallback New Arrival Badge */}
+          {customBadge ? (
+            <Badge badge={customBadge} />
+          ) : (
+            product.is_new_arrival && (
+              <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 z-10 pointer-events-none">
+                <Badge variant="new" />
+              </div>
+            )
+          )}
 
-          {/* Badges */}
-          <div className="absolute z-10 flex flex-col gap-1 bottom-2.5 right-2.5 sm:bottom-auto sm:right-auto sm:top-3 sm:left-3 items-end sm:items-start pointer-events-none">
-            {!customBadge && product.is_new_arrival && <Badge variant="new" />}
-            {isOutOfStock && <Badge variant="out-of-stock" />}
-          </div>
 
-          {/* Wishlist */}
-          <div className="absolute top-3 right-3 z-10">
+          {/* Top-Right: Wishlist Button */}
+          <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 z-10">
             <WishlistButton product={product} />
           </div>
+
+          {/* Bottom-Right: Stock / Sold Out Badge */}
+          {isOutOfStock && (
+            <div className="absolute bottom-2.5 right-2.5 z-10 pointer-events-none">
+              <Badge variant="out-of-stock" />
+            </div>
+          )}
         </div>
+
 
         <div className="p-3 sm:p-4">
           <h3 className="font-display text-[13px] font-semibold tracking-[0.03em] text-[#2C1D13] mb-2 leading-snug line-clamp-2">

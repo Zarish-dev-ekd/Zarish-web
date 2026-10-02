@@ -350,15 +350,23 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
               </button>
             )}
 
-            {/* Custom Styled Ribbon / Badge */}
-            {customBadge && <Badge badge={customBadge} />}
+            {/* Top-Left: Custom Ribbon OR Fallback Badges */}
+            {customBadge ? (
+              <Badge badge={customBadge} />
+            ) : (
+              <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 flex flex-col gap-1.5 pointer-events-none">
+                {product.is_new_arrival && <Badge variant="new" />}
+                {product.is_on_sale && <Badge variant="sale" />}
+              </div>
+            )}
 
-            {/* Badges (Top Left) */}
-            <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 flex flex-col gap-1.5">
-              {!customBadge && product.is_new_arrival && <Badge variant="new" />}
-              {!customBadge && product.is_on_sale && <Badge variant="sale" />}
-              {product.stock_quantity <= 0 && <Badge variant="out-of-stock" />}
-            </div>
+            {/* Bottom-Right: Stock / Sold Out Badge */}
+            {product.stock_quantity <= 0 && (
+              <div className="absolute bottom-3.5 right-3.5 sm:bottom-5 sm:right-5 z-10 pointer-events-none">
+                <Badge variant="out-of-stock" />
+              </div>
+            )}
+
 
             {/* Floating Wishlist Button (Top Right) */}
             <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 w-9 h-9 rounded-full bg-white/85 backdrop-blur-md shadow-sm flex items-center justify-center hover:bg-white transition-all">

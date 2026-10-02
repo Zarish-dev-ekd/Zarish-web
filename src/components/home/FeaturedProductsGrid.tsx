@@ -58,8 +58,17 @@ function GridProductCard({ product }: { product: Product }) {
             />
           )}
 
-          {/* Custom Styled Ribbon / Badge */}
-          {customBadge && <Badge badge={customBadge} />}
+          {/* Top-Left: Custom Ribbon OR Fallback New Arrival Badge */}
+          {customBadge ? (
+            <Badge badge={customBadge} />
+          ) : (
+            product.is_new_arrival && (
+              <div className="absolute top-2 left-2 z-10 pointer-events-none">
+                <Badge variant="new" />
+              </div>
+            )
+          )}
+
 
           {/* Hover overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
