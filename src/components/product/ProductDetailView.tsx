@@ -11,6 +11,7 @@ import CheckoutModal from '@/components/checkout/CheckoutModal';
 import SizeGuideModal from './SizeGuideModal';
 import { useCart } from '@/context/CartContext';
 import type { Product, SiteSettings, ProductColor } from '@/lib/types';
+import { getProductBadge } from '@/lib/badges';
 
 interface ProductDetailViewProps {
   product: Product;
@@ -20,6 +21,7 @@ interface ProductDetailViewProps {
 
 export default function ProductDetailView({ product, settings, colors = [] }: ProductDetailViewProps) {
   const router = useRouter();
+  const customBadge = getProductBadge(product);
   // Checkout modal state
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   // Size Guide modal state
@@ -348,10 +350,13 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
               </button>
             )}
 
+            {/* Custom Styled Ribbon / Badge */}
+            {customBadge && <Badge badge={customBadge} />}
+
             {/* Badges (Top Left) */}
             <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 flex flex-col gap-1.5">
-              {product.is_new_arrival && <Badge variant="new" />}
-              {product.is_on_sale && <Badge variant="sale" />}
+              {!customBadge && product.is_new_arrival && <Badge variant="new" />}
+              {!customBadge && product.is_on_sale && <Badge variant="sale" />}
               {product.stock_quantity <= 0 && <Badge variant="out-of-stock" />}
             </div>
 

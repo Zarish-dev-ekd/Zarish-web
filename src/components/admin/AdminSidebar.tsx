@@ -148,6 +148,15 @@ function IconSettings({ className, size = 18 }: IconProps) {
   );
 }
 
+function IconBadges({ className, size = 18 }: IconProps) {
+  return (
+    <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76z" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
 interface NavItem {
   label: string;
   href: string;
@@ -161,6 +170,7 @@ const adminNav: NavItem[] = [
   { label: 'Comments', href: '/admin/comments', Icon: IconComments },
   { label: 'Coupons', href: '/admin/coupons', Icon: IconCoupons },
   { label: 'Products', href: '/admin/products', Icon: IconProducts },
+  { label: 'Badges & Ribbons', href: '/admin/badges', Icon: IconBadges },
   { label: 'Categories', href: '/admin/categories', Icon: IconCategories },
   { label: 'Size & Color', href: '/admin/sizes', Icon: IconSizes },
   { label: 'Hero Banner', href: '/admin/hero', Icon: IconHero },
@@ -170,6 +180,7 @@ const adminNav: NavItem[] = [
   { label: 'Store Policies', href: '/admin/policies', Icon: IconPolicies },
   { label: 'Settings', href: '/admin/settings', Icon: IconSettings },
 ];
+
 
 export default function AdminSidebar() {
   const pathname = usePathname();

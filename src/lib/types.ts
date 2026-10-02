@@ -135,6 +135,27 @@ export interface SizeChartConfig {
   rows?: SizeMeasurementRow[];
 }
 
+// ─── Product Badges ──────────────────────────────────────────
+export type BadgeStyle =
+  | 'corner_ribbon'
+  | 'hanging_flag'
+  | 'rosette'
+  | 'side_tag'
+  | 'luxury_pill';
+
+export interface ProductBadge {
+  id: string;
+  name: string;
+  text: string;
+  style: BadgeStyle;
+  bg_color: string;
+  text_color: string;
+  is_active?: boolean;
+  display_order?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
 // ─── Products ────────────────────────────────────────────────
 export interface Product {
   id: string;
@@ -160,10 +181,13 @@ export interface Product {
   seo_title: string | null;
   seo_description: string | null;
   size_chart?: SizeChartConfig | null;
+  badge_id?: string | null;
+  badge?: ProductBadge | null;
   published_at: string | null;
   created_at: string;
   updated_at: string;
 }
+
 
 // ─── Product Images ──────────────────────────────────────────
 export interface ProductImage {

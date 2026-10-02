@@ -7,8 +7,10 @@ import { createClient } from '@/utils/supabase/client';
 import ColorImageUploader from '@/components/admin/ColorImageUploader';
 import MultiImageUpload, { type UploadedImageItem } from '@/components/admin/MultiImageUpload';
 import ProductSizeChartEditor from '@/components/admin/ProductSizeChartEditor';
-import type { Category, Size, ProductColor, Product, SizeChartConfig } from '@/lib/types';
+import type { Category, Size, ProductColor, Product, SizeChartConfig, ProductBadge } from '@/lib/types';
 import { resolveUniqueProductSlug } from '@/lib/utils';
+import { getProductBadges, getProductBadge } from '@/lib/badges';
+import Badge from '@/components/product/Badge';
 
 interface EditProductPageProps {
   params: Promise<{ id: string }>;
@@ -23,6 +25,8 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [availableColors, setAvailableColors] = useState<ProductColor[]>([]);
   const [availableSizes, setAvailableSizes] = useState<Size[]>([]);
+  const [availableBadges, setAvailableBadges] = useState<ProductBadge[]>([]);
+  const [selectedBadgeId, setSelectedBadgeId] = useState<string>('');
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -121,6 +125,13 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
             use_default: true,
             rows: undefined,
           });
+        }
+
+        const loadedBadges = await getProductBadges(supabase);
+        setAvailableBadges(loadedBadges);
+        const currentBadge = getProductBadge(p);
+        if (currentBadge) {
+          setSelectedBadgeId(currentBadge.id);
         }
 
         // 1. Reconstruct colors & variant stock from product_variants
@@ -437,6 +448,11 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
         productId
       );
 
+      const selectedBadgeObj = availableBadges.find((b) => b.id === selectedBadgeId);
+      const tagsList = selectedBadgeObj
+        ? [`badge_data:${JSON.stringify(selectedBadgeObj)}`, `badge_id:${selectedBadgeObj.id}`]
+        : [];
+
       // 1. Update product table
       const updatePayload: any = {
         name: name.trim(),
@@ -455,6 +471,8 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
         is_new_arrival: isNewArrival,
         is_on_sale: isOnSale,
         size_chart: sizeChartConfig,
+        badge_id: selectedBadgeId || null,
+        tags: tagsList,
         updated_at: new Date().toISOString(),
       };
 
@@ -466,6 +484,16 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
       // Fallback if size_chart column does not exist yet
       if (updateErr && updateErr.message?.includes('size_chart')) {
         delete updatePayload.size_chart;
+        const retry = await supabase
+          .from('products')
+          .update(updatePayload)
+          .eq('id', productId);
+        updateErr = retry.error;
+      }
+
+      // Fallback if badge_id column does not exist yet
+      if (updateErr && updateErr.message?.includes('badge_id')) {
+        delete updatePayload.badge_id;
         const retry = await supabase
           .from('products')
           .update(updatePayload)
@@ -1187,6 +1215,69 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
               <h3 className="text-lg font-semibold m-0 mb-4 text-[#2C241E]">
                 Storefront Badges & Status
               </h3>
+
+              {/* Promotional Badge / Ribbon Dropdown */}
+              <div className="mb-5 pb-5 border-b border-[#E8E0D5]">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-[13px] font-semibold text-[#2C241E]">
+                    Product Ribbon / Badge
+                  </label>
+                  <Link
+                    href="/admin/badges"
+                    target="_blank"
+                    className="text-xs text-[#7B5B3A] hover:underline"
+                  >
+                    + Manage Badges
+                  </Link>
+                </div>
+                <select
+                  value={selectedBadgeId}
+                  onChange={(e) => setSelectedBadgeId(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A] mb-2 font-medium"
+                >
+                  <option value="">None (No custom ribbon/badge)</option>
+                  {availableBadges.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.text} — {b.name}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Live Selected Badge Mini-Card Preview */}
+                {selectedBadgeId && (() => {
+                  const b = availableBadges.find((x) => x.id === selectedBadgeId);
+                  if (!b) return null;
+                  return (
+                    <div className="p-3 bg-[#FAF6F0] rounded-lg border border-[#E8E0D5] flex items-center justify-between gap-3 mb-2">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {/* Mini mockup card with the exact left corner ribbon */}
+                        <div className="relative w-16 h-20 bg-white rounded-md overflow-hidden shadow-xs border border-[#E8E0D5] flex-shrink-0">
+                          <div className="absolute inset-0 bg-gradient-to-br from-[#F5EDE4] to-[#EAE0D5]" />
+                          <Badge badge={b} />
+                          <div className="absolute bottom-1 right-1 text-[8px] font-serif text-[#7B5B3A]/40 font-bold">Z</div>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs font-bold text-[#2C241E] truncate">{b.name}</div>
+                          <div className="text-[11px] text-[#7A6F66] mt-0.5">
+                            Renders on the top-left corner of the product photo.
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedBadgeId('')}
+                        className="text-xs text-[#C44D4D] hover:underline cursor-pointer font-medium flex-shrink-0"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  );
+                })()}
+                <p className="text-[11px] text-[#7A6F66] mt-1 m-0">
+                  Select a stylish corner ribbon to display on the product card.
+                </p>
+              </div>
+
 
               <div className="flex flex-col gap-3">
                 <label className="flex items-center gap-2.5 cursor-pointer text-sm text-[#2C241E]">

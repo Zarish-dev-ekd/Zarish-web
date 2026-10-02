@@ -6,6 +6,7 @@ import type { Product } from '@/lib/types';
 import { formatPrice, optimizeCloudinaryUrl } from '@/lib/utils';
 import WishlistButton from '@/components/product/WishlistButton';
 import Badge from '@/components/product/Badge';
+import { getProductBadge } from '@/lib/badges';
 
 /* ─── Types ─────────────────────────────────────────────────── */
 interface PaginatedResult {
@@ -35,6 +36,7 @@ function GridProductCard({ product }: { product: Product }) {
   const totalStock = getTotalStock(product);
   const isOutOfStock = totalStock <= 0;
   const isLowStock = !isOutOfStock && totalStock <= LOW_STOCK_THRESHOLD;
+  const customBadge = getProductBadge(product);
 
   return (
     <article className="group relative flex flex-col rounded-2xl overflow-hidden bg-white border border-[#F0EBE5] hover:border-[#D8C8BA] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(44,29,19,0.10)] cursor-pointer">
@@ -55,6 +57,9 @@ function GridProductCard({ product }: { product: Product }) {
               aria-hidden="true"
             />
           )}
+
+          {/* Custom Styled Ribbon / Badge */}
+          {customBadge && <Badge badge={customBadge} />}
 
           {/* Hover overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

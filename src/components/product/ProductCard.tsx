@@ -3,6 +3,7 @@ import type { Product } from '@/lib/types';
 import { formatPrice, optimizeCloudinaryUrl } from '@/lib/utils';
 import WishlistButton from './WishlistButton';
 import Badge from './Badge';
+import { getProductBadge } from '@/lib/badges';
 
 interface ProductCardProps {
   product: Product;
@@ -11,6 +12,7 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const primaryImage = product.images?.find((img) => img.role === 'primary') || product.images?.[0];
   const hasDiscount = product.compare_at_price && product.compare_at_price > product.price;
+  const customBadge = getProductBadge(product);
 
   const totalStock =
     product.variants && product.variants.length > 0
@@ -36,9 +38,12 @@ export default function ProductCard({ product }: ProductCardProps) {
             <div className="w-full h-full bg-gradient-to-br from-[#F5EDE4] to-[#EAE0D5] flex items-center justify-center" aria-hidden="true" />
           )}
 
+          {/* Custom Styled Ribbon / Badge */}
+          {customBadge && <Badge badge={customBadge} />}
+
           {/* Badges */}
           <div className="absolute z-10 flex flex-col gap-1 bottom-2.5 right-2.5 sm:bottom-auto sm:right-auto sm:top-3 sm:left-3 items-end sm:items-start pointer-events-none">
-            {product.is_new_arrival && <Badge variant="new" />}
+            {!customBadge && product.is_new_arrival && <Badge variant="new" />}
             {isOutOfStock && <Badge variant="out-of-stock" />}
           </div>
 
