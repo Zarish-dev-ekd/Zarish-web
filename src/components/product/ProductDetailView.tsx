@@ -4,11 +4,12 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { formatPrice, optimizeCloudinaryUrl } from '@/lib/utils';
-import { IconArrowRight, IconTruck, IconShield, IconPackage, IconShoppingBag, IconRuler, IconTapeMeasure, IconWhatsapp } from '@/components/icons';
+import { IconArrowRight, IconTruck, IconShield, IconPackage, IconShoppingBag, IconRuler, IconTapeMeasure, IconWhatsapp, IconShare } from '@/components/icons';
 import Badge from './Badge';
 import WishlistButton from './WishlistButton';
 import CheckoutModal from '@/components/checkout/CheckoutModal';
 import SizeGuideModal from './SizeGuideModal';
+import ProductShareModal from './ProductShareModal';
 import { useCart } from '@/context/CartContext';
 import type { Product, SiteSettings, ProductColor } from '@/lib/types';
 import { getProductBadge } from '@/lib/badges';
@@ -27,6 +28,8 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
   // Size Guide modal state
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [sizeGuideTab, setSizeGuideTab] = useState<'chart' | 'measure'>('chart');
+  // Share modal state
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const isSizeChartActive = product?.size_chart?.is_active !== false;
 
   // 1. Detect colors available for this product (from variants and image alt tags)
@@ -368,9 +371,23 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
             )}
 
 
-            {/* Floating Wishlist Button (Top Right) */}
-            <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 w-9 h-9 rounded-full bg-white/85 backdrop-blur-md shadow-sm flex items-center justify-center hover:bg-white transition-all">
-              <WishlistButton product={product} />
+            {/* Floating Action Buttons (Top Right): Wishlist & Share */}
+            <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 flex flex-col gap-2">
+              <div className="w-9 h-9 rounded-full bg-white/85 backdrop-blur-md shadow-sm flex items-center justify-center hover:bg-white transition-all">
+                <WishlistButton product={product} />
+              </div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsShareModalOpen(true);
+                }}
+                className="w-9 h-9 rounded-full bg-white/85 backdrop-blur-md shadow-sm flex items-center justify-center text-[#2C1D13] hover:text-[#7B5B3A] hover:bg-white hover:scale-105 active:scale-90 transition-all cursor-pointer"
+                title="Share this product"
+                aria-label="Share this product"
+              >
+                <IconShare size={15} />
+              </button>
             </div>
 
             {/* Touch Previous / Next Buttons */}
@@ -463,12 +480,23 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
               <span />
             )}
 
-            {product.sku && (
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-mono font-bold tracking-wider text-[#7B5B3A] bg-[#FAF6F0] px-2.5 py-0.5 rounded-full border border-[#E2D5C7] shadow-2xs">
-                <span className="text-[#8C7B6B] font-sans font-medium text-[10px] uppercase tracking-normal">CODE:</span>
-                <span className="text-[#2C1D13]">{product.sku}</span>
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              {product.sku && (
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-mono font-bold tracking-wider text-[#7B5B3A] bg-[#FAF6F0] px-2.5 py-0.5 rounded-full border border-[#E2D5C7] shadow-2xs">
+                  <span className="text-[#8C7B6B] font-sans font-medium text-[10px] uppercase tracking-normal">CODE:</span>
+                  <span className="text-[#2C1D13]">{product.sku}</span>
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsShareModalOpen(true)}
+                className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#7B5B3A] hover:text-[#2C1D13] bg-[#FAF6F0] hover:bg-[#F2ECE4] px-2.5 py-1 rounded-full border border-[#E2D5C7] transition-all cursor-pointer shadow-2xs active:scale-95 group"
+                title="Share this garment"
+              >
+                <IconShare size={13} className="text-[#7B5B3A] group-hover:scale-110 transition-transform" />
+                <span>Share</span>
+              </button>
+            </div>
           </div>
 
           {/* Title */}
@@ -773,6 +801,18 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
               <IconWhatsapp size={22} className="text-white shrink-0" />
               <span>Or Shop via WhatsApp</span>
             </button>
+
+            {/* Subtle Share Link */}
+            <div className="flex items-center justify-center pt-1">
+              <button
+                type="button"
+                onClick={() => setIsShareModalOpen(true)}
+                className="inline-flex items-center gap-2 text-xs font-medium text-[#7B5B3A] hover:text-[#2C1D13] transition-colors cursor-pointer py-1.5 px-3.5 rounded-full hover:bg-[#FAF6F0] group"
+              >
+                <IconShare size={14} className="text-[#7B5B3A] group-hover:scale-110 transition-transform" />
+                <span>Share this piece with friends & family</span>
+              </button>
+            </div>
           </div>
 
 
@@ -885,6 +925,13 @@ export default function ProductDetailView({ product, settings, colors = [] }: Pr
           settings={settings}
         />
       )}
+
+      {/* Product Share Modal */}
+      <ProductShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        product={product}
+      />
 
       {/* Fullscreen High-Res Luxury Lightbox Modal */}
       {isLightboxOpen && activeImage && (
