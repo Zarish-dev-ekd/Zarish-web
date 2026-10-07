@@ -384,6 +384,7 @@ CREATE POLICY "Customers view own orders" ON public.orders
   FOR SELECT TO authenticated
   USING (
     auth.uid() = user_id 
+    OR lower(customer_email) = lower(auth.jwt() ->> 'email')
     OR (auth.jwt() ->> 'email') = 'zarish2025co@gmail.com'
   );
 
@@ -408,6 +409,7 @@ CREATE POLICY "Customers view own order items" ON public.order_items
       WHERE o.id = order_items.order_id
       AND (
         o.user_id = auth.uid()
+        OR lower(o.customer_email) = lower(auth.jwt() ->> 'email')
         OR (auth.jwt() ->> 'email') = 'zarish2025co@gmail.com'
       )
     )

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { createRazorpayOrder, getRazorpayKeyId } from '@/lib/razorpay';
 import { resolveDeliveryDetails } from '@/lib/delivery';
 
@@ -34,12 +35,20 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = await createClient();
+    // Get authenticated user ID if logged in (guest checkouts will have userId = null)
+    let userId: string | null = null;
+    try {
+      const authClient = await createClient();
+      const {
+        data: { user },
+      } = await authClient.auth.getUser();
+      userId = user?.id || null;
+    } catch {
+      userId = null;
+    }
 
-    // Check if user is authenticated
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    // Service-role admin client for secure backend queries and order recording (bypasses RLS)
+    const adminSupabase = createAdminClient();
 
     let calculatedTotal = 0;
     const orderItemsToInsert: Array<{
@@ -56,7 +65,7 @@ export async function POST(request: Request) {
     if (productId) {
       const cleanId = String(productId).trim();
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanId);
-      let query = supabase.from('products').select(`*, images:product_images(*)`);
+      let query = adminSupabase.from('products').select(`*, images:product_images(*)`);
       if (isUUID) {
         query = query.eq('id', cleanId);
       } else {
@@ -93,7 +102,7 @@ export async function POST(request: Request) {
       for (const it of items) {
         const cleanProdId = String(it.productId).trim();
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanProdId);
-        let prodQuery = supabase.from('products').select(`*, images:product_images(*)`);
+        let prodQuery = adminSupabase.from('products').select(`*, images:product_images(*)`);
         if (isUUID) {
           prodQuery = prodQuery.eq('id', cleanProdId);
         } else {
@@ -138,7 +147,7 @@ export async function POST(request: Request) {
 
     if (couponCode && typeof couponCode === 'string') {
       const cleanCode = couponCode.trim().toUpperCase();
-      const { data: coupon } = await supabase
+      const { data: coupon } = await adminSupabase
         .from('coupons')
         .select('*')
         .eq('code', cleanCode)
@@ -163,7 +172,7 @@ export async function POST(request: Request) {
     // Fetch dynamic courier delivery settings if configured in admin panel
     let customDeliveryConfig = null;
     try {
-      const { data: policyData } = await supabase
+      const { data: policyData } = await adminSupabase
         .from('store_policies')
         .select('content')
         .eq('slug', 'delivery-settings')
@@ -221,12 +230,12 @@ export async function POST(request: Request) {
     });
 
     // Save pending order record to Supabase
-    const { data: savedOrder, error: orderErr } = await supabase
+    const { data: savedOrder, error: orderErr } = await adminSupabase
       .from('orders')
       .insert([
         {
           order_number: orderNumber,
-          user_id: user?.id || null,
+          user_id: userId,
           customer_name: customer.fullName.trim(),
           customer_email: customer.email.trim().toLowerCase(),
           customer_phone: customer.phone || shippingAddress?.phone || null,
@@ -259,7 +268,7 @@ export async function POST(request: Request) {
         ...item,
         order_id: savedOrder.id,
       }));
-      const { error: itemsErr } = await supabase.from('order_items').insert(itemsWithOrderId);
+      const { error: itemsErr } = await adminSupabase.from('order_items').insert(itemsWithOrderId);
       if (itemsErr) {
         console.error('Error inserting order items:', itemsErr);
       }

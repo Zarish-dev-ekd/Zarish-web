@@ -33,18 +33,35 @@ export default function OrderConfirmationPage({ params }: OrderConfirmationPageP
 
   useEffect(() => {
     async function loadOrder() {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('order_number', orderNumber)
-        .maybeSingle();
-
-      if (data) {
-        setOrderData(data);
+      try {
+        const res = await fetch(`/api/track-order?orderNumber=${encodeURIComponent(orderNumber)}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.order) {
+            setOrderData(json.order);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Could not fetch order via track API:', err);
       }
+
+      try {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('order_number', orderNumber)
+          .maybeSingle();
+
+        if (data) {
+          setOrderData(data);
+        }
+      } catch {}
     }
-    loadOrder();
+    if (orderNumber) {
+      loadOrder();
+    }
   }, [orderNumber]);
 
   const shippingAddress = typeof orderData?.shipping_address === 'string'
