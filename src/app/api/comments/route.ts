@@ -161,6 +161,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Please enter your name.' }, { status: 400 });
     }
 
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+      return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 });
+    }
+
     if (!message || message.length < 2) {
       return NextResponse.json({ error: 'Please enter a message or comment.' }, { status: 400 });
     }

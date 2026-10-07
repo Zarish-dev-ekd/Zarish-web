@@ -7,6 +7,10 @@ import { formatPrice, optimizeCloudinaryUrl } from '@/lib/utils';
 import WishlistButton from '@/components/product/WishlistButton';
 import Badge from '@/components/product/Badge';
 import { getProductBadge } from '@/lib/badges';
+import {
+  useStockBadgeConfig,
+  type StockBadgeConfig,
+} from '@/lib/stock-badge-settings';
 
 /* ─── Types ─────────────────────────────────────────────────── */
 interface PaginatedResult {
@@ -16,7 +20,6 @@ interface PaginatedResult {
 }
 
 const PAGE_SIZE = 10;
-const LOW_STOCK_THRESHOLD = 3;
 
 /* ─── Helpers ───────────────────────────────────────────────── */
 function getTotalStock(product: Product): number {
@@ -27,7 +30,13 @@ function getTotalStock(product: Product): number {
 }
 
 /* ─── Mini Product Card ─────────────────────────────────────── */
-function GridProductCard({ product }: { product: Product }) {
+function GridProductCard({
+  product,
+  config,
+}: {
+  product: Product;
+  config: StockBadgeConfig;
+}) {
   const primaryImage =
     product.images?.find((img) => img.role === 'primary') || product.images?.[0];
   const hasDiscount =
@@ -35,7 +44,12 @@ function GridProductCard({ product }: { product: Product }) {
 
   const totalStock = getTotalStock(product);
   const isOutOfStock = totalStock <= 0;
-  const isLowStock = !isOutOfStock && totalStock <= LOW_STOCK_THRESHOLD;
+  const isLowStock =
+    !isOutOfStock &&
+    config.enable_low_stock_badge &&
+    totalStock <= (config.low_stock_threshold || 3);
+  const isShowInStock =
+    !isOutOfStock && !isLowStock && config.show_in_stock_badge;
   const customBadge = getProductBadge(product);
 
   return (
@@ -88,11 +102,11 @@ function GridProductCard({ product }: { product: Product }) {
               <span className="inline-flex items-center px-1.5 py-1 rounded text-[9px] font-semibold tracking-wide uppercase leading-none bg-[#C0392B]/95 text-white shadow-xs">
                 Only {totalStock} left
               </span>
-            ) : (
+            ) : isShowInStock ? (
               <span className="inline-flex items-center px-1.5 py-1 rounded text-[9px] font-semibold tracking-wide uppercase leading-none bg-[#0E7064]/95 text-white shadow-xs">
                 In Stock
               </span>
-            )}
+            ) : null}
           </div>
 
           {/* Out-of-stock overlay */}
@@ -151,6 +165,7 @@ export default function FeaturedProductsGrid() {
   const [initialLoaded, setInitialLoaded] = useState(false);
   const [showInitialOnly, setShowInitialOnly] = useState(true);
   const [infiniteMode, setInfiniteMode] = useState(false);
+  const badgeConfig = useStockBadgeConfig();
   const loadingRef = useRef(false);
 
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -273,7 +288,7 @@ export default function FeaturedProductsGrid() {
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
               {visibleProducts.map((product) => (
-                <GridProductCard key={product.id} product={product} />
+                <GridProductCard key={product.id} product={product} config={badgeConfig} />
               ))}
               {loading &&
                 Array.from({ length: PAGE_SIZE }).map((_, i) => (

@@ -39,6 +39,12 @@ function SettingsContent() {
   const [enableCoupons, setEnableCoupons] = useState(true);
   const [couponToggleLoading, setCouponToggleLoading] = useState(false);
 
+  // Stock Urgency Badges Settings State
+  const [enableLowStockBadge, setEnableLowStockBadge] = useState(true);
+  const [lowStockThreshold, setLowStockThreshold] = useState(3);
+  const [showInStockBadge, setShowInStockBadge] = useState(false);
+  const [stockBadgeSavingAction, setStockBadgeSavingAction] = useState<'urgency' | 'in_stock' | 'threshold' | null>(null);
+
   // Delivery Settings State
   const [deliveryConfig, setDeliveryConfig] = useState<DeliveryConfig>(DEFAULT_DELIVERY_CONFIG);
   const [deliveryLoading, setDeliveryLoading] = useState(true);
@@ -78,6 +84,15 @@ function SettingsContent() {
           setCurrencyCode(data.currency_code || 'INR');
           setMetaTitle(data.meta_title || '');
           setMetaDescription(data.meta_description || '');
+          if (typeof data.enable_low_stock_badge === 'boolean') {
+            setEnableLowStockBadge(data.enable_low_stock_badge);
+          }
+          if (typeof data.low_stock_threshold === 'number') {
+            setLowStockThreshold(data.low_stock_threshold);
+          }
+          if (typeof data.show_in_stock_badge === 'boolean') {
+            setShowInStockBadge(data.show_in_stock_badge);
+          }
         }
       } catch (err: any) {
         console.error('Failed to load settings:', err);
@@ -87,6 +102,63 @@ function SettingsContent() {
     }
     loadSettings();
   }, []);
+
+  // Load stock badge settings from API
+  useEffect(() => {
+    fetch('/api/stock-badge-settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.config) {
+          if (typeof data.config.enable_low_stock_badge === 'boolean') {
+            setEnableLowStockBadge(data.config.enable_low_stock_badge);
+          }
+          if (typeof data.config.low_stock_threshold === 'number') {
+            setLowStockThreshold(data.config.low_stock_threshold);
+          }
+          if (typeof data.config.show_in_stock_badge === 'boolean') {
+            setShowInStockBadge(data.config.show_in_stock_badge);
+          }
+        }
+      })
+      .catch((err) => console.warn('Could not load stock badge settings:', err));
+  }, []);
+
+  const handleSaveStockBadgeSettings = async (
+    patch?: Partial<{
+      enable_low_stock_badge: boolean;
+      low_stock_threshold: number;
+      show_in_stock_badge: boolean;
+    }>,
+    action: 'urgency' | 'in_stock' | 'threshold' = 'urgency'
+  ) => {
+    try {
+      setStockBadgeSavingAction(action);
+      const nextConfig = {
+        enable_low_stock_badge: patch && typeof patch.enable_low_stock_badge === 'boolean' ? patch.enable_low_stock_badge : enableLowStockBadge,
+        low_stock_threshold: patch && typeof patch.low_stock_threshold === 'number' ? patch.low_stock_threshold : lowStockThreshold,
+        show_in_stock_badge: patch && typeof patch.show_in_stock_badge === 'boolean' ? patch.show_in_stock_badge : showInStockBadge,
+      };
+
+      const res = await fetch('/api/stock-badge-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nextConfig),
+      });
+      const data = await res.json();
+      if (data?.success) {
+        setEnableLowStockBadge(nextConfig.enable_low_stock_badge);
+        setLowStockThreshold(nextConfig.low_stock_threshold);
+        setShowInStockBadge(nextConfig.show_in_stock_badge);
+        setSuccess('Stock badge settings saved! Product cards now reflect this globally.');
+      } else {
+        throw new Error(data?.error || 'Failed to save');
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Failed to update stock badge setting');
+    } finally {
+      setStockBadgeSavingAction(null);
+    }
+  };
 
   // Load delivery config from API
   useEffect(() => {
@@ -181,6 +253,9 @@ function SettingsContent() {
         currency_code: currencyCode.trim(),
         meta_title: metaTitle.trim(),
         meta_description: metaDescription.trim(),
+        enable_low_stock_badge: enableLowStockBadge,
+        low_stock_threshold: Math.max(1, Number(lowStockThreshold) || 3),
+        show_in_stock_badge: showInStockBadge,
         updated_at: new Date().toISOString(),
       };
 
@@ -427,12 +502,17 @@ function SettingsContent() {
           <div className="max-w-[840px] bg-white border border-[#E8E0D5] rounded-xl p-5 sm:p-6 mb-6 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-start gap-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-xl border transition-colors ${
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border transition-colors ${
                   enableCoupons
                     ? 'bg-[#E8F5E9] border-[#C8E6C9] text-[#2E7D32]'
                     : 'bg-[#FFEBEE] border-[#FFCDD2] text-[#C62828]'
                 }`}>
-                  🎟️
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+                    <path d="M13 5v2" />
+                    <path d="M13 17v2" />
+                    <path d="M13 11v2" />
+                  </svg>
                 </div>
                 <div>
                   <div className="flex items-center gap-2.5 flex-wrap">
@@ -471,6 +551,166 @@ function SettingsContent() {
                   <span>Show on Checkout</span>
                 )}
               </button>
+            </div>
+          </div>
+
+          {/* Product Badges Feature: Stock Urgency Badges */}
+          <div className="max-w-[840px] mb-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-[#2C241E] m-0">Catalog Stock & Urgency Badges</h3>
+                <p className="text-xs text-[#7A6F66] m-0 mt-0.5">Control which automated inventory tags appear on customer product cards.</p>
+              </div>
+            </div>
+
+            {/* CARD 1: Low Stock Urgency Badge */}
+            <div className="bg-white border border-[#E8E0D5] rounded-xl p-5 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3.5">
+                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border transition-colors ${
+                    enableLowStockBadge
+                      ? 'bg-[#FFEBEE] border-[#FFCDD2] text-[#C62828]'
+                      : 'bg-[#F5F2ED] border-[#E8E0D5] text-[#7A6F66]'
+                  }`}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="text-[14px] font-bold text-[#2C241E] m-0">
+                        Low Stock Urgency Tag (&ldquo;ONLY X LEFT&rdquo;)
+                      </h4>
+                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold uppercase ${
+                        enableLowStockBadge
+                          ? 'bg-[#FFEBEE] text-[#C62828] border border-[#FFCDD2]'
+                          : 'bg-[#F5F2ED] text-[#7A6F66] border border-[#E8E0D5]'
+                      }`}>
+                        {enableLowStockBadge ? '● Visible' : '○ Hidden'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#7A6F66] mt-1 mb-3">
+                      Shows the red urgency tag on items when available quantity is low.
+                    </p>
+
+                    {/* Inline Threshold Setting */}
+                    <div className="flex items-center gap-2.5 bg-[#FAF7F2] p-2.5 rounded-lg border border-[#EFE8DF] w-fit">
+                      <span className="text-xs font-semibold text-[#2C241E]">Trigger when stock &le;</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={50}
+                        value={lowStockThreshold}
+                        onChange={(e) => {
+                          const val = Math.max(1, parseInt(e.target.value) || 1);
+                          setLowStockThreshold(val);
+                        }}
+                        onBlur={() => handleSaveStockBadgeSettings({ low_stock_threshold: lowStockThreshold }, 'threshold')}
+                        className="w-16 px-2 py-1 text-xs text-center font-bold border border-[#E8E0D5] rounded bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
+                      />
+                      <span className="text-xs text-[#7A6F66]">
+                        {stockBadgeSavingAction === 'threshold' ? 'Saving...' : 'units'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleSaveStockBadgeSettings({ enable_low_stock_badge: !enableLowStockBadge }, 'urgency')}
+                  disabled={stockBadgeSavingAction !== null}
+                  className={`px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-50 whitespace-nowrap self-end sm:self-center flex items-center gap-2 ${
+                    enableLowStockBadge
+                      ? 'bg-[#C62828] hover:bg-[#B71C1C] text-white shadow-[#C62828]/20'
+                      : 'bg-[#2E7D32] hover:bg-[#1B5E20] text-white shadow-[#2E7D32]/20'
+                  }`}
+                >
+                  {stockBadgeSavingAction === 'urgency' ? (
+                    <span>Saving...</span>
+                  ) : enableLowStockBadge ? (
+                    <span>Hide Urgency Tag</span>
+                  ) : (
+                    <span>Show Urgency Tag</span>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* CARD 2: In Stock Badge */}
+            <div className="bg-white border border-[#E8E0D5] rounded-xl p-5 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3.5">
+                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border transition-colors ${
+                    showInStockBadge
+                      ? 'bg-[#E8F5E9] border-[#C8E6C9] text-[#2E7D32]'
+                      : 'bg-[#F5F2ED] border-[#E8E0D5] text-[#7A6F66]'
+                  }`}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                      <path d="m9 12 2 2 4-4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="text-[14px] font-bold text-[#2C241E] m-0">
+                        &ldquo;IN STOCK&rdquo; Tag
+                      </h4>
+                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold uppercase ${
+                        showInStockBadge
+                          ? 'bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]'
+                          : 'bg-[#F5F2ED] text-[#7A6F66] border border-[#E8E0D5]'
+                      }`}>
+                        {showInStockBadge ? '● Visible' : '○ Hidden (Clean Look)'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#7A6F66] mt-1">
+                      Display green &ldquo;IN STOCK&rdquo; tag on all regular available items (leave hidden for a minimal luxury catalog).
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleSaveStockBadgeSettings({ show_in_stock_badge: !showInStockBadge }, 'in_stock')}
+                  disabled={stockBadgeSavingAction !== null}
+                  className={`px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-50 whitespace-nowrap self-end sm:self-center flex items-center gap-2 ${
+                    showInStockBadge
+                      ? 'bg-[#C62828] hover:bg-[#B71C1C] text-white shadow-[#C62828]/20'
+                      : 'bg-[#2E7D32] hover:bg-[#1B5E20] text-white shadow-[#2E7D32]/20'
+                  }`}
+                >
+                  {stockBadgeSavingAction === 'in_stock' ? (
+                    <span>Saving...</span>
+                  ) : showInStockBadge ? (
+                    <span>Hide In-Stock Tag</span>
+                  ) : (
+                    <span>Show In-Stock Tag</span>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Live Customer Catalog Preview */}
+            <div className="p-3.5 bg-[#FAF7F2] border border-[#E8E0D5] rounded-xl flex items-center justify-between gap-3 text-xs">
+              <span className="text-[#7A6F66] font-semibold">Customer Catalog Preview:</span>
+              <div className="flex items-center gap-2">
+                {enableLowStockBadge && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase bg-[#C0392B] text-white shadow-xs">
+                    ONLY {lowStockThreshold} LEFT
+                  </span>
+                )}
+                {showInStockBadge && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase bg-[#0E7064] text-white shadow-xs">
+                    IN STOCK
+                  </span>
+                )}
+                {!enableLowStockBadge && !showInStockBadge && (
+                  <span className="text-xs italic text-[#7A6F66]">[Clean UI: No stock badges on available items]</span>
+                )}
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase bg-[#8C7B6B] text-white shadow-xs">
+                  SOLD OUT
+                </span>
+              </div>
             </div>
           </div>
 
