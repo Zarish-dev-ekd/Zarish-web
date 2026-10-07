@@ -45,7 +45,7 @@ export default async function ShopBySizePage({ params }: ShopBySizePageProps) {
 
       <main className="w-full max-w-[1280px] mx-auto px-4 md:px-8 pt-8 pb-20">
         {/* Breadcrumb */}
-   
+
 
         {/* Heading */}
         <div className="text-center my-6 sm:my-0">
@@ -56,7 +56,7 @@ export default async function ShopBySizePage({ params }: ShopBySizePageProps) {
             Garments Available in Size {displaySize}
           </h1>
           <p className="text-sm text-[#8C7B6B] max-w-[540px] mx-auto leading-relaxed">
-            Modest silhouettes tailored to flatter your personal proportion and height.
+            Designed to make you feel comfortable, confident, and effortlessly stylish.
           </p>
 
           {/* Quick Size Switcher */}
@@ -74,11 +74,10 @@ export default async function ShopBySizePage({ params }: ShopBySizePageProps) {
                   <Link
                     key={s.id}
                     href={`/shop-by-size/${s.slug}`}
-                    className={`px-4 py-2 text-[13px] font-semibold rounded-full border transition-all inline-flex items-center justify-center ${
-                      isCurrent
-                        ? 'bg-[#884A48] text-white border-[#884A48] shadow-xs'
-                        : 'bg-white text-[#2C1D13] border-[#E2D5C7] hover:border-[#884A48] hover:bg-[#FAF6F0]'
-                    }`}
+                    className={`px-4 py-2 text-[13px] font-semibold rounded-full border transition-all inline-flex items-center justify-center ${isCurrent
+                      ? 'bg-[#884A48] text-white border-[#884A48] shadow-xs'
+                      : 'bg-white text-[#2C1D13] border-[#E2D5C7] hover:border-[#884A48] hover:bg-[#FAF6F0]'
+                      }`}
                   >
                     {s.name}
                   </Link>

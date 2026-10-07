@@ -28,6 +28,9 @@ export interface SiteSettings {
   default_size_chart?: SizeMeasurementRow[] | null;
   size_guide_image_url?: string | null;
   size_guide_show_overlay?: boolean | null;
+  enable_low_stock_badge?: boolean | null;
+  low_stock_threshold?: number | null;
+  show_in_stock_badge?: boolean | null;
   updated_at: string;
 }
 

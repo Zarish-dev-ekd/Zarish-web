@@ -1,9 +1,12 @@
+'use client';
+
 import Link from 'next/link';
 import type { Product } from '@/lib/types';
 import { formatPrice, optimizeCloudinaryUrl } from '@/lib/utils';
 import WishlistButton from './WishlistButton';
 import Badge from './Badge';
 import { getProductBadge } from '@/lib/badges';
+import { useStockBadgeConfig } from '@/lib/stock-badge-settings';
 
 interface ProductCardProps {
   product: Product;
@@ -13,12 +16,15 @@ export default function ProductCard({ product }: ProductCardProps) {
   const primaryImage = product.images?.find((img) => img.role === 'primary') || product.images?.[0];
   const hasDiscount = product.compare_at_price && product.compare_at_price > product.price;
   const customBadge = getProductBadge(product);
+  const config = useStockBadgeConfig();
 
   const totalStock =
     product.variants && product.variants.length > 0
       ? product.variants.reduce((sum, v) => sum + (v.stock_quantity ?? 0), 0)
       : (product.stock_quantity ?? 0);
   const isOutOfStock = totalStock <= 0;
+  const isLowStock = !isOutOfStock && config.enable_low_stock_badge && totalStock <= (config.low_stock_threshold || 3);
+  const isShowInStock = !isOutOfStock && !isLowStock && config.show_in_stock_badge;
 
   return (
     <article className="group relative rounded-xl overflow-hidden transition-all duration-300 bg-white hover:-translate-y-1 hover:shadow-lg cursor-pointer border border-[#F0EBE5]">
@@ -56,11 +62,19 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
 
           {/* Bottom-Right: Stock / Sold Out Badge */}
-          {isOutOfStock && (
-            <div className="absolute bottom-2.5 right-2.5 z-10 pointer-events-none">
+          <div className="absolute bottom-2.5 right-2.5 z-10 pointer-events-none">
+            {isOutOfStock ? (
               <Badge variant="out-of-stock" />
-            </div>
-          )}
+            ) : isLowStock ? (
+              <span className="inline-flex items-center px-1.5 py-1 rounded text-[9px] font-semibold tracking-wide uppercase leading-none bg-[#C0392B]/95 text-white shadow-xs">
+                Only {totalStock} left
+              </span>
+            ) : isShowInStock ? (
+              <span className="inline-flex items-center px-1.5 py-1 rounded text-[9px] font-semibold tracking-wide uppercase leading-none bg-[#0E7064]/95 text-white shadow-xs">
+                In Stock
+              </span>
+            ) : null}
+          </div>
         </div>
 
 

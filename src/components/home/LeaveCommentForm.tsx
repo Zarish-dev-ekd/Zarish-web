@@ -12,6 +12,7 @@ export default function LeaveCommentForm({
   description = 'Your feedback means a lot to us. Share your experience and let us know what you think!',
 }: LeaveCommentFormProps) {
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,10 +23,16 @@ export default function LeaveCommentForm({
     setError(null);
 
     const trimmedName = name.trim();
+    const trimmedEmail = email.trim().toLowerCase();
     const trimmedMessage = message.trim();
 
     if (!trimmedName) {
       setError('Please enter your name.');
+      return;
+    }
+
+    if (!trimmedEmail || !/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
+      setError('Please enter a valid email address.');
       return;
     }
 
@@ -41,6 +48,7 @@ export default function LeaveCommentForm({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: trimmedName,
+          email: trimmedEmail,
           message: trimmedMessage,
         }),
       });
@@ -53,6 +61,7 @@ export default function LeaveCommentForm({
 
       setSubmitted(true);
       setName('');
+      setEmail('');
       setMessage('');
     } catch (err: any) {
       console.error('Error submitting comment:', err);
@@ -103,17 +112,32 @@ export default function LeaveCommentForm({
             </div>
           )}
 
-          <div>
-            <input
-              type="text"
-              name="name"
-              id="comment-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Name"
-              required
-              className="w-full px-3.5 py-2.5 text-xs sm:text-sm border border-[#D9C9B8] rounded-xl bg-white text-[#2C1D13] placeholder-[#8C7B6B] focus:outline-none focus:border-[#7B5B3A] focus:ring-1 focus:ring-[#7B5B3A]/20 transition-all shadow-2xs"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <input
+                type="text"
+                name="name"
+                id="comment-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Name *"
+                required
+                className="w-full px-3.5 py-2.5 text-xs sm:text-sm border border-[#D9C9B8] rounded-xl bg-white text-[#2C1D13] placeholder-[#8C7B6B] focus:outline-none focus:border-[#7B5B3A] focus:ring-1 focus:ring-[#7B5B3A]/20 transition-all shadow-2xs"
+              />
+            </div>
+
+            <div>
+              <input
+                type="email"
+                name="email"
+                id="comment-email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email Address *"
+                required
+                className="w-full px-3.5 py-2.5 text-xs sm:text-sm border border-[#D9C9B8] rounded-xl bg-white text-[#2C1D13] placeholder-[#8C7B6B] focus:outline-none focus:border-[#7B5B3A] focus:ring-1 focus:ring-[#7B5B3A]/20 transition-all shadow-2xs"
+              />
+            </div>
           </div>
 
           <div>
@@ -123,7 +147,7 @@ export default function LeaveCommentForm({
               rows={4}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Message"
+              placeholder="Your comment or message *"
               required
               className="w-full px-3.5 py-2.5 text-xs sm:text-sm border border-[#D9C9B8] rounded-xl bg-white text-[#2C1D13] placeholder-[#8C7B6B] focus:outline-none focus:border-[#7B5B3A] focus:ring-1 focus:ring-[#7B5B3A]/20 transition-all resize-y shadow-2xs"
             />

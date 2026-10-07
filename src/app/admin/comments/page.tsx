@@ -11,6 +11,7 @@ export default function AdminCommentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showSql, setShowSql] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<CustomerComment | null>(null);
 
   const fetchComments = async () => {
     try {
@@ -41,10 +42,9 @@ export default function AdminCommentsPage() {
     fetchComments();
   }, []);
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this comment?')) {
-      return;
-    }
+  const handleConfirmDelete = async () => {
+    if (!commentToDelete) return;
+    const id = commentToDelete.id;
 
     try {
       setActionLoadingId(id);
@@ -62,6 +62,7 @@ export default function AdminCommentsPage() {
 
       setComments((prev) => prev.filter((c) => c.id !== id));
       setSuccess('Comment deleted successfully.');
+      setCommentToDelete(null);
     } catch (err: any) {
       console.error('Delete error:', err);
       setError(err?.message || 'Failed to delete comment');
@@ -303,12 +304,18 @@ CREATE POLICY "Admin view comments" ON public.customer_comments FOR ALL TO authe
                   {/* Delete button */}
                   <button
                     type="button"
-                    onClick={() => handleDelete(comment.id)}
+                    onClick={() => setCommentToDelete(comment)}
                     disabled={isDeleting}
-                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer shrink-0"
+                    className="p-2 text-[#9E8E80] hover:text-[#C62828] hover:bg-[#FFEBEE] rounded-lg transition-colors cursor-pointer shrink-0"
                     title="Delete comment"
                   >
-                    🗑️
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 6h18" />
+                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                      <line x1="10" y1="11" x2="10" y2="17" />
+                      <line x1="14" y1="11" x2="14" y2="17" />
+                    </svg>
                   </button>
                 </div>
 
@@ -321,6 +328,65 @@ CREATE POLICY "Admin view comments" ON public.customer_comments FOR ALL TO authe
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* ─── Delete Confirmation Modal ─── */}
+      {commentToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl border border-[#E8E0D5] p-6 max-w-md w-full shadow-2xl space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="flex items-start gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-[#FFEBEE] border border-[#FFCDD2] text-[#C62828] flex items-center justify-center shrink-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 6h18" />
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                  <line x1="10" y1="11" x2="10" y2="17" />
+                  <line x1="14" y1="11" x2="14" y2="17" />
+                </svg>
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-base font-bold text-[#2C241E] m-0">
+                  Delete Customer Comment?
+                </h3>
+                <p className="text-xs text-[#7A6F66] mt-1 leading-relaxed">
+                  Are you sure you want to permanently delete the feedback from{' '}
+                  <strong className="text-[#2C241E]">{commentToDelete.name}</strong>? This action cannot be undone.
+                </p>
+              </div>
+            </div>
+
+            {/* Comment snippet preview */}
+            <div className="p-3 rounded-lg bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#523E30] italic line-clamp-2">
+              &ldquo;{commentToDelete.message}&rdquo;
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setCommentToDelete(null)}
+                disabled={actionLoadingId === commentToDelete.id}
+                className="px-4 py-2 rounded-xl border border-[#E8E0D5] text-xs font-semibold text-[#2C241E] hover:bg-[#FAF8F5] transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={actionLoadingId === commentToDelete.id}
+                className="px-4 py-2 rounded-xl bg-[#C62828] hover:bg-[#B71C1C] text-white text-xs font-bold transition-all shadow-xs active:scale-95 disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+              >
+                {actionLoadingId === commentToDelete.id ? (
+                  <>
+                    <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <span>Yes, Delete Comment</span>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
