@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import { Cinzel, Playfair_Display, Inter, Alex_Brush } from 'next/font/google';
 import './globals.css';
 
@@ -193,8 +194,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
-
-        <script
+      </head>
+      <body suppressHydrationWarning className="bg-white">
+        <Script
+          id="zarish-suppress-intro"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `try{if(sessionStorage.getItem('zarish_intro_seen')==='true'){var s=document.createElement('style');s.id='zarish-suppress-intro';s.textContent='#zarish-preintro{display:none!important}';document.head.appendChild(s);}}catch(e){}`,
           }}
@@ -336,8 +340,7 @@ export default function RootLayout({
             }),
           }}
         />
-      </head>
-      <body suppressHydrationWarning className="bg-white">
+
         <NavigationProgress />
         <CartProvider>
           <WishlistProvider>

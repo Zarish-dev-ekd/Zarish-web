@@ -396,6 +396,7 @@ export interface Order {
   razorpay_signature?: string | null;
   order_status: 'placed' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   tracking_number?: string | null;
+  tracking_url?: string | null;
   coupon_code?: string | null;
   discount_amount?: number | null;
   notes?: string | null;

@@ -312,6 +312,7 @@ CREATE TABLE IF NOT EXISTS public.orders (
   razorpay_signature TEXT,
   order_status TEXT NOT NULL DEFAULT 'placed', -- placed, confirmed, processing, shipped, delivered, cancelled
   tracking_number TEXT,
+  tracking_url TEXT,
   coupon_code TEXT,
   discount_amount NUMERIC(10, 2) DEFAULT 0,
   notes TEXT,

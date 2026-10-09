@@ -323,6 +323,7 @@ export async function getFilteredProducts(options?: {
   onSale?: boolean;
   sort?: string;
   limit?: number;
+  searchQuery?: string;
 }): Promise<Product[]> {
   try {
     const supabase = await createClient();
@@ -356,6 +357,33 @@ export async function getFilteredProducts(options?: {
     if (error || !data) return [];
 
     let filtered = data as Product[];
+
+    // Product Code (SKU) & Title search filter
+    if (options?.searchQuery?.trim()) {
+      const q = options.searchQuery.trim().toLowerCase();
+      filtered = filtered.filter(
+        (p) =>
+          p.sku?.toLowerCase().includes(q) ||
+          p.name.toLowerCase().includes(q) ||
+          p.description?.toLowerCase().includes(q) ||
+          p.category?.name.toLowerCase().includes(q)
+      );
+
+      // Prioritize exact or prefix product code (SKU) matches
+      filtered.sort((a, b) => {
+        const aExact = a.sku?.toLowerCase() === q;
+        const bExact = b.sku?.toLowerCase() === q;
+        if (aExact && !bExact) return -1;
+        if (!aExact && bExact) return 1;
+
+        const aStarts = a.sku?.toLowerCase().startsWith(q);
+        const bStarts = b.sku?.toLowerCase().startsWith(q);
+        if (aStarts && !bStarts) return -1;
+        if (!aStarts && bStarts) return 1;
+
+        return 0;
+      });
+    }
 
     if (options?.categorySlug) {
       filtered = filtered.filter((p) => p.category?.slug === options.categorySlug);

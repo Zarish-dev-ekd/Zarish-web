@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import { formatPrice } from '@/lib/utils';
 import type { Order } from '@/lib/types';
 import { IconX } from '@/components/icons';
+import ShippingLabelPrintModal from '@/components/admin/ShippingLabelPrintModal';
 
 function renderCourierBadge(shippingAddress?: any) {
   if (!shippingAddress) return null;
@@ -92,6 +93,14 @@ function renderCourierBadge(shippingAddress?: any) {
   return null;
 }
 
+function getOrderTrackingUrl(order: Order): string {
+  if (order.tracking_url) return order.tracking_url;
+  const addr = typeof order.shipping_address === 'string'
+    ? (() => { try { return JSON.parse(order.shipping_address); } catch { return {}; } })()
+    : (order.shipping_address || {});
+  return addr.tracking_url || '';
+}
+
 export default function AdminOrdersPage() {
   const supabase = createClient();
 
@@ -101,11 +110,27 @@ export default function AdminOrdersPage() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterCourier, setFilterCourier] = useState<string>('all');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
+  const [notificationToast, setNotificationToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // Multi-Selection State for Bulk Status Updates & Printing
+  const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
+  const [bulkUpdating, setBulkUpdating] = useState(false);
+  const [bulkTargetStatus, setBulkTargetStatus] = useState<string>('processing');
+  const [printingOrders, setPrintingOrders] = useState<Order[] | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setNotificationToast({ message, type });
+    setTimeout(() => {
+      setNotificationToast(null);
+    }, 4000);
+  };
 
   // Inspect Modal State
   const [inspectedOrder, setInspectedOrder] = useState<Order | null>(null);
   const [copiedAddress, setCopiedAddress] = useState(false);
   const [modalTrackingInput, setModalTrackingInput] = useState('');
+  const [modalTrackingUrlInput, setModalTrackingUrlInput] = useState('');
   const [savingTracking, setSavingTracking] = useState(false);
 
   // Close modal on Escape
@@ -158,6 +183,32 @@ export default function AdminOrdersPage() {
     };
   }, [supabase]);
 
+  const handleSendShippingEmail = async (order: Order) => {
+    try {
+      setSendingEmailId(order.id);
+      const res = await fetch('/api/admin/orders/notify-shipped', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: order.id,
+          trackingNumber: order.tracking_number,
+          trackingUrl: getOrderTrackingUrl(order),
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(`✓ Shipment email dispatched to ${order.customer_email}!`);
+      } else {
+        showToast(`Failed: ${data?.error || data?.warning || 'Could not send email'}`, 'error');
+      }
+    } catch (err: any) {
+      showToast(`Error sending email: ${err.message}`, 'error');
+    } finally {
+      setSendingEmailId(null);
+    }
+  };
+
   const handleUpdateStatus = async (orderId: string, newStatus: string) => {
     try {
       setUpdatingId(orderId);
@@ -178,10 +229,112 @@ export default function AdminOrdersPage() {
       if (inspectedOrder && inspectedOrder.id === orderId) {
         setInspectedOrder((prev) => (prev ? { ...prev, order_status: newStatus as any } : null));
       }
+
+      // Automatically dispatch shipping email when status transitions to 'shipped'
+      if (newStatus === 'shipped') {
+        const currentOrder = orders.find((o) => o.id === orderId) || inspectedOrder;
+        const trackingNumber = currentOrder?.tracking_number || null;
+        const trackingUrl = currentOrder ? getOrderTrackingUrl(currentOrder) : null;
+
+        fetch('/api/admin/orders/notify-shipped', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId,
+            trackingNumber,
+            trackingUrl,
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data?.success && data?.emailSent) {
+              showToast(`✓ Status: Shipped & Dispatch Email sent to customer!`);
+            } else {
+              showToast(`✓ Order marked as Shipped`);
+            }
+          })
+          .catch(() => {
+            showToast(`✓ Order marked as Shipped`);
+          });
+      } else {
+        showToast(`✓ Status updated to ${newStatus}`);
+      }
     } catch (err: any) {
-      alert('Failed to update status: ' + err.message);
+      showToast('Failed to update status: ' + err.message, 'error');
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const toggleSelectOrder = (orderId: string) => {
+    setSelectedOrderIds((prev) =>
+      prev.includes(orderId) ? prev.filter((id) => id !== orderId) : [...prev, orderId]
+    );
+  };
+
+  const toggleSelectAll = (targetOrders: Order[]) => {
+    const targetIds = targetOrders.map((o) => o.id);
+    const allSelected = targetIds.length > 0 && targetIds.every((id) => selectedOrderIds.includes(id));
+    if (allSelected) {
+      setSelectedOrderIds([]);
+    } else {
+      setSelectedOrderIds(targetIds);
+    }
+  };
+
+  const handleBulkUpdateStatus = async (statusOverride?: string) => {
+    const targetStatus = statusOverride || bulkTargetStatus;
+    if (selectedOrderIds.length === 0) {
+      showToast('Please select at least one order to update', 'error');
+      return;
+    }
+
+    try {
+      setBulkUpdating(true);
+      const { error: updateErr } = await supabase
+        .from('orders')
+        .update({
+          order_status: targetStatus,
+          updated_at: new Date().toISOString(),
+        })
+        .in('id', selectedOrderIds);
+
+      if (updateErr) throw updateErr;
+
+      // If updating to shipped, trigger shipping email dispatch for each selected order
+      if (targetStatus === 'shipped') {
+        const ordersToNotify = orders.filter((o) => selectedOrderIds.includes(o.id));
+        ordersToNotify.forEach((ord) => {
+          fetch('/api/admin/orders/notify-shipped', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId: ord.id,
+              trackingNumber: ord.tracking_number,
+              trackingUrl: getOrderTrackingUrl(ord),
+            }),
+          }).catch(() => {});
+        });
+      }
+
+      setOrders((prev) =>
+        prev.map((o) =>
+          selectedOrderIds.includes(o.id)
+            ? { ...o, order_status: targetStatus as any }
+            : o
+        )
+      );
+
+      if (inspectedOrder && selectedOrderIds.includes(inspectedOrder.id)) {
+        setInspectedOrder((prev) => (prev ? { ...prev, order_status: targetStatus as any } : null));
+      }
+
+      showToast(`✓ Updated ${selectedOrderIds.length} orders to ${targetStatus}!`);
+      setSelectedOrderIds([]);
+    } catch (err: any) {
+      showToast('Bulk update failed: ' + err.message, 'error');
+    } finally {
+      setBulkUpdating(false);
     }
   };
 
@@ -210,9 +363,55 @@ export default function AdminOrdersPage() {
     }
   };
 
+  const handleUpdateTrackingUrl = async (orderId: string, trackingUrl: string) => {
+    try {
+      const cleanUrl = trackingUrl.trim() || null;
+
+      // 1. Attempt direct tracking_url column update
+      let { error: updateErr } = await supabase
+        .from('orders')
+        .update({
+          tracking_url: cleanUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', orderId);
+
+      // 2. Resilient fallback if column does not exist yet on remote instance
+      if (updateErr && (updateErr.message?.includes('column') || (updateErr as any).code === '42703')) {
+        const currentOrder = orders.find((o) => o.id === orderId);
+        const currentAddr = typeof currentOrder?.shipping_address === 'string'
+          ? (() => { try { return JSON.parse(currentOrder.shipping_address); } catch { return {}; } })()
+          : { ...(currentOrder?.shipping_address || {}) };
+        currentAddr.tracking_url = cleanUrl;
+
+        const res = await supabase
+          .from('orders')
+          .update({
+            shipping_address: currentAddr,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', orderId);
+        updateErr = res.error;
+      }
+
+      if (updateErr) throw updateErr;
+
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, tracking_url: cleanUrl } : o))
+      );
+
+      if (inspectedOrder && inspectedOrder.id === orderId) {
+        setInspectedOrder((prev) => (prev ? { ...prev, tracking_url: cleanUrl } : null));
+      }
+    } catch (err: any) {
+      alert('Failed to save tracking link: ' + err.message);
+    }
+  };
+
   const handleInspectOrder = (order: Order) => {
     setInspectedOrder(order);
     setModalTrackingInput(order.tracking_number || '');
+    setModalTrackingUrlInput(getOrderTrackingUrl(order));
     setCopiedAddress(false);
   };
 
@@ -252,7 +451,10 @@ export default function AdminOrdersPage() {
     if (!inspectedOrder) return;
     setSavingTracking(true);
     try {
-      await handleUpdateTracking(inspectedOrder.id, modalTrackingInput);
+      await Promise.all([
+        handleUpdateTracking(inspectedOrder.id, modalTrackingInput),
+        handleUpdateTrackingUrl(inspectedOrder.id, modalTrackingUrlInput),
+      ]);
     } finally {
       setSavingTracking(false);
     }
@@ -458,6 +660,7 @@ export default function AdminOrdersPage() {
             <div className="md:hidden space-y-3">
               {filteredOrders.map((order) => {
                 const isPaid = order.payment_status?.toLowerCase() === 'paid';
+                const isSelected = selectedOrderIds.includes(order.id);
                 const dateStr = new Date(order.created_at).toLocaleDateString('en-IN', {
                   day: 'numeric',
                   month: 'short',
@@ -473,15 +676,28 @@ export default function AdminOrdersPage() {
                 return (
                   <div
                     key={order.id}
-                    className="border border-[#E8E0D5] rounded-xl p-3.5 bg-white shadow-xs hover:border-[#D1C2B0] transition-colors"
+                    className={`border rounded-xl p-3.5 transition-all ${
+                      isSelected
+                        ? 'bg-[#FAF6F0] border-[#7B5B3A] shadow-sm'
+                        : 'bg-white border-[#E8E0D5] shadow-xs hover:border-[#D1C2B0]'
+                    }`}
                   >
-                    {/* Top Row: Order # + Date + Paid Badge */}
+                    {/* Top Row: Checkbox + Order # + Date + Paid Badge */}
                     <div className="flex items-start justify-between gap-2 border-b border-[#F0EBE1] pb-2.5 mb-2.5">
-                      <div>
-                        <div className="font-mono font-bold text-xs sm:text-sm text-[#2C241E]">
-                          {order.order_number}
+                      <div className="flex items-start gap-2.5">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSelectOrder(order.id)}
+                          className="w-4 h-4 mt-0.5 rounded border-[#D8C8BA] text-[#7B5B3A] focus:ring-[#7B5B3A] cursor-pointer accent-[#7B5B3A] shrink-0"
+                          aria-label={`Select order ${order.order_number}`}
+                        />
+                        <div>
+                          <div className="font-mono font-bold text-xs sm:text-sm text-[#2C241E]">
+                            {order.order_number}
+                          </div>
+                          <div className="text-[11px] text-[#7A6F66]">{dateStr}</div>
                         </div>
-                        <div className="text-[11px] text-[#7A6F66]">{dateStr}</div>
                       </div>
                       <div className="text-right">
                         <div className="font-bold text-sm text-[#2C241E]">
@@ -577,7 +793,7 @@ export default function AdminOrdersPage() {
                     </div>
 
                     {/* Order Status & Actions */}
-                    <div className="grid grid-cols-2 gap-2 mb-2.5">
+                    <div className="grid grid-cols-2 gap-2 mb-2">
                       <div>
                         <label className="text-[10px] font-semibold uppercase text-[#7A6F66] tracking-wider block mb-1">
                           Status
@@ -590,7 +806,7 @@ export default function AdminOrdersPage() {
                         >
                           <option value="placed">Placed</option>
                           <option value="confirmed">Confirmed</option>
-                          <option value="processing">Processing</option>
+                          <option value="processing">Processing (Handcrafting)</option>
                           <option value="shipped">Shipped</option>
                           <option value="delivered">Delivered</option>
                           <option value="cancelled">Cancelled</option>
@@ -620,15 +836,83 @@ export default function AdminOrdersPage() {
                       </div>
                     </div>
 
-                    {/* PRIMARY ACTION: Inspect Button */}
-                    <button
-                      type="button"
-                      onClick={() => handleInspectOrder(order)}
-                      className="w-full py-2.5 px-3 rounded-lg bg-[#2C241E] hover:bg-[#43362A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer active:scale-[0.99]"
-                    >
-                      <span>🔍</span>
-                      <span>Inspect Order & Full Address</span>
-                    </button>
+                    {/* Shipment Tracking Link Field */}
+                    <div className="mb-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-[10px] font-semibold uppercase text-[#7A6F66] tracking-wider flex items-center gap-1">
+                          <span>🔗 Shipment Tracking Link</span>
+                        </label>
+                        {order.order_status === 'processing' && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A]">
+                            Processing Order
+                          </span>
+                        )}
+                      </div>
+                      <div className="relative flex items-center">
+                        <input
+                          type="url"
+                          placeholder={
+                            order.order_status === 'processing'
+                              ? 'Paste live tracking URL (Processing)...'
+                              : 'https://track.dtdc.com/... or indiapost.gov.in'
+                          }
+                          defaultValue={getOrderTrackingUrl(order)}
+                          className={`w-full text-xs px-2.5 py-1.5 pr-7 border rounded-md outline-none transition-colors ${
+                            order.order_status === 'processing'
+                              ? 'border-[#F59E0B]/50 bg-[#FFFBEB] text-[#92400E] placeholder:text-[#B45309]/60 focus:bg-white focus:border-[#7B5B3A]'
+                              : 'border-[#E8E0D5] bg-[#FAF8F5] text-[#2C241E] focus:bg-white focus:border-[#7B5B3A]'
+                          }`}
+                          title="Press Enter or click away to save tracking URL link"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleUpdateTrackingUrl(order.id, (e.target as HTMLInputElement).value);
+                            }
+                          }}
+                          onBlur={(e) => {
+                            if (e.target.value !== getOrderTrackingUrl(order)) {
+                              handleUpdateTrackingUrl(order.id, e.target.value);
+                            }
+                          }}
+                        />
+                        {getOrderTrackingUrl(order) && (
+                          <a
+                            href={
+                              getOrderTrackingUrl(order).startsWith('http')
+                                ? getOrderTrackingUrl(order)
+                                : `https://${getOrderTrackingUrl(order)}`
+                            }
+                            target="_blank"
+                            rel="noreferrer"
+                            className="absolute right-2 text-xs font-bold text-[#7B5B3A] hover:text-[#2C241E]"
+                            title="Open tracking link in new tab"
+                          >
+                            ↗
+                          </a>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Actions: Print Label & Inspect */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPrintingOrders([order])}
+                        className="py-2.5 px-3 rounded-lg border border-[#2C241E] bg-[#FAF6F0] hover:bg-[#F3EADF] text-[#2C241E] text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer active:scale-[0.99]"
+                        title="Print delivery box shipping seal label"
+                      >
+                        <span>🖨️</span>
+                        <span>Print Label</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleInspectOrder(order)}
+                        className="py-2.5 px-3 rounded-lg bg-[#2C241E] hover:bg-[#43362A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer active:scale-[0.99]"
+                        title="Inspect full address & order details"
+                      >
+                        <span>🔍</span>
+                        <span>Inspect</span>
+                      </button>
+                    </div>
                   </div>
                 );
               })}
@@ -639,6 +923,24 @@ export default function AdminOrdersPage() {
               <table className="w-full border-collapse text-left text-sm">
                 <thead>
                   <tr className="bg-[#FAF8F5]">
+                    {/* Checkbox Column Header */}
+                    <th className="w-12 px-3 py-3.5 border-b border-[#E8E0D5] text-center">
+                      <input
+                        type="checkbox"
+                        checked={
+                          filteredOrders.length > 0 &&
+                          filteredOrders.every((o) => selectedOrderIds.includes(o.id))
+                        }
+                        onChange={() => toggleSelectAll(filteredOrders)}
+                        className="w-4 h-4 rounded border-[#D8C8BA] text-[#7B5B3A] focus:ring-[#7B5B3A] cursor-pointer accent-[#7B5B3A]"
+                        title={
+                          filteredOrders.length > 0 &&
+                          filteredOrders.every((o) => selectedOrderIds.includes(o.id))
+                            ? 'Deselect All'
+                            : 'Select All Orders'
+                        }
+                      />
+                    </th>
                     <th className="px-4 py-3.5 font-semibold text-xs uppercase tracking-[0.05em] text-[#7A6F66] border-b border-[#E8E0D5]">
                       Order #
                     </th>
@@ -665,6 +967,7 @@ export default function AdminOrdersPage() {
                 <tbody>
                   {filteredOrders.map((order) => {
                     const isPaid = order.payment_status?.toLowerCase() === 'paid';
+                    const isSelected = selectedOrderIds.includes(order.id);
                     const dateStr = new Date(order.created_at).toLocaleDateString('en-IN', {
                       day: 'numeric',
                       month: 'short',
@@ -677,7 +980,23 @@ export default function AdminOrdersPage() {
                       : (order.shipping_address || {});
 
                     return (
-                      <tr key={order.id} className="hover:bg-black/[0.01]">
+                      <tr
+                        key={order.id}
+                        className={`transition-colors ${
+                          isSelected ? 'bg-[#FAF6F0]' : 'hover:bg-black/[0.01]'
+                        }`}
+                      >
+                        {/* 0. Row Checkbox */}
+                        <td className="w-12 px-3 py-3.5 border-b border-[#E8E0D5] align-middle text-center">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleSelectOrder(order.id)}
+                            className="w-4 h-4 rounded border-[#D8C8BA] text-[#7B5B3A] focus:ring-[#7B5B3A] cursor-pointer accent-[#7B5B3A]"
+                            aria-label={`Select order ${order.order_number}`}
+                          />
+                        </td>
+
                         {/* 1. Order Number & Date */}
                         <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle">
                           <strong className="font-mono text-[#2C241E]">
@@ -763,7 +1082,8 @@ export default function AdminOrdersPage() {
 
                         {/* 6. Order Status & Tracking */}
                         <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle">
-                          <div className="flex flex-col gap-1.5 min-w-[150px]">
+                          <div className="flex flex-col gap-1.5 min-w-[170px] max-w-[220px]">
+                            {/* Status Select */}
                             <select
                               className="w-full text-xs px-2.5 py-1.5 border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] font-medium outline-none focus:border-[#7B5B3A] transition-colors"
                               value={order.order_status}
@@ -778,6 +1098,7 @@ export default function AdminOrdersPage() {
                               <option value="cancelled">Cancelled</option>
                             </select>
 
+                            {/* Courier AWB # Input */}
                             <input
                               type="text"
                               placeholder="Courier / AWB #"
@@ -795,20 +1116,75 @@ export default function AdminOrdersPage() {
                                 }
                               }}
                             />
+
+                            {/* Shipment Tracking Link Input */}
+                            <div className="relative flex items-center">
+                              <input
+                                type="url"
+                                placeholder={
+                                  order.order_status === 'processing'
+                                    ? '🔗 Tracking Link (Processing)'
+                                    : 'Tracking link (https://...)'
+                                }
+                                defaultValue={getOrderTrackingUrl(order)}
+                                className={`w-full text-[11px] px-2 py-1 pr-6 border rounded outline-none transition-colors ${
+                                  order.order_status === 'processing'
+                                    ? 'border-[#D97706]/40 bg-[#FFFBEB] text-[#92400E] placeholder:text-[#B45309]/60 focus:bg-white focus:border-[#7B5B3A]'
+                                    : 'border-[#E8E0D5] bg-[#FAF8F5] text-[#2C241E] focus:bg-white focus:border-[#7B5B3A]'
+                                }`}
+                                title="Press Enter or click away to save shipment tracking URL link"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    handleUpdateTrackingUrl(order.id, (e.target as HTMLInputElement).value);
+                                  }
+                                }}
+                                onBlur={(e) => {
+                                  if (e.target.value !== getOrderTrackingUrl(order)) {
+                                    handleUpdateTrackingUrl(order.id, e.target.value);
+                                  }
+                                }}
+                              />
+                              {getOrderTrackingUrl(order) && (
+                                <a
+                                  href={
+                                    getOrderTrackingUrl(order).startsWith('http')
+                                      ? getOrderTrackingUrl(order)
+                                      : `https://${getOrderTrackingUrl(order)}`
+                                  }
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="absolute right-1.5 p-0.5 text-[#7B5B3A] hover:text-[#2C241E] text-xs font-bold transition-colors"
+                                  title="Open live tracking link in new tab"
+                                >
+                                  ↗
+                                </a>
+                              )}
+                            </div>
                           </div>
                         </td>
 
-                        {/* 7. Action: Inspect Button */}
+                        {/* 7. Action: Print & Inspect Buttons */}
                         <td className="px-4 py-3.5 border-b border-[#E8E0D5] align-middle text-center">
-                          <button
-                            type="button"
-                            onClick={() => handleInspectOrder(order)}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#7B5B3A] bg-[#FAF6F0] text-[#7B5B3A] text-xs font-semibold hover:bg-[#7B5B3A] hover:text-white transition-all shadow-xs cursor-pointer active:scale-95 whitespace-nowrap"
-                            title="Inspect full address & order details"
-                          >
-                            <span>🔍</span>
-                            <span>Inspect</span>
-                          </button>
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setPrintingOrders([order])}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#2C241E] bg-white text-[#2C241E] text-xs font-bold hover:bg-[#2C241E] hover:text-white transition-all shadow-xs cursor-pointer active:scale-95 whitespace-nowrap"
+                              title="Print delivery box shipping slip / seal"
+                            >
+                              <span>🖨️</span>
+                              <span>Print</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleInspectOrder(order)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#7B5B3A] bg-[#FAF6F0] text-[#7B5B3A] text-xs font-semibold hover:bg-[#7B5B3A] hover:text-white transition-all shadow-xs cursor-pointer active:scale-95 whitespace-nowrap"
+                              title="Inspect full address & order details"
+                            >
+                              <span>🔍</span>
+                              <span>Inspect</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -996,45 +1372,86 @@ export default function AdminOrdersPage() {
                     </div>
                   </div>
 
-                  {/* AWB Tracking Input */}
-                  <div className="mt-3 pt-3 border-t border-[#F0EBE1]">
-                    <label className="text-xs font-semibold text-[#2C241E] block mb-1">
-                      Tracking / AWB Number:
-                    </label>
-                    <div className="flex items-center gap-2">
+                  {/* AWB Tracking & Shipment Tracking Link Inputs */}
+                  <div className="mt-3 pt-3 border-t border-[#F0EBE1] space-y-3">
+                    <div>
+                      <label className="text-xs font-semibold text-[#2C241E] block mb-1">
+                        Courier AWB / Tracking Number:
+                      </label>
                       <input
                         type="text"
                         placeholder="e.g. ED123456789IN or DTDC789012"
                         value={modalTrackingInput}
                         onChange={(e) => setModalTrackingInput(e.target.value)}
-                        className="flex-1 text-xs px-3 py-2 border border-[#E8E0D5] rounded-lg bg-[#FAF8F5] text-[#2C241E] outline-none focus:bg-white focus:border-[#7B5B3A]"
+                        className="w-full text-xs px-3 py-2 border border-[#E8E0D5] rounded-lg bg-[#FAF8F5] text-[#2C241E] outline-none focus:bg-white focus:border-[#7B5B3A]"
                       />
-                      <button
-                        type="button"
-                        onClick={handleSaveModalTracking}
-                        disabled={savingTracking}
-                        className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-[#7B5B3A] text-white hover:bg-[#63472C] transition-colors cursor-pointer disabled:opacity-50"
-                      >
-                        {savingTracking ? 'Saving...' : 'Save AWB'}
-                      </button>
                     </div>
 
-                    <div className="flex items-center justify-between text-xs mt-2">
-                      <span className="text-[11px] text-[#7A6F66]">
-                        {inspectedOrder.tracking_number ? (
-                          <span className="text-[#0E7064] font-medium">✓ Saved: {inspectedOrder.tracking_number}</span>
-                        ) : (
-                          'No AWB saved yet'
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs font-semibold text-[#2C241E]">
+                          Shipment Tracking Link (URL):
+                        </label>
+                        {modalTrackingUrlInput && (
+                          <a
+                            href={
+                              modalTrackingUrlInput.startsWith('http')
+                                ? modalTrackingUrlInput
+                                : `https://${modalTrackingUrlInput}`
+                            }
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs font-semibold text-[#7B5B3A] hover:underline"
+                          >
+                            Open Link ↗
+                          </a>
                         )}
-                      </span>
-                      <a
-                        href={`/track-order?orderNumber=${encodeURIComponent(inspectedOrder.order_number)}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs text-[#7B5B3A] hover:underline font-semibold"
-                      >
-                        View Live Tracking Page →
-                      </a>
+                      </div>
+                      <input
+                        type="url"
+                        placeholder="e.g. https://www.indiapost.gov.in/... or https://track.dtdc.com/..."
+                        value={modalTrackingUrlInput}
+                        onChange={(e) => setModalTrackingUrlInput(e.target.value)}
+                        className="w-full text-xs px-3 py-2 border border-[#E8E0D5] rounded-lg bg-[#FAF8F5] text-[#2C241E] outline-none focus:bg-white focus:border-[#7B5B3A]"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1 flex-wrap gap-2">
+                      <div className="text-[11px] text-[#7A6F66]">
+                        {inspectedOrder.tracking_number || getOrderTrackingUrl(inspectedOrder) ? (
+                          <span className="text-[#0E7064] font-medium">
+                            ✓ Saved: {inspectedOrder.tracking_number || 'Link set'}
+                          </span>
+                        ) : (
+                          'No tracking details saved yet'
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => handleSendShippingEmail(inspectedOrder)}
+                          disabled={sendingEmailId === inspectedOrder.id}
+                          className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#0E7064] bg-[#F0FDFA] text-[#0E7064] hover:bg-[#0E7064] hover:text-white transition-all cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5"
+                          title="Send dispatch email notification with tracking link to customer"
+                        >
+                          <span>✉️</span>
+                          <span>
+                            {sendingEmailId === inspectedOrder.id
+                              ? 'Sending Email...'
+                              : 'Send Customer Dispatch Email'}
+                          </span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleSaveModalTracking}
+                          disabled={savingTracking}
+                          className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-[#7B5B3A] text-white hover:bg-[#63472C] transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
+                        >
+                          {savingTracking ? 'Saving...' : 'Save Tracking Info'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1140,14 +1557,26 @@ export default function AdminOrdersPage() {
               </div>
 
               {/* Modal Footer */}
-              <div className="px-5 py-3 border-t border-[#E8E0D5] bg-[#FAF8F5] flex items-center justify-between">
-                <button
-                  type="button"
-                  onClick={() => handleCopyAddress(inspectedOrder)}
-                  className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors cursor-pointer"
-                >
-                  {copiedAddress ? '✓ Address Copied' : '📋 Copy Address'}
-                </button>
+              <div className="px-5 py-3 border-t border-[#E8E0D5] bg-[#FAF8F5] flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleCopyAddress(inspectedOrder)}
+                    className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors cursor-pointer"
+                  >
+                    {copiedAddress ? '✓ Address Copied' : '📋 Copy Address'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPrintingOrders([inspectedOrder])}
+                    className="px-3.5 py-2 text-xs font-bold rounded-lg border border-[#7B5B3A] bg-[#FAF6F0] hover:bg-[#7B5B3A] text-[#7B5B3A] hover:text-white transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
+                    title="Print delivery box seal label"
+                  >
+                    <span>🖨️</span>
+                    <span>Print Box Label</span>
+                  </button>
+                </div>
 
                 <button
                   type="button"
@@ -1161,6 +1590,137 @@ export default function AdminOrdersPage() {
           </div>
         );
       })()}
+
+      {/* Floating Bulk Actions Bar */}
+      {selectedOrderIds.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[99999] w-[95%] max-w-3xl bg-[#2C241E] text-white px-4 sm:px-6 py-3.5 rounded-2xl shadow-2xl border border-[#4A3B2C] flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-5 duration-200">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="flex items-center justify-center w-7 h-7 rounded-full bg-[#E5D2BA] text-[#2C241E] font-bold text-xs">
+              {selectedOrderIds.length}
+            </span>
+            <div>
+              <div className="text-xs sm:text-sm font-semibold tracking-wide">
+                {selectedOrderIds.length === 1 ? '1 order selected' : `${selectedOrderIds.length} orders selected`}
+              </div>
+              <div className="text-[11px] text-[#C4B5A5] hidden sm:block">
+                Bulk status change & customer dispatch
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Quick Status Buttons */}
+            <div className="hidden md:flex items-center gap-1.5">
+              <button
+                type="button"
+                disabled={bulkUpdating}
+                onClick={() => handleBulkUpdateStatus('delivered')}
+                className="px-2.5 py-1.5 rounded-lg bg-[#0E7064] hover:bg-[#115E59] text-white text-xs font-semibold transition-all disabled:opacity-50 cursor-pointer shadow-sm"
+                title="Mark all selected orders as Delivered"
+              >
+                ✓ Delivered
+              </button>
+              <button
+                type="button"
+                disabled={bulkUpdating}
+                onClick={() => handleBulkUpdateStatus('shipped')}
+                className="px-2.5 py-1.5 rounded-lg bg-[#1E40AF] hover:bg-[#1D4ED8] text-white text-xs font-semibold transition-all disabled:opacity-50 cursor-pointer shadow-sm"
+                title="Mark as Shipped and notify customers"
+              >
+                🚀 Shipped
+              </button>
+              <button
+                type="button"
+                disabled={bulkUpdating}
+                onClick={() => handleBulkUpdateStatus('processing')}
+                className="px-2.5 py-1.5 rounded-lg bg-[#854D0E] hover:bg-[#A16207] text-white text-xs font-semibold transition-all disabled:opacity-50 cursor-pointer shadow-sm"
+                title="Mark as Processing"
+              >
+                ⚙️ Processing
+              </button>
+            </div>
+
+            {/* Status Dropdown + Apply Button */}
+            <div className="flex items-center gap-1.5 bg-black/30 p-1 rounded-xl border border-[#4A3B2C]">
+              <select
+                value={bulkTargetStatus}
+                onChange={(e) => setBulkTargetStatus(e.target.value)}
+                disabled={bulkUpdating}
+                className="bg-transparent text-white text-xs font-medium px-2 py-1 outline-none border-none cursor-pointer focus:ring-0"
+              >
+                <option value="delivered" className="bg-[#2C241E] text-white">Delivered</option>
+                <option value="shipped" className="bg-[#2C241E] text-white">Shipped</option>
+                <option value="processing" className="bg-[#2C241E] text-white">Processing</option>
+                <option value="confirmed" className="bg-[#2C241E] text-white">Confirmed</option>
+                <option value="placed" className="bg-[#2C241E] text-white">Placed</option>
+                <option value="cancelled" className="bg-[#2C241E] text-white">Cancelled</option>
+              </select>
+
+              <button
+                type="button"
+                disabled={bulkUpdating}
+                onClick={() => handleBulkUpdateStatus()}
+                className="px-3 py-1.5 rounded-lg bg-[#E5D2BA] hover:bg-[#D4BEA3] text-[#2C241E] text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {bulkUpdating ? 'Updating...' : 'Apply'}
+              </button>
+            </div>
+
+            {/* Bulk Print Delivery Box Labels */}
+            <button
+              type="button"
+              disabled={bulkUpdating}
+              onClick={() => {
+                const selected = orders.filter((o) => selectedOrderIds.includes(o.id));
+                if (selected.length > 0) {
+                  setPrintingOrders(selected);
+                } else {
+                  showToast('Please select orders to print', 'error');
+                }
+              }}
+              className="px-3 py-1.5 rounded-lg bg-[#FAF6F0] hover:bg-white text-[#2C241E] text-xs font-bold transition-all disabled:opacity-50 cursor-pointer flex items-center gap-1.5 shadow-xs"
+              title="Print delivery box labels for all selected orders (fitted 4 per A4 sheet)"
+            >
+              <span>🖨️</span>
+              <span>Print Labels ({selectedOrderIds.length})</span>
+            </button>
+
+            {/* Clear selection */}
+            <button
+              type="button"
+              disabled={bulkUpdating}
+              onClick={() => setSelectedOrderIds([])}
+              className="p-1.5 text-[#C4B5A5] hover:text-white transition-colors cursor-pointer text-xs"
+              title="Deselect all"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ─── PRINT SHIPPING LABELS MODAL ─── */}
+      {printingOrders && printingOrders.length > 0 && (
+        <ShippingLabelPrintModal
+          orders={printingOrders}
+          onClose={() => setPrintingOrders(null)}
+        />
+      )}
+
+      {/* Floating Toast Alert Notification */}
+      {notificationToast && (
+        <div
+          className={`fixed bottom-6 right-6 z-[999999] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs sm:text-sm font-semibold transition-all ${
+            notificationToast.type === 'success'
+              ? 'bg-[#111111] text-white border border-[#3D2B1F]'
+              : 'bg-[#DC2626] text-white border border-red-700'
+          }`}
+          role="alert"
+        >
+          <span>{notificationToast.type === 'success' ? '🚀' : '⚠️'}</span>
+          <span>{notificationToast.message}</span>
+        </div>
+      )}
     </div>
   );
 }

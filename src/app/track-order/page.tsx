@@ -419,13 +419,40 @@ function TrackOrderContent() {
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <h3 className="text-sm font-bold text-[#111111]">
                         {statusInfo.title}
                       </h3>
                       <p className="text-xs sm:text-sm text-[#52525B] leading-relaxed mt-0.5">
                         {statusInfo.message}
                       </p>
+
+                      {/* Live Courier Tracking Link Button */}
+                      {(() => {
+                        const rawLink =
+                          selectedOrder.tracking_url ||
+                          (typeof selectedOrder.shipping_address === 'object'
+                            ? (selectedOrder.shipping_address as any)?.tracking_url
+                            : null);
+
+                        if (!rawLink) return null;
+                        const validUrl = rawLink.startsWith('http') ? rawLink : `https://${rawLink}`;
+
+                        return (
+                          <div className="mt-3 pt-2.5 border-t border-[#F3F4F6]">
+                            <a
+                              href={validUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#2C1D13] hover:bg-[#7B5B3A] text-white text-xs font-semibold tracking-wide transition-all shadow-xs"
+                            >
+                              <span>📦</span>
+                              <span>Live Courier Tracking Link ↗</span>
+                            </a>
+                          </div>
+                        );
+                      })()}
+
                       <p className="text-xs text-[#A1A1AA] mt-2">
                         {formatDate(selectedOrder.updated_at || selectedOrder.created_at)}
                       </p>
