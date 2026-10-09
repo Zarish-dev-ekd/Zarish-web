@@ -799,3 +799,294 @@ export async function sendAdminNewOrderEmail(
     return { success: false, error: error?.message };
   }
 }
+
+export interface SendOrderShippedEmailParams {
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string | null;
+  trackingNumber?: string | null;
+  trackingUrl?: string | null;
+  shippingAddress: {
+    addressLine1?: string;
+    addressLine2?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+    phone?: string;
+    deliveryMethod?: string;
+    deliveryMethodTitle?: string;
+    deliveryFee?: number;
+    deliveryTime?: string;
+  };
+  items: OrderEmailItem[];
+  subtotal: number;
+  discountAmount?: number;
+  totalAmount: number;
+  paymentMethod?: string;
+}
+
+/**
+ * Send Customer Order Shipped / Dispatch Notification Email
+ * Aesthetic: Nike / Zara / Net-A-Porter luxury fashion dispatch notice with direct Live Tracking button.
+ */
+export async function sendOrderShippedEmail(
+  params: SendOrderShippedEmailParams
+): Promise<{ success: boolean; error?: string }> {
+  const rawApiKey = process.env.BREVO_API_KEY || '';
+  const rawSenderEmail = process.env.BREVO_SENDER_EMAIL || '';
+  const rawSenderName = process.env.BREVO_SENDER_NAME || 'ZARISH';
+
+  const apiKey = rawApiKey.replace(/^["']|["']$/g, '').trim();
+  const senderEmail = rawSenderEmail.replace(/^["']|["']$/g, '').trim();
+  const senderName = rawSenderName.replace(/^["']|["']$/g, '').trim();
+
+  if (!apiKey || !senderEmail) {
+    console.warn('[Email Service - Brevo] Brevo not configured. Skipped shipped email.');
+    return { success: false, error: 'Brevo not configured' };
+  }
+
+  let logoBase64 = '';
+  try {
+    const logoPath = path.join(process.cwd(), 'public', 'logo-zarish.png');
+    if (fs.existsSync(logoPath)) {
+      logoBase64 = fs.readFileSync(logoPath).toString('base64');
+    }
+  } catch (err) {
+    console.warn('[Email Service] Could not read logo file:', err);
+  }
+
+  const subject = `Your ZARISH Order #${params.orderNumber} Has Been Dispatched! 📦`;
+  const internalTrackingUrl = `${SITE_URL}/track-order?orderNumber=${encodeURIComponent(params.orderNumber)}`;
+  const externalTrackingUrl = params.trackingUrl
+    ? params.trackingUrl.startsWith('http')
+      ? params.trackingUrl
+      : `https://${params.trackingUrl}`
+    : null;
+
+  const primaryActionUrl = externalTrackingUrl || internalTrackingUrl;
+  const courierTitle = params.shippingAddress.deliveryMethodTitle || 'Courier Express Partner';
+
+  // High-End Items Table
+  const itemsHtml = (params.items || [])
+    .map(
+      (item) => `
+      <tr>
+        <td style="padding: 14px 0; border-bottom: 1px solid #F0ECE6; vertical-align: top; width: 64px;">
+          ${
+            item.imageUrl
+              ? `<img src="${item.imageUrl}" alt="${item.name}" width="60" height="76" style="display: block; width: 60px; height: 76px; object-fit: cover; border-radius: 8px; border: 1px solid #EADBCE; background-color: #FAF6F0;" />`
+              : `<div style="width: 60px; height: 76px; border-radius: 8px; background-color: #FAF6F0; border: 1px solid #EADBCE; text-align: center; line-height: 76px; font-size: 10px; color: #8C7B6B; font-weight: 600;">ZARISH</div>`
+          }
+        </td>
+        <td style="padding: 14px 12px 14px 14px; border-bottom: 1px solid #F0ECE6; vertical-align: top;">
+          <p style="margin: 0 0 4px 0; font-size: 13.5px; font-weight: 600; color: #111111; line-height: 1.35;">
+            ${item.name}
+          </p>
+          <p style="margin: 0; font-size: 12px; color: #71717A; line-height: 1.5;">
+            ${item.size ? `Size: <strong>${item.size}</strong>` : 'Standard'}
+            ${item.color ? ` &bull; Color: ${item.color}` : ''}
+          </p>
+          <p style="margin: 4px 0 0 0; font-size: 12px; color: #8C7B6B; font-weight: 500;">
+            Qty: ${item.quantity}
+          </p>
+        </td>
+        <td style="padding: 14px 0; border-bottom: 1px solid #F0ECE6; vertical-align: top; text-align: right; font-size: 13.5px; font-weight: 700; color: #111111; white-space: nowrap;">
+          ₹${Number(item.totalPrice).toLocaleString('en-IN')}
+        </td>
+      </tr>
+    `
+    )
+    .join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${subject}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #F8F6F3; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #111111;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #F8F6F3; padding: 36px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" style="max-width: 580px; background-color: #FFFFFF; border-radius: 20px; border: 1px solid #EAE4DD; overflow: hidden; box-shadow: 0 4px 24px rgba(44, 29, 19, 0.04);">
+          
+          <!-- Logo Header -->
+          <tr>
+            <td align="center" style="padding: 32px 24px 20px 24px; border-bottom: 1px solid #F3EDE7;">
+              <img src="cid:logo-zarish.png" alt="ZARISH" width="150" style="display: block; margin: 0 auto; max-height: 38px; width: 150px;" />
+            </td>
+          </tr>
+
+          <!-- Dispatch Banner -->
+          <tr>
+            <td style="padding: 32px 32px 20px 32px; text-align: center;">
+              <p style="margin: 0 0 8px 0; font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: #0E7064;">
+                Order Dispatched &bull; #${params.orderNumber}
+              </p>
+
+              <h1 style="margin: 0 0 10px 0; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: #111111; line-height: 1.25;">
+                Your Order Is On Its Way! 🚀
+              </h1>
+
+              <p style="margin: 0 auto 24px auto; max-width: 450px; font-size: 14px; color: #5C4A3C; line-height: 1.6;">
+                Hello <strong>${params.customerName}</strong>, your handcrafted ZARISH garment has been packed with love and handed over to our courier partner.
+              </p>
+
+              <!-- Courier & Live Tracking Callout Card -->
+              <table width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #FAF6F0; border-radius: 14px; border: 1px solid #E2D5C7; padding: 20px; margin-bottom: 24px; text-align: left;">
+                <tr>
+                  <td>
+                    <p style="margin: 0 0 6px 0; font-size: 11px; font-weight: 700; color: #7B5B3A; text-transform: uppercase; letter-spacing: 0.1em;">
+                      🚚 Courier Partner &amp; Tracking
+                    </p>
+                    <p style="margin: 0 0 12px 0; font-size: 15px; font-weight: 700; color: #2C1D13;">
+                      ${courierTitle}
+                    </p>
+
+                    ${
+                      params.trackingNumber
+                        ? `<p style="margin: 0 0 14px 0; font-size: 13px; color: #4A3A2C;">
+                            AWB / Tracking Number: <strong style="font-family: monospace; font-size: 14px; background-color: #FFFFFF; padding: 3px 8px; border-radius: 6px; border: 1px solid #D8C8BA; color: #111111;">${params.trackingNumber}</strong>
+                          </p>`
+                        : ''
+                    }
+
+                    <!-- Direct Live Tracking Button -->
+                    <div style="text-align: center; margin-top: 14px;">
+                      <a
+                        href="${primaryActionUrl}"
+                        target="_blank"
+                        style="display: inline-block; width: 88%; background-color: #111111; color: #FFFFFF; text-decoration: none; font-size: 12.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 14px 24px; border-radius: 50px; box-shadow: 0 4px 14px rgba(0,0,0,0.15);"
+                      >
+                        ${externalTrackingUrl ? '📦 Open Live Courier Tracking Link &rarr;' : '📦 View Live Order Status &rarr;'}
+                      </a>
+                    </div>
+
+                    ${
+                      externalTrackingUrl
+                        ? `<div style="text-align: center; margin-top: 10px;">
+                            <a
+                              href="${internalTrackingUrl}"
+                              target="_blank"
+                              style="font-size: 11.5px; color: #7B5B3A; text-decoration: underline; font-weight: 600;"
+                            >
+                              Or track on ZARISH Order Portal &rarr;
+                            </a>
+                          </div>`
+                        : ''
+                    }
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Items Table -->
+          <tr>
+            <td style="padding: 0 32px 20px 32px;">
+              <p style="margin: 0 0 10px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #7B5B3A; letter-spacing: 0.08em;">
+                Items in this Shipment
+              </p>
+              <table width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top: 1px solid #F0ECE6;">
+                ${itemsHtml}
+              </table>
+
+              <!-- Delivery Address Box -->
+              <table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top: 20px; background-color: #FAF8F5; border-radius: 12px; border: 1px solid #EFE8E1; padding: 16px;">
+                <tr>
+                  <td style="vertical-align: top;">
+                    <p style="margin: 0 0 6px 0; font-size: 11px; font-weight: 700; color: #7B5B3A; text-transform: uppercase; letter-spacing: 0.08em;">
+                      📍 Delivering To
+                    </p>
+                    <p style="margin: 0; font-size: 12.5px; color: #3D2B1F; line-height: 1.55;">
+                      <strong>${params.customerName}</strong><br>
+                      ${params.shippingAddress.addressLine1 || ''} ${params.shippingAddress.addressLine2 || ''}<br>
+                      ${params.shippingAddress.city || ''}, ${params.shippingAddress.state || ''} ${params.shippingAddress.postalCode || ''}<br>
+                      ${params.customerPhone || params.shippingAddress.phone ? `📞 ${params.customerPhone || params.shippingAddress.phone}` : ''}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Concierge Support -->
+              <div style="text-align: center; margin-top: 24px; padding-top: 18px; border-top: 1px solid #F0ECE6;">
+                <p style="margin: 0 0 10px 0; font-size: 12px; color: #71717A;">
+                  Have questions about delivery or timing?
+                </p>
+                <a
+                  href="${WHATSAPP_URL}"
+                  target="_blank"
+                  style="display: inline-block; background-color: #FAF6F0; color: #2C1D13; text-decoration: none; font-size: 11.5px; font-weight: 600; padding: 8px 20px; border-radius: 50px; border: 1px solid #E2D5C7;"
+                >
+                  Chat with Concierge on WhatsApp &rarr;
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 24px 32px; background-color: #FAF8F5; border-top: 1px solid #EFE8E1; text-align: center;">
+              <p style="margin: 0 0 6px 0; font-size: 11px; font-weight: 600; color: #7B5B3A; letter-spacing: 0.1em; text-transform: uppercase;">
+                Made for moments worth remembering.
+              </p>
+              <p style="margin: 0; font-size: 11px; color: #9C8F84;">
+                &copy; ${new Date().getFullYear()} ZARISH by Nehala Mufeed. Kerala, India.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  const requestBody: any = {
+    sender: { name: senderName, email: senderEmail },
+    to: [{ email: params.customerEmail, name: params.customerName }],
+    subject,
+    htmlContent: html,
+  };
+
+  if (logoBase64) {
+    requestBody.attachment = [
+      {
+        name: 'logo-zarish.png',
+        content: logoBase64,
+      },
+    ];
+  }
+
+  try {
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        'api-key': apiKey,
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const errBody = await response.text();
+      console.error('[Brevo Email] Failed to send order shipped notification:', {
+        status: response.status,
+        error: errBody,
+      });
+      return { success: false, error: errBody };
+    }
+
+    console.log(`[Brevo Email] Order shipped notification dispatched to ${params.customerEmail} for #${params.orderNumber}`);
+    return { success: true };
+  } catch (error: any) {
+    console.error('[Brevo Email] Error notifying customer of order shipment:', error);
+    return { success: false, error: error?.message };
+  }
+}
+

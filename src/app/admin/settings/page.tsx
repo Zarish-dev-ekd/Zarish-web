@@ -9,6 +9,12 @@ import {
   type DeliveryConfig,
   type DeliveryOption,
 } from '@/lib/delivery';
+import {
+  DEFAULT_SHIPPING_SENDER_INFO,
+  getLocalShippingSender,
+  saveShippingSenderLocally,
+  type ShippingSenderInfo,
+} from '@/lib/shipping-sender';
 
 function SettingsContent() {
   const searchParams = useSearchParams();
@@ -51,6 +57,12 @@ function SettingsContent() {
   const [deliverySubmitting, setDeliverySubmitting] = useState(false);
   const [deliverySuccess, setDeliverySuccess] = useState<string | null>(null);
   const [deliveryError, setDeliveryError] = useState<string | null>(null);
+
+  // Shipping Label (FROM Sender Address) State
+  const [senderInfo, setSenderInfo] = useState<ShippingSenderInfo>(getLocalShippingSender);
+  const [senderSubmitting, setSenderSubmitting] = useState(false);
+  const [senderSuccess, setSenderSuccess] = useState<string | null>(null);
+  const [senderError, setSenderError] = useState<string | null>(null);
 
   // Live preview interactive state
   const [previewState, setPreviewState] = useState<'kerala' | 'other'>('kerala');
@@ -101,6 +113,17 @@ function SettingsContent() {
       }
     }
     loadSettings();
+
+    // Load Shipping Sender Address from API
+    fetch('/api/shipping-sender-settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success && data?.senderInfo) {
+          setSenderInfo(data.senderInfo);
+          saveShippingSenderLocally(data.senderInfo);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // Load stock badge settings from API
@@ -218,6 +241,35 @@ function SettingsContent() {
       setError(err?.message || 'Failed to update checkout setting');
     } finally {
       setCouponToggleLoading(false);
+    }
+  };
+
+  // Save Shipping Sender Address for Printed Labels
+  const handleSaveSenderInfo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSenderSubmitting(true);
+    setSenderSuccess(null);
+    setSenderError(null);
+
+    try {
+      const res = await fetch('/api/shipping-sender-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ senderInfo }),
+      });
+      const data = await res.json();
+      if (!res.ok || data?.error) {
+        throw new Error(data?.error || 'Failed to save shipping sender settings.');
+      }
+      if (data?.senderInfo) {
+        setSenderInfo(data.senderInfo);
+        saveShippingSenderLocally(data.senderInfo);
+      }
+      setSenderSuccess('✓ Shipping Sender Address saved! All delivery box labels will now use this address.');
+    } catch (err: any) {
+      setSenderError(err?.message || 'Failed to save shipping sender settings.');
+    } finally {
+      setSenderSubmitting(false);
     }
   };
 
@@ -1325,6 +1377,157 @@ function SettingsContent() {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* ────────── SECTION: DELIVERY BOX SHIPPING LABEL (FROM SENDER ADDRESS) ────────── */}
+          <div className="bg-white border border-[#E8E0D5] rounded-xl p-5 sm:p-6 shadow-sm">
+            <div className="flex items-start justify-between gap-4 mb-4 pb-4 border-b border-[#E8E0D5]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#FAF6F0] text-[#7B5B3A] border border-[#E8E0D5] flex items-center justify-center text-xl shrink-0">
+                  📦
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-[#2C241E] m-0">
+                    Delivery Box Shipping Label &middot; FROM (Sender Address)
+                  </h3>
+                  <p className="text-xs text-[#7A6F66] mt-0.5 m-0">
+                    This exact sender address, customer ID, and BNPL account info will appear on all printed delivery box seal labels.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {senderError && (
+              <div className="mb-4 bg-[#FFEBEE] text-[#D32F2F] p-3 rounded-lg text-xs font-semibold">
+                {senderError}
+              </div>
+            )}
+
+            {senderSuccess && (
+              <div className="mb-4 bg-[#E8F5E9] text-[#2E7D32] p-3 rounded-lg text-xs font-semibold">
+                {senderSuccess}
+              </div>
+            )}
+
+            <form onSubmit={handleSaveSenderInfo} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Store Name / Brand */}
+                <div>
+                  <label className="block text-xs font-bold text-[#2C241E] uppercase tracking-wider mb-1">
+                    Store Brand Name (FROM)
+                  </label>
+                  <input
+                    type="text"
+                    value={senderInfo.storeName}
+                    onChange={(e) => setSenderInfo({ ...senderInfo, storeName: e.target.value })}
+                    placeholder="e.g. ZARISH"
+                    className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-lg bg-[#FAF8F5] text-[#2C241E] font-bold focus:bg-white focus:border-[#7B5B3A] outline-none"
+                    required
+                  />
+                </div>
+
+                {/* Dispatch Phone Number */}
+                <div>
+                  <label className="block text-xs font-bold text-[#2C241E] uppercase tracking-wider mb-1">
+                    Store Contact / Dispatch Phone
+                  </label>
+                  <input
+                    type="text"
+                    value={senderInfo.phone}
+                    onChange={(e) => setSenderInfo({ ...senderInfo, phone: e.target.value })}
+                    placeholder="e.g. 9562292980"
+                    className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-lg bg-[#FAF8F5] text-[#2C241E] font-semibold focus:bg-white focus:border-[#7B5B3A] outline-none"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Full Address */}
+              <div>
+                <label className="block text-xs font-bold text-[#2C241E] uppercase tracking-wider mb-1">
+                  Full Dispatch / Warehouse Address (Location &amp; Pincode)
+                </label>
+                <input
+                  type="text"
+                  value={senderInfo.address}
+                  onChange={(e) => setSenderInfo({ ...senderInfo, address: e.target.value })}
+                  placeholder="e.g. Convent Junction, EKM, 682011"
+                  className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-lg bg-[#FAF8F5] text-[#2C241E] font-medium focus:bg-white focus:border-[#7B5B3A] outline-none"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Customer ID */}
+                <div>
+                  <label className="block text-xs font-bold text-[#2C241E] uppercase tracking-wider mb-1">
+                    Courier Customer ID (India Post / BNPL)
+                  </label>
+                  <input
+                    type="text"
+                    value={senderInfo.customerId}
+                    onChange={(e) => setSenderInfo({ ...senderInfo, customerId: e.target.value })}
+                    placeholder="e.g. 1511058312"
+                    className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-lg bg-[#FAF8F5] text-[#2C241E] font-mono focus:bg-white focus:border-[#7B5B3A] outline-none"
+                  />
+                </div>
+
+                {/* BNPL Account / Branch Info */}
+                <div>
+                  <label className="block text-xs font-bold text-[#2C241E] uppercase tracking-wider mb-1">
+                    BNPL Account / Branch Reference
+                  </label>
+                  <input
+                    type="text"
+                    value={senderInfo.accountInfo}
+                    onChange={(e) => setSenderInfo({ ...senderInfo, accountInfo: e.target.value })}
+                    placeholder="e.g. NHS KOCHI - BNPL A/C 158"
+                    className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-lg bg-[#FAF8F5] text-[#2C241E] font-medium focus:bg-white focus:border-[#7B5B3A] outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Live Visual Print Preview */}
+              <div className="mt-4 p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5]">
+                <span className="text-[11px] font-bold text-[#7A6F66] uppercase tracking-wider block mb-2">
+                  Live Preview on Printed Shipping Slip:
+                </span>
+                <div className="border border-dashed border-gray-400 p-3 bg-white rounded-lg max-w-sm text-[10px] leading-tight text-gray-800 font-sans shadow-xs">
+                  <span className="font-extrabold uppercase text-[10px] text-black block mb-0.5">
+                    FROM:
+                  </span>
+                  <div className="font-bold text-[11px] text-black">{senderInfo.storeName || 'ZARISH'}</div>
+                  <div>{senderInfo.address || 'Convent Junction, EKM, 682011'}</div>
+                  {senderInfo.customerId && (
+                    <div className="font-medium text-gray-900">Customer ID: {senderInfo.customerId}</div>
+                  )}
+                  {senderInfo.accountInfo && (
+                    <div className="font-medium text-gray-900">{senderInfo.accountInfo}</div>
+                  )}
+                  {senderInfo.phone && (
+                    <div className="font-bold text-black mt-0.5">Ph: {senderInfo.phone}</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <button
+                  type="button"
+                  onClick={() => setSenderInfo(DEFAULT_SHIPPING_SENDER_INFO)}
+                  className="text-xs text-[#7A6F66] hover:text-[#2C241E] underline cursor-pointer"
+                >
+                  Reset to Default ZARISH Address
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={senderSubmitting}
+                  className="px-6 py-2.5 rounded-xl bg-[#2C241E] hover:bg-[#43362A] text-white text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
+                >
+                  {senderSubmitting ? 'Saving Address...' : '💾 Save Sender Address'}
+                </button>
+              </div>
+            </form>
           </div>
 
           {/* Bottom Save Button */}

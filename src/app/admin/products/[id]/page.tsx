@@ -267,6 +267,31 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
     loadData();
   }, [productId, supabase]);
 
+  // Helper to Auto-Generate Unique Product SKU
+  const generateNewSku = (catId?: string, prodName?: string) => {
+    const targetCatId = catId || categoryId;
+    const targetName = prodName !== undefined ? prodName : name;
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
+    const cat = categories.find((c) => c.id === targetCatId);
+
+    if (cat?.name) {
+      const cleanCat = cat.name.slice(0, 3).toUpperCase().replace(/[^A-Z]/g, '');
+      if (cleanCat.length >= 2) {
+        return `ZR-${cleanCat}-${randomNum}`;
+      }
+    } else if (targetName.trim()) {
+      const words = targetName.trim().split(/\s+/).filter(Boolean);
+      if (words.length >= 2) {
+        const initials = words
+          .slice(0, 3)
+          .map((w) => w[0].toUpperCase())
+          .join('');
+        return `ZR-${initials}-${randomNum}`;
+      }
+    }
+    return `ZR-${randomNum}`;
+  };
+
   const handleNameChange = (val: string) => {
     setName(val);
     if (!slug || slug === name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) {
@@ -717,18 +742,38 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
                 <div>
-                  <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">
-                    Product Code (SKU)
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15 uppercase font-mono font-medium"
-                    placeholder="e.g. ZAR-010"
-                    value={sku}
-                    onChange={(e) => setSku(e.target.value.toUpperCase())}
-                  />
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="block text-[13px] font-semibold text-[#2C241E]">
+                      Product Code (SKU)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setSku(generateNewSku())}
+                      className="text-xs text-[#7B5B3A] hover:text-[#5A3F24] font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                      title="Auto-generate a fresh unique product code"
+                    >
+                      <span>✨ Auto-Generate</span>
+                    </button>
+                  </div>
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      className="w-full px-3.5 py-2.5 pr-20 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15 uppercase font-mono font-bold tracking-wider"
+                      placeholder="e.g. ZR-1048"
+                      value={sku}
+                      onChange={(e) => setSku(e.target.value.toUpperCase())}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setSku(generateNewSku())}
+                      className="absolute right-2 px-2 py-1 text-[11px] font-bold rounded bg-[#FAF6F0] text-[#7B5B3A] hover:bg-[#7B5B3A] hover:text-white border border-[#E8E0D5] transition-all cursor-pointer"
+                      title="Generate random code"
+                    >
+                      🎲 Roll
+                    </button>
+                  </div>
                   <p className="text-[11px] text-[#7A6F66] mt-1 m-0">
-                    Searchable code shown on product detail page.
+                    Auto-generated &middot; Customers can search products directly with this code.
                   </p>
                 </div>
 
@@ -1169,20 +1214,7 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
                   value={comparePrice}
                   onChange={(e) => setComparePrice(e.target.value)}
                 />
-              </div>
-
-              <div className="mb-0">
-                <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">
-                  Base SKU Code
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
-                  placeholder="ZR-ABY-001"
-                  value={sku}
-                  onChange={(e) => setSku(e.target.value)}
-                />
-              </div>
+                </div>
             </div>
 
             {/* Category Organization */}

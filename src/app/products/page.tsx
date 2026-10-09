@@ -47,6 +47,8 @@ interface ProductsPageProps {
     size?: string;
     sort?: string;
     sale?: string;
+    q?: string;
+    search?: string;
   }>;
 }
 
@@ -56,6 +58,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const sizeSlug = resolvedParams.size;
   const sort = resolvedParams.sort || 'newest';
   const onSale = resolvedParams.sale === 'true';
+  const searchQuery = resolvedParams.q || resolvedParams.search;
 
   const [products, categories, sizes, settings, announcements, navigationItems] = await Promise.all([
     getFilteredProducts({
@@ -63,6 +66,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       sizeSlug,
       onSale,
       sort,
+      searchQuery,
     }),
     getCategories(),
     getSizes(),
@@ -92,12 +96,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     if (sz) params.set('size', sz);
     if (sl) params.set('sale', 'true');
     if (st && st !== 'newest') params.set('sort', st);
+    if (searchQuery) params.set('q', searchQuery);
 
     const str = params.toString();
     return str ? `/products?${str}` : '/products';
   };
 
-  const hasActiveFilters = Boolean(categorySlug || sizeSlug || onSale || (sort && sort !== 'newest'));
+  const hasActiveFilters = Boolean(categorySlug || sizeSlug || onSale || (sort && sort !== 'newest') || searchQuery);
 
   return (
     <>
@@ -274,6 +279,17 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   title="Remove size filter"
                 >
                   <span>Size: <strong>{activeSize.name}</strong></span>
+                  <span className="text-xs font-bold">✕</span>
+                </Link>
+              )}
+
+              {searchQuery && (
+                <Link
+                  href="/products"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FAF6F0] border border-[#7B5B3A] text-[#2C1D13] hover:bg-[#7B5B3A] hover:text-white transition-colors"
+                  title="Remove search query"
+                >
+                  <span>Code/Search: <strong>&ldquo;{searchQuery}&rdquo;</strong></span>
                   <span className="text-xs font-bold">✕</span>
                 </Link>
               )}

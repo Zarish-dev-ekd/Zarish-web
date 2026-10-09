@@ -22,24 +22,7 @@ export async function GET(request: NextRequest) {
     const { data: order, error } = await supabase
       .from('orders')
       .select(`
-        id,
-        order_number,
-        user_id,
-        customer_name,
-        customer_email,
-        customer_phone,
-        shipping_address,
-        total_amount,
-        currency,
-        payment_method,
-        payment_status,
-        order_status,
-        tracking_number,
-        coupon_code,
-        discount_amount,
-        notes,
-        created_at,
-        updated_at,
+        *,
         items:order_items(*)
       `)
       .ilike('order_number', cleanOrderNumber)
