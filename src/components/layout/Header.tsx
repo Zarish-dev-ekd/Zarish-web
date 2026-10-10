@@ -11,6 +11,7 @@ import AuthModal from '@/components/auth/AuthModal';
 import SearchModal from '@/components/search/SearchModal';
 import { useWishlist } from '@/context/WishlistContext';
 import { useCart } from '@/context/CartContext';
+import { isAdminUser } from '@/lib/auth';
 
 const FALLBACK_NAV_ITEMS: NavigationItem[] = [
   { id: 'nav-shop', label: 'Shop All', href: '/products', display_order: 1, is_active: true, parent_id: null, open_in_new_tab: false, icon: null, created_at: '', updated_at: '' },
@@ -244,6 +245,28 @@ export default function Header({ navigationItems = [], cartItemCount = 0 }: Head
                         </div>
                       </div>
 
+                      {/* Admin Dashboard (if admin) */}
+                      {isAdminUser(user) && (
+                        <Link
+                          href="/admin"
+                          onClick={() => setAccountMenuOpen(false)}
+                          className="group flex items-center justify-between px-3 py-2.5 rounded-xl text-xs text-[#7B5B3A] bg-[#FAF6F0] hover:bg-[#F3ECE2] transition-all font-semibold mb-1"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className="w-7 h-7 rounded-lg bg-[#7B5B3A] text-white flex items-center justify-center transition-colors">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="3" width="7" height="7" />
+                                <rect x="14" y="3" width="7" height="7" />
+                                <rect x="14" y="14" width="7" height="7" />
+                                <rect x="3" y="14" width="7" height="7" />
+                              </svg>
+                            </span>
+                            <span>Admin Dashboard</span>
+                          </div>
+                          <IconChevronRight size={13} className="text-[#7B5B3A] group-hover:translate-x-0.5 transition-all" />
+                        </Link>
+                      )}
+
                       {/* View Profile */}
                       <Link
                         href="/account"
@@ -459,6 +482,12 @@ export default function Header({ navigationItems = [], cartItemCount = 0 }: Head
 
           {user ? (
             <>
+              {isAdminUser(user) && (
+                <Link href="/admin" className="flex items-center justify-between px-6 py-3 text-base text-[#7B5B3A] font-semibold bg-[#FAF6F0] hover:bg-[#F3ECE2] transition-colors" onClick={closeDrawer}>
+                  Admin Dashboard
+                  <IconChevronRight size={14} />
+                </Link>
+              )}
               <Link href="/account" className="flex items-center justify-between px-6 py-3 text-base text-[#2C1D13] hover:bg-[#F3ECE2] transition-colors" onClick={closeDrawer}>
                 My Account & Orders
                 <IconChevronRight size={14} />

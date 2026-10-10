@@ -367,13 +367,20 @@ function ShippingLabelRowContent({
         })()
       : order.shipping_address || {};
 
-  const courierTitle =
+  const rawCourierTitle =
     addr.deliveryMethodTitle ||
     (addr.deliveryMethod === 'speed_post'
       ? 'Speed Post'
       : addr.deliveryMethod === 'dtdc_express'
       ? 'DTDC Express'
-      : 'India Post');
+      : 'India Post Parcel');
+
+  // Remove duration mentions like "(3-5 days)", "(3-5 Days)", "- 3-5 days"
+  const courierTitle = rawCourierTitle
+    .replace(/\s*\([^)]*(?:day|days|date|business|working|approx|hrs|hours)[^)]*\)/gi, '')
+    .replace(/\s*-\s*\d+[\s\d\-–—]*(?:days|working days|business days)/gi, '')
+    .replace(/\s*\b\d+\s*-\s*\d+\s*(?:days|day)\b/gi, '')
+    .trim();
 
   const customerPhone = addr.phone || order.customer_phone || '';
   const customerName = addr.fullName || order.customer_name || 'Valued Customer';
@@ -386,111 +393,115 @@ function ShippingLabelRowContent({
   return (
     <div className="w-full h-full flex items-stretch text-black font-sans leading-tight">
       {/* 1. ORDER & COURIER BADGE (Left Column ~21%) */}
-      <div className="w-[21%] border-r border-gray-300 pr-3 flex flex-col justify-between shrink-0 box-border">
+      <div className="w-[21%] border-r border-gray-300 pr-3.5 flex flex-col justify-start shrink-0 box-border">
         <div>
-          <span className="text-[9px] uppercase font-bold tracking-wider text-gray-500 block">
+          <span className="text-[10px] uppercase font-bold tracking-wider text-gray-500 block">
             ORDER NUMBER
           </span>
-          <strong className="text-sm font-mono font-black tracking-tight text-black block truncate mt-0.5">
+          <strong className="text-[15px] font-mono font-black tracking-tight text-black block truncate mt-0.5">
             {order.order_number}
           </strong>
 
-          <div className="mt-1.5">
-            <span className="inline-block px-2 py-0.5 rounded bg-black text-white font-bold text-[9px] uppercase tracking-wider">
+          <div className="mt-2">
+            <span className="inline-block px-2.5 py-0.5 rounded bg-black text-white font-bold text-[9.5px] uppercase tracking-wider">
               {courierTitle}
             </span>
           </div>
 
           {order.tracking_number && (
-            <div className="mt-1.5 inline-block bg-gray-100 border border-gray-300 px-1.5 py-0.5 rounded text-[9px] font-mono text-gray-900 font-bold truncate max-w-full">
+            <div className="mt-2 inline-block bg-gray-100 border border-gray-300 px-2 py-0.5 rounded text-[9.5px] font-mono text-gray-900 font-bold truncate max-w-full">
               AWB: {order.tracking_number}
             </div>
           )}
-        </div>
 
-        <div className="text-[8.5px] text-gray-500 font-mono pt-1.5 border-t border-gray-100">
-          {orderDate} &middot; ZARISH
+          <div className="text-[9px] text-gray-500 font-mono mt-3 pt-2 border-t border-gray-100">
+            {orderDate} &middot; ZARISH
+          </div>
         </div>
       </div>
 
       {/* 2. FROM SENDER ADDRESS & LOGO (Middle-Left Column ~27%) */}
-      <div className="w-[27%] border-r border-gray-300 px-3 flex flex-col justify-between text-[9.5px] shrink-0 box-border">
+      <div className="w-[27%] border-r border-gray-300 px-3.5 flex flex-col justify-start text-[10px] shrink-0 box-border">
         <div>
-          {/* FROM Header & Logo Row */}
-          <div className="flex items-center justify-between gap-2 pb-1 border-b border-gray-200">
-            <span className="font-black uppercase text-[8.5px] text-white bg-black px-1.5 py-0.5 rounded tracking-wide">
+          {/* FROM Header Tag */}
+          <div className="pb-1 border-b border-gray-200">
+            <span className="font-black uppercase text-[9px] text-white bg-black px-2 py-0.5 rounded tracking-wide inline-block">
               FROM:
             </span>
+          </div>
+
+          <div className="mt-1.5">
+            {/* Zarish Logo */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo-zarish.png"
               alt="ZARISH"
-              className="h-4.5 w-auto object-contain max-w-[85px]"
+              className="h-5.5 w-auto object-contain max-w-[100px] mb-1.5"
             />
-          </div>
-
-          <div className="mt-1">
-            <div className="font-black text-[11px] text-black truncate">
-              {senderInfo?.storeName || DEFAULT_SHIPPING_SENDER_INFO.storeName}
-            </div>
-            <div className="text-gray-800 mt-0.5 leading-snug text-[9px] line-clamp-3">
+            <div className="text-gray-900 leading-snug text-[9.5px] line-clamp-3 font-medium">
               {senderInfo?.address || DEFAULT_SHIPPING_SENDER_INFO.address}
             </div>
             {senderInfo?.customerId && (
-              <div className="font-semibold text-gray-700 mt-0.5 text-[8.5px] truncate">
+              <div className="font-bold text-gray-800 mt-1 text-[9px] truncate">
                 Customer ID: {senderInfo.customerId}
               </div>
             )}
             {senderInfo?.accountInfo && (
-              <div className="font-semibold text-gray-700 text-[8.5px] truncate">
+              <div className="font-bold text-gray-800 text-[9px] truncate">
                 {senderInfo.accountInfo}
+              </div>
+            )}
+            {senderInfo?.phone && (
+              <div className="font-black text-black text-[9.5px] mt-1.5">
+                Ph: {senderInfo.phone}
               </div>
             )}
           </div>
         </div>
-
-        {senderInfo?.phone && (
-          <div className="font-bold text-black text-[9px] pt-1 border-t border-gray-200 truncate">
-            Ph: {senderInfo.phone}
-          </div>
-        )}
       </div>
 
       {/* 3. DELIVER TO CUSTOMER (Middle-Right Column ~28%) */}
-      <div className="w-[28%] border-r border-gray-300 px-3 flex flex-col justify-between text-[9.5px] shrink-0 box-border">
+      <div className="w-[28%] border-r border-gray-300 px-3.5 flex flex-col justify-start shrink-0 box-border">
         <div>
-          <span className="font-black uppercase text-[8.5px] text-black bg-gray-200 px-1.5 py-0.5 rounded tracking-wide inline-block">
+          <span className="font-black uppercase text-[10px] text-black bg-gray-200 px-2 py-0.5 rounded tracking-wider inline-block">
             DELIVER TO:
           </span>
-          <div className="font-black text-[12px] text-black leading-snug truncate mt-1">
+          <div className="font-black text-[15.5px] text-black leading-snug tracking-tight truncate mt-1">
             {customerName}
           </div>
-          <div className="text-gray-900 mt-0.5 leading-snug text-[9.5px]">
-            {addr.addressLine1 && <div className="truncate">{addr.addressLine1}</div>}
-            {addr.addressLine2 && <div className="truncate">{addr.addressLine2}</div>}
-            <div className="font-bold text-[10px] text-black mt-0.5">
+          <div className="text-black mt-1 leading-snug space-y-0.5">
+            {addr.addressLine1 && (
+              <div className="font-extrabold text-[12px] text-black break-words leading-tight">
+                {addr.addressLine1}
+              </div>
+            )}
+            {addr.addressLine2 && (
+              <div className="font-extrabold text-[12px] text-black break-words leading-tight">
+                {addr.addressLine2}
+              </div>
+            )}
+            <div className="font-black text-[13px] text-black tracking-tight mt-1 leading-tight">
               {[addr.city, addr.state, addr.postalCode ? `- ${addr.postalCode}` : '']
                 .filter(Boolean)
                 .join(', ')
                 .replace(', -', ' -')}
             </div>
-            <div className="text-gray-600 text-[8.5px]">{addr.country || 'India'}</div>
+            <div className="font-bold text-gray-800 text-[10.5px]">{addr.country || 'India'}</div>
+            {customerPhone && (
+              <div className="font-black text-[12.5px] text-black mt-1.5 inline-block bg-gray-100 border border-gray-400 px-2 py-0.5 rounded tracking-wide">
+                Ph: {customerPhone}
+              </div>
+            )}
           </div>
         </div>
-
-        {customerPhone && (
-          <div className="font-black text-[9.5px] text-black pt-1 border-t border-gray-200 truncate">
-            Ph: {customerPhone}
-          </div>
-        )}
       </div>
 
       {/* 4. PACKED ITEMS (Right Column ~24%) */}
-      <div className="w-[24%] pl-3 flex flex-col justify-between shrink-0 box-border">
+      <div className="w-[24%] pl-3.5 flex flex-col justify-start shrink-0 box-border">
         <div>
-          <div className="text-[8.5px] font-bold uppercase tracking-wider text-gray-700 pb-1 border-b border-gray-200 flex items-center justify-between">
+          <div className="text-[9px] font-bold uppercase tracking-wider text-gray-700 pb-1 border-b border-gray-200 flex items-center justify-between">
             <span>PACKED ITEMS</span>
-            <span className="text-[7.5px] font-normal text-gray-500">Box Contents</span>
+            <span className="text-[8px] font-normal text-gray-500">Box Contents</span>
           </div>
 
           <div className="space-y-1.5 mt-1.5">
@@ -498,11 +509,11 @@ function ShippingLabelRowContent({
               order.items.slice(0, 2).map((it, idx) => (
                 <div
                   key={it.id || idx}
-                  className="flex items-center gap-1.5 bg-gray-50 p-1.5 rounded border border-gray-200"
+                  className="flex items-center gap-2 bg-gray-50 p-1.5 rounded border border-gray-200"
                 >
                   {/* Product Image: Cropped lower 3/4 */}
                   {it.image_url ? (
-                    <div className="w-9 h-11 rounded bg-gray-200 border border-gray-300 overflow-hidden shrink-0 relative">
+                    <div className="w-10 h-12 rounded bg-gray-200 border border-gray-300 overflow-hidden shrink-0 relative">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={it.image_url}
@@ -514,16 +525,16 @@ function ShippingLabelRowContent({
                       />
                     </div>
                   ) : (
-                    <div className="w-9 h-11 rounded bg-gray-200 border border-gray-300 flex items-center justify-center text-xs shrink-0">
+                    <div className="w-10 h-12 rounded bg-gray-200 border border-gray-300 flex items-center justify-center text-xs shrink-0">
                       👗
                     </div>
                   )}
 
                   <div className="min-w-0 flex-1 leading-tight">
-                    <div className="font-bold text-[9px] text-black truncate">
+                    <div className="font-bold text-[9.5px] text-black truncate">
                       {it.product_name}
                     </div>
-                    <div className="text-[8px] text-gray-700 flex items-center gap-1 mt-1">
+                    <div className="text-[8.5px] text-gray-700 flex items-center gap-1 mt-1">
                       {it.size && (
                         <span className="font-bold px-1.5 py-0.5 rounded bg-gray-200 text-black text-[8px]">
                           {it.size}
@@ -537,19 +548,19 @@ function ShippingLabelRowContent({
                 </div>
               ))
             ) : (
-              <div className="text-[8.5px] text-gray-500 italic">No items</div>
+              <div className="text-[9px] text-gray-500 italic">No items</div>
             )}
 
             {order.items && order.items.length > 2 && (
-              <div className="text-[7.5px] font-bold text-gray-600 text-right">
+              <div className="text-[8px] font-bold text-gray-600 text-right">
                 +{order.items.length - 2} more items
               </div>
             )}
           </div>
-        </div>
 
-        <div className="text-[7.5px] text-gray-500 font-mono text-right pt-1 border-t border-gray-100">
-          SEAL &amp; DELIVER
+          <div className="text-[8px] text-gray-400 font-mono text-right mt-2">
+            SEAL &amp; DELIVER
+          </div>
         </div>
       </div>
     </div>
