@@ -9,6 +9,7 @@ import { INDIAN_STATES } from '@/lib/constants';
 import type { Order } from '@/lib/types';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import { isAdminUser } from '@/lib/auth';
 
 export default function CustomerAccountPage() {
   const router = useRouter();
@@ -167,6 +168,14 @@ export default function CustomerAccountPage() {
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
+            {isAdminUser(user) && (
+              <Link
+                href="/admin"
+                className="flex-1 sm:flex-initial px-5 py-2.5 rounded-full bg-[#7B5B3A] hover:bg-[#63472C] text-white text-xs font-semibold tracking-wider uppercase transition-all shadow-xs text-center"
+              >
+                Admin Dashboard
+              </Link>
+            )}
             <button
               type="button"
               onClick={handleSignOut}
