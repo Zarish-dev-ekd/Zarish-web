@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { sendPasswordResetEmail } from '@/lib/email';
+import { getRedirectBaseUrl } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    const origin = request.headers.get('origin') || 'http://localhost:3000';
+    const origin = getRedirectBaseUrl(request);
     const redirectTo = `${origin}/reset-password`;
 
     // ── APPROACH 1: If Service Role Key is configured, generate recovery link & send via Brevo ──

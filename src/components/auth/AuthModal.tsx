@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { createClient } from '@/utils/supabase/client';
 import { IconGoogle, IconX } from '@/components/icons';
+import { getAuthCallbackUrl } from '@/lib/auth';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -59,10 +60,14 @@ export default function AuthModal({
     setError(null);
 
     try {
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/account';
+      const destination = currentPath && currentPath !== '/' ? currentPath : '/account';
+      const callbackUrl = getAuthCallbackUrl(destination);
+
       const { error: oauthErr } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: callbackUrl,
         },
       });
 

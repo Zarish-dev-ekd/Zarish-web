@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/utils/supabase/client';
 import { IconGoogle } from '@/components/icons';
+import { getAuthCallbackUrl } from '@/lib/auth';
 
 function SignupForm() {
   const router = useRouter();
@@ -29,14 +30,13 @@ function SignupForm() {
     setError(null);
 
     try {
+      const destination = redirectTo || '/account';
+      const callbackUrl = getAuthCallbackUrl(destination);
+
       const { error: oauthErr } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback${
-            redirectTo && redirectTo !== '/account'
-              ? `?next=${encodeURIComponent(redirectTo)}`
-              : ''
-          }`,
+          redirectTo: callbackUrl,
         },
       });
 

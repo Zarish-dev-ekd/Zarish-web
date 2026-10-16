@@ -1,29 +1,68 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { cookies } from 'next/headers';
+import { createServerClient } from '@supabase/ssr';
+import type { EmailOtpType } from '@supabase/supabase-js';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { sendGoogleWelcomeEmail } from '@/lib/email';
+import { getRedirectBaseUrl } from '@/lib/auth';
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const requestUrl = new URL(request.url);
+  const { searchParams } = requestUrl;
   const code = searchParams.get('code');
   const rawNext = searchParams.get('next') ?? '/account';
   const next = rawNext.startsWith('/') ? rawNext : `/${rawNext}`;
 
+  // Robust canonical origin resolution (mobile LAN, dev proxy, production domain)
+  const baseUrl = getRedirectBaseUrl(request);
+
   const oauthError = searchParams.get('error_description') || searchParams.get('error');
   if (oauthError) {
-    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(oauthError)}`);
+    const errorRedirectUrl = new URL(
+      `/login?error=${encodeURIComponent(oauthError)}`,
+      baseUrl
+    ).toString();
+    return NextResponse.redirect(errorRedirectUrl);
   }
 
   if (code) {
-    const supabase = await createClient();
+    const destinationUrl = new URL(next, baseUrl).toString();
+    const redirectResponse = NextResponse.redirect(destinationUrl);
+    const cookieStore = await cookies();
+
+    // Instantiate SSR client that sets cookies directly on the redirect response
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              );
+            } catch {
+              // Ignore in server context if already committed
+            }
+            // CRITICAL: Bind auth cookies directly to the redirect response headers
+            cookiesToSet.forEach(({ name, value, options }) =>
+              redirectResponse.cookies.set(name, value, options)
+            );
+          },
+        },
+      }
+    );
+
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
       const user = data?.user ?? data?.session?.user;
 
       if (user) {
-        // Check if welcome email was already sent
         const alreadySent = user.user_metadata?.welcome_email_sent === true;
-
-        // Verify newly created account (created within the last 15 minutes)
         const createdAt = user.created_at ? new Date(user.created_at).getTime() : 0;
         const isNewlyCreated = createdAt > 0 && Date.now() - createdAt < 15 * 60 * 1000;
 
@@ -34,44 +73,71 @@ export async function GET(request: Request) {
               name: user.user_metadata?.full_name || user.user_metadata?.name,
             });
 
-            // Mark welcome email as sent so it won't be sent on subsequent logins
-            await supabase.auth.updateUser({
-              data: { welcome_email_sent: true },
-            });
+            // Update user metadata via admin client to avoid mutating session tokens/cookies
+            try {
+              const admin = createAdminClient();
+              await admin.auth.admin.updateUserById(user.id, {
+                user_metadata: {
+                  ...user.user_metadata,
+                  welcome_email_sent: true,
+                },
+              });
+            } catch (adminErr) {
+              console.warn('[Auth Callback] Admin metadata update skipped:', adminErr);
+            }
           } catch (emailErr) {
             console.error('[Auth Callback] Welcome email error:', emailErr);
           }
         }
       }
 
-      const forwardedHost = request.headers.get('x-forwarded-host');
-      const isLocalEnv = process.env.NODE_ENV === 'development';
-
-      if (isLocalEnv) {
-        return NextResponse.redirect(`${origin}${next}`);
-      } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`);
-      } else {
-        return NextResponse.redirect(`${origin}${next}`);
-      }
+      return redirectResponse;
+    } else {
+      console.error('[Auth Callback] exchangeCodeForSession failed:', error.message);
     }
   }
 
   const token_hash = searchParams.get('token_hash');
-  const type = searchParams.get('type') as any;
+  const type = (searchParams.get('type') as EmailOtpType) || 'recovery';
   if (token_hash) {
-    const supabase = await createClient();
+    const destinationUrl = new URL(next, baseUrl).toString();
+    const redirectResponse = NextResponse.redirect(destinationUrl);
+    const cookieStore = await cookies();
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              );
+            } catch {}
+            cookiesToSet.forEach(({ name, value, options }) =>
+              redirectResponse.cookies.set(name, value, options)
+            );
+          },
+        },
+      }
+    );
+
     const { error } = await supabase.auth.verifyOtp({ token_hash, type: type || 'recovery' });
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+      return redirectResponse;
     }
   }
 
   // If destination was reset-password, always allow user to reach reset-password page
   if (next.includes('reset-password')) {
-    return NextResponse.redirect(`${origin}/reset-password`);
+    return NextResponse.redirect(new URL('/reset-password', baseUrl).toString());
   }
 
-  // Return user to an error page or login with error
-  return NextResponse.redirect(`${origin}/login?error=auth-code-error`);
+  // Return user to login with error
+  return NextResponse.redirect(new URL('/login?error=auth-code-error', baseUrl).toString());
 }
