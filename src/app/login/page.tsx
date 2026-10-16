@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/utils/supabase/client';
-import { isAdminUser } from '@/lib/auth';
+import { isAdminUser, getAuthCallbackUrl } from '@/lib/auth';
+import { IconGoogle } from '@/components/icons';
 
 function LoginForm() {
   const router = useRouter();
@@ -19,6 +20,7 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [viewMode, setViewMode] = useState<'login' | 'forgot'>('login');
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
@@ -37,6 +39,31 @@ function LoginForm() {
   );
 
   const supabase = createClient();
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    setError(null);
+
+    try {
+      const destination = redirectParam || '/account';
+      const callbackUrl = getAuthCallbackUrl(destination);
+
+      const { error: oauthErr } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: callbackUrl,
+        },
+      });
+
+      if (oauthErr) {
+        throw oauthErr;
+      }
+    } catch (err: any) {
+      console.error('Google sign in error:', err);
+      setError(err?.message || 'Failed to initialize Google sign in.');
+      setGoogleLoading(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -299,6 +326,57 @@ function LoginForm() {
                   <span>Sign In</span>
                 )}
               </button>
+
+              {/* Social Sign In */}
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-[#E2D5C7]" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-3 text-[#A89887] tracking-wider font-medium">
+                    or
+                  </span>
+                </div>
+              </div>
+
+              {/* Continue with Google */}
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={googleLoading || loading}
+                className="w-full h-11 sm:h-12 rounded-full border border-[#D9C9B8] hover:border-[#7B5B3A] bg-white hover:bg-[#FAF8F5] text-[#2C1D13] text-xs sm:text-sm font-semibold tracking-wide transition-all shadow-xs active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3 cursor-pointer"
+              >
+                {googleLoading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-[#7B5B3A]/30 border-t-[#7B5B3A] rounded-full animate-spin" />
+                    <span>Connecting to Google...</span>
+                  </>
+                ) : (
+                  <>
+                    <IconGoogle size={18} />
+                    <span>Continue with Google</span>
+                  </>
+                )}
+              </button>
+
+              {/* New to ZARISH / Sign Up Link */}
+              <div className="relative my-5">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-[#E2D5C7]" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-3 text-[#A89887] tracking-wider font-medium">
+                    New to ZARISH?
+                  </span>
+                </div>
+              </div>
+
+              <Link
+                href={`/signup${redirectParam ? `?redirect=${encodeURIComponent(redirectParam)}` : ''}`}
+                className="w-full h-11 sm:h-12 rounded-full border border-[#7B5B3A] text-[#7B5B3A] hover:bg-[#FAF6F0] text-xs sm:text-sm font-semibold tracking-wider transition-all flex items-center justify-center text-center cursor-pointer"
+              >
+                Create Account
+              </Link>
             </form>
           ) : (
             /* ── Forgot Password Form ── */

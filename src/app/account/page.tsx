@@ -10,12 +10,13 @@ import type { Order } from '@/lib/types';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { isAdminUser } from '@/lib/auth';
+import type { User } from '@supabase/supabase-js';
 
 export default function CustomerAccountPage() {
   const router = useRouter();
   const supabase = createClient();
 
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'orders' | 'profile'>('orders');
 
@@ -35,19 +36,21 @@ export default function CustomerAccountPage() {
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    async function loadUserAndOrders() {
+    let isMounted = true;
+
+    async function loadUserAndOrders(currentUser?: User) {
       try {
         setLoading(true);
-        const {
-          data: { user: authUser },
-          error: userErr,
-        } = await supabase.auth.getUser();
+        const authUser = currentUser || (await supabase.auth.getUser()).data?.user;
 
-        if (userErr || !authUser) {
-          router.push('/login?redirect=/account');
+        if (!authUser) {
+          if (isMounted) {
+            router.push('/login?redirect=/account');
+          }
           return;
         }
 
+        if (!isMounted) return;
         setUser(authUser);
         setFullName(
           authUser.user_metadata?.full_name ||
@@ -77,18 +80,55 @@ export default function CustomerAccountPage() {
           .or(`user_id.eq.${authUser.id},customer_email.eq.${authUser.email}`)
           .order('created_at', { ascending: false });
 
-        if (!ordersErr && userOrders) {
+        if (!ordersErr && userOrders && isMounted) {
           setOrders(userOrders as Order[]);
         }
       } catch (err) {
         console.error('Account load error:', err);
       } finally {
-        setLoading(false);
-        setLoadingOrders(false);
+        if (isMounted) {
+          setLoading(false);
+          setLoadingOrders(false);
+        }
       }
     }
 
-    loadUserAndOrders();
+    // 1. Initial user check with fallback to getSession to prevent premature redirect
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        loadUserAndOrders(user);
+      } else {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session?.user) {
+            loadUserAndOrders(session.user);
+          } else {
+            if (isMounted) {
+              setLoading(false);
+              router.push('/login?redirect=/account');
+            }
+          }
+        });
+      }
+    });
+
+    // 2. Reactive auth state listener
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        loadUserAndOrders(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        if (isMounted) {
+          setUser(null);
+          router.push('/login?redirect=/account');
+        }
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, [router, supabase]);
 
   const handleSignOut = async () => {
