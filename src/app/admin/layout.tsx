@@ -33,11 +33,15 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-[#F8F5F0] text-[#2C241E] font-sans max-md:flex-col">
-      <AdminSidebar />
-      <div className="flex-1 flex flex-col min-w-0 relative">
-        <AdminHeader />
-        <main className="p-3.5 sm:p-6 md:p-8 flex-1 max-w-[1280px] w-full mx-auto">{children}</main>
+    <div className="flex min-h-screen bg-[#F8F5F0] text-[#2C241E] font-sans max-md:flex-col print:bg-white print:min-h-0 print:block">
+      <div className="print:hidden">
+        <AdminSidebar />
+      </div>
+      <div className="flex-1 flex flex-col min-w-0 relative print:block print:w-full">
+        <div className="print:hidden">
+          <AdminHeader />
+        </div>
+        <main className="p-3.5 sm:p-6 md:p-8 flex-1 max-w-[1280px] w-full mx-auto print:p-0 print:m-0 print:max-w-none print:w-full">{children}</main>
       </div>
     </div>
   );

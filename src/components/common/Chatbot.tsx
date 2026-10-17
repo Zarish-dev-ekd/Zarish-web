@@ -52,6 +52,7 @@ const QUICK_QUESTIONS = [
 
 export default function Chatbot() {
   const pathname = usePathname();
+  const isAdmin = pathname?.startsWith('/admin');
   const isPdpOrCheckout = pathname?.startsWith('/products/') || pathname === '/checkout';
 
   const [isOpen, setIsOpen] = useState(false);
@@ -286,6 +287,11 @@ export default function Chatbot() {
     handleSendMessage(input);
   };
 
+  // Do not render the customer chatbot on admin dashboard or label printing pages
+  if (isAdmin) {
+    return null;
+  }
+
   return (
     <>
       {/* ─── 1. FLOATING BUBBLE BUTTON (Only shown when chat is closed) ─── */}
@@ -296,7 +302,7 @@ export default function Chatbot() {
             setIsOpen(true);
             setHasUnread(false);
           }}
-          className={`fixed z-[9999] w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-[#FAF4EE] to-[#FFFFFF] border border-[#E5D7CA] text-[#2C1D13] shadow-[0_8px_24px_rgba(44,29,19,0.16)] hover:shadow-[0_12px_32px_rgba(44,29,19,0.24)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center cursor-pointer group select-none ${
+          className={`fixed z-[9999] print:hidden w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-[#FAF4EE] to-[#FFFFFF] border border-[#E5D7CA] text-[#2C1D13] shadow-[0_8px_24px_rgba(44,29,19,0.16)] hover:shadow-[0_12px_32px_rgba(44,29,19,0.24)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center cursor-pointer group select-none ${
             isPdpOrCheckout
               ? 'bottom-[calc(4.85rem+env(safe-area-inset-bottom))] right-3 sm:bottom-6 sm:right-6'
               : 'bottom-5 right-4 sm:bottom-6 sm:right-6'
@@ -315,7 +321,7 @@ export default function Chatbot() {
       {/* ─── 2. MINI CHATBOT POPUP WINDOW ─── */}
       {isOpen && (
         <div
-          className={`fixed z-[9999] w-[calc(100vw-24px)] sm:w-[380px] max-h-[580px] sm:max-h-[620px] rounded-[24px] sm:rounded-[28px] overflow-hidden bg-[#FAF6F0] border border-[#E5D7CA] shadow-[0_20px_50px_rgba(44,29,19,0.22)] flex flex-col transition-all duration-300 animate-in fade-in slide-in-from-bottom-3 right-3 sm:right-6 ${
+          className={`fixed z-[9999] print:hidden w-[calc(100vw-24px)] sm:w-[380px] max-h-[580px] sm:max-h-[620px] rounded-[24px] sm:rounded-[28px] overflow-hidden bg-[#FAF6F0] border border-[#E5D7CA] shadow-[0_20px_50px_rgba(44,29,19,0.22)] flex flex-col transition-all duration-300 animate-in fade-in slide-in-from-bottom-3 right-3 sm:right-6 ${
             isPdpOrCheckout
               ? 'bottom-[calc(4.85rem+env(safe-area-inset-bottom))] sm:bottom-6'
               : 'bottom-5 sm:bottom-6'

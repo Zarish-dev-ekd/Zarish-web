@@ -111,6 +111,7 @@ export default function AdminOrdersPage() {
   const [filterCourier, setFilterCourier] = useState<string>('all');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
+  const [generatingLabelId, setGeneratingLabelId] = useState<string | null>(null);
   const [notificationToast, setNotificationToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   // Multi-Selection State for Bulk Status Updates & Printing
@@ -457,6 +458,66 @@ export default function AdminOrdersPage() {
       ]);
     } finally {
       setSavingTracking(false);
+    }
+  };
+
+  const handleGenerateIndiaPostLabel = async (orderId: string) => {
+    try {
+      setGeneratingLabelId(orderId);
+      const res = await fetch('/api/admin/shipping/indiapost/create-label', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to generate India Post label');
+      }
+
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId
+            ? {
+                ...o,
+                tracking_number: data.barcode,
+                tracking_url: 'https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx',
+                order_status: 'shipped',
+              }
+            : o
+        )
+      );
+
+      if (inspectedOrder && inspectedOrder.id === orderId) {
+        setInspectedOrder((prev) =>
+          prev
+            ? {
+                ...prev,
+                tracking_number: data.barcode,
+                tracking_url: 'https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx',
+                order_status: 'shipped',
+              }
+            : null
+        );
+        setModalTrackingInput(data.barcode);
+        setModalTrackingUrlInput('https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx');
+      }
+
+      showToast(
+        data.isSimulated
+          ? `India Post Test Label assigned: ${data.barcode}`
+          : `India Post Label generated: ${data.barcode}`,
+        'success'
+      );
+
+      if (typeof window !== 'undefined') {
+        window.open(`/admin/orders/label/${orderId}`, '_blank');
+      }
+    } catch (err: any) {
+      console.error('Error generating India Post label:', err);
+      showToast(err.message || 'Failed to generate India Post label', 'error');
+    } finally {
+      setGeneratingLabelId(null);
     }
   };
 
@@ -893,20 +954,30 @@ export default function AdminOrdersPage() {
                     </div>
 
                     {/* Actions: Print Label & Inspect */}
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <button
                         type="button"
                         onClick={() => setPrintingOrders([order])}
-                        className="py-2.5 px-3 rounded-lg border border-[#2C241E] bg-[#FAF6F0] hover:bg-[#F3EADF] text-[#2C241E] text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer active:scale-[0.99]"
+                        className="py-2.5 px-2 rounded-lg border border-[#2C241E] bg-[#FAF6F0] hover:bg-[#F3EADF] text-[#2C241E] text-xs font-bold flex items-center justify-center gap-1 shadow-xs transition-colors cursor-pointer active:scale-[0.99]"
                         title="Print delivery box shipping seal label"
                       >
                         <span>🖨️</span>
-                        <span>Print Label</span>
+                        <span>Box Label</span>
                       </button>
+                      <a
+                        href={`/admin/orders/label/${order.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="py-2.5 px-2 rounded-lg border border-[#C4161C] bg-[#FEF2F2] hover:bg-[#C4161C] text-[#C4161C] hover:text-white text-xs font-bold flex items-center justify-center gap-1 shadow-xs transition-colors cursor-pointer active:scale-[0.99] text-center"
+                        title="Print India Post official A6 thermal shipping label"
+                      >
+                        <span>📮</span>
+                        <span>IP Label</span>
+                      </a>
                       <button
                         type="button"
                         onClick={() => handleInspectOrder(order)}
-                        className="py-2.5 px-3 rounded-lg bg-[#2C241E] hover:bg-[#43362A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer active:scale-[0.99]"
+                        className="py-2.5 px-2 rounded-lg bg-[#2C241E] hover:bg-[#43362A] text-white text-xs font-semibold flex items-center justify-center gap-1 shadow-xs transition-colors cursor-pointer active:scale-[0.99]"
                         title="Inspect full address & order details"
                       >
                         <span>🔍</span>
@@ -1175,6 +1246,16 @@ export default function AdminOrdersPage() {
                               <span>🖨️</span>
                               <span>Print</span>
                             </button>
+                            <a
+                              href={`/admin/orders/label/${order.id}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#C4161C] bg-[#FEF2F2] text-[#C4161C] text-xs font-bold hover:bg-[#C4161C] hover:text-white transition-all shadow-xs cursor-pointer active:scale-95 whitespace-nowrap"
+                              title={order.tracking_number ? `Print India Post A6 label (${order.tracking_number})` : 'Print India Post A6 Label'}
+                            >
+                              <span>📮</span>
+                              <span>IP Label</span>
+                            </a>
                             <button
                               type="button"
                               onClick={() => handleInspectOrder(order)}
@@ -1369,6 +1450,78 @@ export default function AdminOrdersPage() {
                     <div>{renderCourierBadge(inspectedOrder.shipping_address)}</div>
                     <div className="text-xs font-semibold text-[#5C4A3C]">
                       Courier Fee: {formatPrice(addr.deliveryFee || 0)}
+                    </div>
+                  </div>
+
+                  {/* Automated India Post 1-Click Dispatch & Label */}
+                  <div className="p-3.5 rounded-lg border border-[#FDE68A] bg-[#FFFBEB] mb-3">
+                    <div className="flex items-center justify-between gap-2 flex-wrap mb-2">
+                      <div className="flex items-center gap-2">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src="/courier-india-post.webp"
+                          alt="India Post"
+                          className="h-4 w-auto object-contain rounded-[2px]"
+                        />
+                        <span className="text-xs font-bold text-[#92400E]">
+                          India Post Automated Booking
+                        </span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#FEF3C7] text-[#B45309] font-bold border border-[#FDE68A]">
+                          {(
+                            (inspectedOrder.shipping_address as any)?.deliveryMethodTitle ||
+                            (inspectedOrder.shipping_address as any)?.deliveryMethod ||
+                            ''
+                          ).toLowerCase().includes('speed')
+                            ? 'EMS Speed Post'
+                            : 'India Post Parcel'}
+                        </span>
+                      </div>
+
+                      {inspectedOrder.tracking_number && (
+                        <a
+                          href={`/admin/orders/label/${inspectedOrder.id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-md bg-[#2C241E] text-white hover:bg-[#43362A] transition-colors shadow-xs"
+                        >
+                          <span>🏷️</span>
+                          <span>Print A6 Label</span>
+                        </a>
+                      )}
+                    </div>
+
+                    <p className="text-[11px] text-[#78350F] mb-2.5 leading-relaxed">
+                      One-click booking: Generates official barcode, marks status as Shipped, notifies customer via email, and opens printable thermal label.
+                    </p>
+
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={() => handleGenerateIndiaPostLabel(inspectedOrder.id)}
+                        disabled={generatingLabelId === inspectedOrder.id}
+                        className="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-[#C4161C] hover:bg-[#9E1217] text-white transition-all shadow-xs cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5 active:scale-98"
+                      >
+                        <span>📮</span>
+                        <span>
+                          {generatingLabelId === inspectedOrder.id
+                            ? 'Generating Barcode...'
+                            : inspectedOrder.tracking_number
+                            ? 'Re-generate India Post Barcode'
+                            : 'Generate India Post Label & Barcode'}
+                        </span>
+                      </button>
+
+                      {inspectedOrder.tracking_number && (
+                        <a
+                          href="https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#D97706] bg-white text-[#B45309] hover:bg-[#FEF3C7] transition-colors inline-flex items-center gap-1"
+                        >
+                          <span>🔍</span>
+                          <span>Track on India Post</span>
+                        </a>
+                      )}
                     </div>
                   </div>
 
@@ -1576,6 +1729,17 @@ export default function AdminOrdersPage() {
                     <span>🖨️</span>
                     <span>Print Box Label</span>
                   </button>
+
+                  <a
+                    href={`/admin/orders/label/${inspectedOrder.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3.5 py-2 text-xs font-bold rounded-lg border border-[#C4161C] bg-[#FEF2F2] hover:bg-[#C4161C] text-[#C4161C] hover:text-white transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
+                    title="Print India Post official A6 thermal shipping label"
+                  >
+                    <span>📮</span>
+                    <span>Print IP Label (A6)</span>
+                  </a>
                 </div>
 
                 <button
