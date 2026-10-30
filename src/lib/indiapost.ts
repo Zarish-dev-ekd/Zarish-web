@@ -21,8 +21,8 @@ const BASE_URL =
 
 const USERNAME = process.env.INDIAPOST_USERNAME || '9999999999';
 const PASSWORD = process.env.INDIAPOST_PASSWORD || 'Dop@1234';
-const CUSTOMER_ID = process.env.INDIAPOST_CUSTOMER_ID || '3000064781';
-const CONTRACT_ID = process.env.INDIAPOST_CONTRACT_ID || '41585456';
+const CUSTOMER_ID = process.env.INDIAPOST_CUSTOMER_ID || '1511058312';
+const CONTRACT_ID = process.env.INDIAPOST_CONTRACT_ID || '41999655';
 
 // Store default sender / pickup configuration (from client's official postal slip)
 export const STORE_SENDER_CONFIG = {
@@ -232,13 +232,14 @@ export async function createIndiaPostShippingLabel(
 
   const payload = [
     {
-      customer_id: Number(CUSTOMER_ID) || 1234567890,
+      customer_id: Number(CUSTOMER_ID) || 1511058312,
+      contract_no: Number(CONTRACT_ID) || 41999655,
       delivery_office_name: addr.city || 'Delivery Office',
       destination_pin: addr.postalCode || '110001',
       booking_datetime: nowStr,
       channel_type: 'E',
       user_type: 'R',
-      user_id: Number(CUSTOMER_ID) || 1234567890,
+      user_id: Number(CUSTOMER_ID) || 1511058312,
       barcode_no: barcode,
       service_type: serviceType,
       booking_type: 'COMMERCIAL',
