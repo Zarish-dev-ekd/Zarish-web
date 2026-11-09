@@ -12,14 +12,14 @@
 import type { Order, ShippingAddress } from './types';
 
 // Environment & Configuration Defaults
-const INDIAPOST_ENV = process.env.INDIAPOST_ENV || 'sandbox'; // 'sandbox' | 'production'
+const INDIAPOST_ENV = process.env.INDIAPOST_ENV || 'production'; // 'sandbox' | 'production'
 const BASE_URL =
   process.env.INDIAPOST_BASE_URL ||
   (INDIAPOST_ENV === 'production'
-    ? 'https://cept.gov.in/beextcustomer'
+    ? 'https://app.indiapost.gov.in/beextcustomer'
     : 'https://test.cept.gov.in/beextcustomer');
 
-const USERNAME = process.env.INDIAPOST_USERNAME || '9999999999';
+const USERNAME = process.env.INDIAPOST_USERNAME || '1511058312';
 const PASSWORD = process.env.INDIAPOST_PASSWORD || 'Dop@1234';
 const CUSTOMER_ID = process.env.INDIAPOST_CUSTOMER_ID || '1511058312';
 const CONTRACT_ID = process.env.INDIAPOST_CONTRACT_ID || '41999655';
