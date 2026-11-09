@@ -56,9 +56,10 @@ export default async function BulkIndiaPostLabelPage({ searchParams }: BulkLabel
           })()
         : rawAddress;
 
+    const cleanNum = (order.order_number || '').replace(/[^0-9]/g, '').padStart(8, '0').slice(-8);
     const trackingBarcode =
       order.tracking_number ||
-      'SP' + order.order_number.replace(/[^0-9]/g, '').slice(-8) + 'IN';
+      'SP' + cleanNum + 'IN';
 
     const isSpeedPost =
       (addr.deliveryMethod || '').toLowerCase().includes('speed') ||
@@ -89,3 +90,4 @@ export default async function BulkIndiaPostLabelPage({ searchParams }: BulkLabel
     />
   );
 }
+

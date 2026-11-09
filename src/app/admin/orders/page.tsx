@@ -118,6 +118,7 @@ export default function AdminOrdersPage() {
   // Multi-Selection State for Bulk Status Updates & Printing
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
   const [bulkUpdating, setBulkUpdating] = useState(false);
+  const [bulkBookingIP, setBulkBookingIP] = useState(false);
   const [bulkTargetStatus, setBulkTargetStatus] = useState<string>('processing');
   const [printingOrders, setPrintingOrders] = useState<Order[] | null>(null);
 
@@ -338,6 +339,52 @@ export default function AdminOrdersPage() {
     } finally {
       setBulkUpdating(false);
     }
+  };
+
+  const handleBulkBookIndiaPost = async () => {
+    const unbooked = orders.filter(
+      (o) => selectedOrderIds.includes(o.id) && !o.tracking_number
+    );
+    if (unbooked.length === 0) {
+      showToast('All selected orders already have India Post barcodes assigned', 'success');
+      return;
+    }
+
+    setBulkBookingIP(true);
+    let successCount = 0;
+
+    for (const ord of unbooked) {
+      try {
+        const res = await fetch('/api/admin/shipping/indiapost/create-label', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId: ord.id }),
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          successCount++;
+          setOrders((prev) =>
+            prev.map((o) =>
+              o.id === ord.id
+                ? {
+                    ...o,
+                    tracking_number: data.barcode,
+                    order_status: 'shipped',
+                  }
+                : o
+            )
+          );
+        }
+      } catch (err) {
+        console.error(`Failed to book order ${ord.order_number}:`, err);
+      }
+    }
+
+    setBulkBookingIP(false);
+    showToast(
+      `✓ Successfully booked ${successCount} of ${unbooked.length} orders with India Post!`,
+      successCount > 0 ? 'success' : 'error'
+    );
   };
 
   const handleUpdateTracking = async (orderId: string, trackingNumber: string) => {
@@ -1872,6 +1919,26 @@ export default function AdminOrdersPage() {
                 {bulkUpdating ? 'Updating...' : 'Apply'}
               </button>
             </div>
+
+            {/* 1-Click Bulk Book with India Post */}
+            {orders.some((o) => selectedOrderIds.includes(o.id) && !o.tracking_number) && (
+              <button
+                type="button"
+                disabled={bulkBookingIP || bulkUpdating}
+                onClick={handleBulkBookIndiaPost}
+                className="px-3 py-1.5 rounded-lg bg-[#D97706] hover:bg-[#B45309] text-white text-xs font-bold transition-all disabled:opacity-50 cursor-pointer flex items-center gap-1.5 shadow-sm"
+                title="Automatically book all selected unbooked orders with India Post in 1 click"
+              >
+                <span>⚡</span>
+                <span>
+                  {bulkBookingIP
+                    ? 'Booking...'
+                    : `Bulk Book IP (${
+                        orders.filter((o) => selectedOrderIds.includes(o.id) && !o.tracking_number).length
+                      })`}
+                </span>
+              </button>
+            )}
 
             {/* Bulk Print Official India Post Barcode Labels */}
             <a

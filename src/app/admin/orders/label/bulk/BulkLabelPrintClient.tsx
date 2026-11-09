@@ -63,6 +63,7 @@ export default function BulkLabelPrintClient({
                 padding: 3.5mm !important;
                 border: 2px solid #000000 !important;
                 box-sizing: border-box !important;
+                overflow: hidden !important;
                 page-break-after: always !important;
                 break-after: page !important;
                 page-break-inside: avoid !important;
@@ -498,3 +499,4 @@ export default function BulkLabelPrintClient({
     </div>
   );
 }
+
