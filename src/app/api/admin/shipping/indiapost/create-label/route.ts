@@ -10,7 +10,7 @@ export const revalidate = 0;
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { orderId, serviceType, weightGrams } = body;
+    const { orderId, serviceType, weightGrams, forceNew } = body;
 
     if (!orderId) {
       return NextResponse.json(
@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
       order: orderData,
       serviceType: serviceType || undefined,
       weightGrams: weightGrams || undefined,
+      forceNew: Boolean(forceNew),
     });
 
     if (!labelResult.success) {

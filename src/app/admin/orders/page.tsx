@@ -461,13 +461,13 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const handleGenerateIndiaPostLabel = async (orderId: string) => {
+  const handleGenerateIndiaPostLabel = async (orderId: string, forceNew = false) => {
     try {
       setGeneratingLabelId(orderId);
       const res = await fetch('/api/admin/shipping/indiapost/create-label', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId }),
+        body: JSON.stringify({ orderId, forceNew }),
       });
 
       const data = await res.json();
@@ -1523,7 +1523,7 @@ export default function AdminOrdersPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <button
                         type="button"
-                        onClick={() => handleGenerateIndiaPostLabel(inspectedOrder.id)}
+                        onClick={() => handleGenerateIndiaPostLabel(inspectedOrder.id, Boolean(inspectedOrder.tracking_number))}
                         disabled={generatingLabelId === inspectedOrder.id}
                         className="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-[#C4161C] hover:bg-[#9E1217] text-white transition-all shadow-xs cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5 active:scale-98"
                       >

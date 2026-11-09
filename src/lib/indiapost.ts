@@ -181,6 +181,7 @@ export interface CreateLabelParams {
   breadthCm?: number;
   heightCm?: number;
   senderOverride?: Partial<typeof STORE_SENDER_CONFIG>;
+  forceNew?: boolean;
 }
 
 export interface CreateLabelResult {
@@ -217,10 +218,15 @@ export async function createIndiaPostShippingLabel(
 
   const sender = { ...STORE_SENDER_CONFIG, ...(senderOverride || {}) };
 
-  // Assign or generate Barcode
+  // Check if existing tracking number is a valid 13-character India Post barcode
+  const isExistingValidBarcode =
+    order.tracking_number &&
+    /^[A-Z]{2}[0-9]{9}[A-Z]{2}$/i.test(order.tracking_number.trim());
+
+  // Assign or generate Barcode (ensure valid 13-character India Post format)
   let barcode =
     params.barcodeNo ||
-    order.tracking_number ||
+    (!params.forceNew && isExistingValidBarcode ? order.tracking_number : null) ||
     (INDIAPOST_ENV === 'sandbox'
       ? `ET2143${sandboxAwbCounter++}XIN`
       : generateIndiaPostBarcode(serviceType));
