@@ -964,16 +964,29 @@ export default function AdminOrdersPage() {
                         <span>🖨️</span>
                         <span>Box Label</span>
                       </button>
-                      <a
-                        href={`/admin/orders/label/${order.id}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="py-2.5 px-2 rounded-lg border border-[#C4161C] bg-[#FEF2F2] hover:bg-[#C4161C] text-[#C4161C] hover:text-white text-xs font-bold flex items-center justify-center gap-1 shadow-xs transition-colors cursor-pointer active:scale-[0.99] text-center"
-                        title="Print India Post official A6 thermal shipping label"
-                      >
-                        <span>📮</span>
-                        <span>IP Label</span>
-                      </a>
+                      {order.tracking_number ? (
+                        <a
+                          href={`/admin/orders/label/${order.id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="py-2.5 px-2 rounded-lg border border-[#C4161C] bg-[#FEF2F2] hover:bg-[#C4161C] text-[#C4161C] hover:text-white text-xs font-bold flex items-center justify-center gap-1 shadow-xs transition-colors cursor-pointer active:scale-[0.99] text-center"
+                          title={`Print India Post official A6 shipping label (${order.tracking_number})`}
+                        >
+                          <span>📮</span>
+                          <span>IP Label</span>
+                        </a>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleGenerateIndiaPostLabel(order.id)}
+                          disabled={generatingLabelId === order.id}
+                          className="py-2.5 px-2 rounded-lg border border-[#C4161C] bg-[#C4161C] text-white hover:bg-[#9E1217] text-xs font-bold flex items-center justify-center gap-1 shadow-xs transition-colors cursor-pointer active:scale-[0.99] text-center disabled:opacity-50"
+                          title="Generate official India Post Barcode & Label via API"
+                        >
+                          <span>📮</span>
+                          <span>{generatingLabelId === order.id ? 'Booking...' : 'Book IP'}</span>
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => handleInspectOrder(order)}
@@ -1246,16 +1259,29 @@ export default function AdminOrdersPage() {
                               <span>🖨️</span>
                               <span>Print</span>
                             </button>
-                            <a
-                              href={`/admin/orders/label/${order.id}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#C4161C] bg-[#FEF2F2] text-[#C4161C] text-xs font-bold hover:bg-[#C4161C] hover:text-white transition-all shadow-xs cursor-pointer active:scale-95 whitespace-nowrap"
-                              title={order.tracking_number ? `Print India Post A6 label (${order.tracking_number})` : 'Print India Post A6 Label'}
-                            >
-                              <span>📮</span>
-                              <span>IP Label</span>
-                            </a>
+                            {order.tracking_number ? (
+                              <a
+                                href={`/admin/orders/label/${order.id}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#C4161C] bg-[#FEF2F2] text-[#C4161C] text-xs font-bold hover:bg-[#C4161C] hover:text-white transition-all shadow-xs cursor-pointer active:scale-95 whitespace-nowrap"
+                                title={`Print India Post A6 label (${order.tracking_number})`}
+                              >
+                                <span>📮</span>
+                                <span>IP Label</span>
+                              </a>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleGenerateIndiaPostLabel(order.id)}
+                                disabled={generatingLabelId === order.id}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#C4161C] bg-[#C4161C] text-white text-xs font-bold hover:bg-[#9E1217] transition-all shadow-xs cursor-pointer active:scale-95 whitespace-nowrap disabled:opacity-50"
+                                title="Book with India Post & Generate Label"
+                              >
+                                <span>📮</span>
+                                <span>{generatingLabelId === order.id ? 'Booking...' : 'Book IP'}</span>
+                              </button>
+                            )}
                             <button
                               type="button"
                               onClick={() => handleInspectOrder(order)}
