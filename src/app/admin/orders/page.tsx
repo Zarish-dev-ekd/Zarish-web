@@ -7,6 +7,7 @@ import { formatPrice } from '@/lib/utils';
 import type { Order } from '@/lib/types';
 import { IconX } from '@/components/icons';
 import ShippingLabelPrintModal from '@/components/admin/ShippingLabelPrintModal';
+import BarcodeSvg from '@/components/admin/BarcodeSvg';
 
 function renderCourierBadge(shippingAddress?: any) {
   if (!shippingAddress) return null;
@@ -1564,6 +1565,22 @@ export default function AdminOrdersPage() {
                         onChange={(e) => setModalTrackingInput(e.target.value)}
                         className="w-full text-xs px-3 py-2 border border-[#E8E0D5] rounded-lg bg-[#FAF8F5] text-[#2C241E] outline-none focus:bg-white focus:border-[#7B5B3A]"
                       />
+                      {modalTrackingInput.trim() && (
+                        <div className="mt-2 p-2.5 bg-white border border-[#E8E0D5] rounded-lg text-center flex flex-col items-center justify-center">
+                          <span className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider mb-1">
+                            Live Code 128 Barcode Preview
+                          </span>
+                          <BarcodeSvg
+                            value={modalTrackingInput.trim()}
+                            width={1.8}
+                            height={42}
+                            className="max-w-[240px] h-11"
+                          />
+                          <span className="text-[12px] font-mono font-bold mt-1 tracking-widest text-black">
+                            {modalTrackingInput.trim()}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     <div>
