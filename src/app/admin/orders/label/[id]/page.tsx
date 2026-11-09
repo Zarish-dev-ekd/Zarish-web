@@ -43,9 +43,10 @@ export default async function IndiaPostLabelPage({ params }: LabelPageProps) {
         })()
       : rawAddress;
 
+  const cleanNum = (orderData.order_number || '').replace(/[^0-9]/g, '').padStart(8, '0').slice(-8);
   const trackingBarcode =
     orderData.tracking_number ||
-    'SP' + orderData.order_number.replace(/[^0-9]/g, '').slice(-8) + 'IN';
+    'SP' + cleanNum + 'IN';
   const isSpeedPost =
     (addr.deliveryMethod || '').toLowerCase().includes('speed') ||
     trackingBarcode.startsWith('SP') ||

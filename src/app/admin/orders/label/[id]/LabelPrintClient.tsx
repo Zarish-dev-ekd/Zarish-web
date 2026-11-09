@@ -67,6 +67,7 @@ export default function LabelPrintClient({
                 padding: 3.5mm !important;
                 border: 2px solid #000000 !important;
                 box-sizing: border-box !important;
+                overflow: hidden !important;
                 page-break-after: avoid !important;
                 page-break-inside: avoid !important;
                 break-after: avoid !important;
