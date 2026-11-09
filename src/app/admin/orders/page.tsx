@@ -1873,6 +1873,18 @@ export default function AdminOrdersPage() {
               </button>
             </div>
 
+            {/* Bulk Print Official India Post Barcode Labels */}
+            <a
+              href={`/admin/orders/label/bulk?ids=${selectedOrderIds.join(',')}`}
+              target="_blank"
+              rel="noreferrer"
+              className="px-3 py-1.5 rounded-lg bg-[#C4161C] hover:bg-[#A31217] text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+              title="Bulk print official India Post A6/A4 labels with Code 128 barcodes & post office receipts"
+            >
+              <span>📮</span>
+              <span>Print IP Labels ({selectedOrderIds.length})</span>
+            </a>
+
             {/* Bulk Print Delivery Box Labels */}
             <button
               type="button"
@@ -1886,10 +1898,10 @@ export default function AdminOrdersPage() {
                 }
               }}
               className="px-3 py-1.5 rounded-lg bg-[#FAF6F0] hover:bg-white text-[#2C241E] text-xs font-bold transition-all disabled:opacity-50 cursor-pointer flex items-center gap-1.5 shadow-xs"
-              title="Print delivery box labels for all selected orders (fitted 4 per A4 sheet)"
+              title="Print delivery box seals (fitted 4 per A4 sheet)"
             >
-              <span>🖨️</span>
-              <span>Print Labels ({selectedOrderIds.length})</span>
+              <span>📦</span>
+              <span>Box Seals ({selectedOrderIds.length})</span>
             </button>
 
             {/* Clear selection */}
