@@ -59,7 +59,6 @@ export async function POST(request: NextRequest) {
       .from('orders')
       .update({
         tracking_number: barcode,
-        tracking_url: trackingUrl,
         order_status: 'shipped',
         updated_at: new Date().toISOString(),
       })
