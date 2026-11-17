@@ -4,6 +4,7 @@ import { useMemo, useEffect } from 'react';
 import {
   getDeliveryOptions,
   calculateDeliveryFee,
+  getEstimatedDeliveryDates,
   type DeliveryMethodId,
   type DeliveryOption,
   type DeliveryConfig,
@@ -24,13 +25,13 @@ function renderCourierLogo(id: string) {
   // 1. India Post Parcel
   if (normId.includes('india_post') || normId.includes('parcel')) {
     return (
-      <div className="flex items-center justify-center bg-white px-2 py-0.5 rounded-md border border-[#EADBCE] shadow-2xs shrink-0">
+      <div className="flex items-center justify-center bg-white px-1.5 py-0.5 rounded border border-[#EADBCE] shadow-2xs shrink-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/courier-india-post.webp"
           alt="India Post"
           loading="lazy"
-          className="h-5 sm:h-6 w-auto max-w-[46px] sm:max-w-[56px] object-contain"
+          className="h-4 sm:h-5 w-auto max-w-[42px] sm:max-w-[48px] object-contain"
         />
       </div>
     );
@@ -39,13 +40,13 @@ function renderCourierLogo(id: string) {
   // 2. EMS Speed Post
   if (normId.includes('speed') || normId.includes('ems')) {
     return (
-      <div className="flex items-center justify-center bg-white px-2 py-0.5 rounded-md border border-[#EADBCE] shadow-2xs shrink-0">
+      <div className="flex items-center justify-center bg-white px-1.5 py-0.5 rounded border border-[#EADBCE] shadow-2xs shrink-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/courier-ems.jpg"
           alt="EMS Speed Post"
           loading="lazy"
-          className="h-4 sm:h-5 w-auto max-w-[68px] sm:max-w-[82px] object-contain mix-blend-multiply"
+          className="h-3.5 sm:h-4 w-auto max-w-[58px] sm:max-w-[68px] object-contain mix-blend-multiply"
         />
       </div>
     );
@@ -54,13 +55,13 @@ function renderCourierLogo(id: string) {
   // 3. DTDC Express
   if (normId.includes('dtdc')) {
     return (
-      <div className="flex items-center justify-center bg-white px-2 py-0.5 rounded-md border border-[#EADBCE] shadow-2xs shrink-0">
+      <div className="flex items-center justify-center bg-white px-1.5 py-0.5 rounded border border-[#EADBCE] shadow-2xs shrink-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/courier-dtdc.png"
           alt="DTDC Express"
           loading="lazy"
-          className="h-4 sm:h-5 w-auto max-w-[70px] sm:max-w-[86px] object-contain mix-blend-multiply"
+          className="h-3.5 sm:h-4 w-auto max-w-[58px] sm:max-w-[70px] object-contain mix-blend-multiply"
         />
       </div>
     );
@@ -92,72 +93,88 @@ export default function DeliveryMethodSelector({
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <label className="block text-xs font-semibold text-[#3D2B1F] mb-1">
-        Select Courier Partner {isKerala ? '(Across Kerala)' : '(Interstate Delivery)'}
-      </label>
+      <div className="flex items-center justify-between">
+        <label className="block text-xs font-semibold text-[#3D2B1F]">
+          Shipping method {isKerala ? '(Across Kerala)' : '(Interstate)'}
+        </label>
+        <span className="text-[11px] text-[#8C7B6B]">Estimated delivery dates</span>
+      </div>
 
-      {/* Delivery Options: Responsive list with ample room on mobile and laptop */}
-      <div className="grid grid-cols-1 gap-2 sm:gap-2.5">
+      {/* Unified clean card with dividers — matching Shopify / high-converting checkout */}
+      <div className="border border-[#E2D5C7] rounded-xl overflow-hidden divide-y divide-[#EADECF] bg-white shadow-2xs">
         {options.map((option: DeliveryOption) => {
           const isSelected = selectedMethod === option.id;
           const calc = calculateDeliveryFee(option.id, stateName, quantity, config);
           const isFree = calc.isBlinkingFree || calc.fee === 0;
 
+          // Compute dynamic delivery estimates
+          const minDays =
+            option.minDays ||
+            (option.id.includes('parcel') ? 3 : option.id.includes('dtdc') ? 1 : 1);
+          const maxDays =
+            option.maxDays ||
+            (option.id.includes('parcel') ? 5 : option.id.includes('dtdc') ? 2 : 3);
+          const estimate = getEstimatedDeliveryDates(minDays, maxDays);
+
+          const dispatchSubtext =
+            option.defaultNote ||
+            (option.id.includes('dtdc')
+              ? 'Ships same day(until 4pm IST)'
+              : option.id.includes('speed') || option.id.includes('ems')
+                ? 'Fast reliable delivery'
+                : 'Ships next day');
+
           return (
             <div
               key={option.id}
               onClick={() => onSelectMethod(option.id)}
-              className={`p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2.5 sm:gap-4 ${
+              className={`p-3 sm:p-3.5 transition-all cursor-pointer select-none flex items-start justify-between gap-3 ${
                 isSelected
-                  ? 'border-[#7B5B3A] bg-[#FAF6F0] ring-1 ring-[#7B5B3A]/25 shadow-2xs'
-                  : 'border-[#E2D5C7] bg-white hover:border-[#7B5B3A]/40 hover:bg-[#FAF8F5]'
+                  ? 'bg-[#FAF6F0] ring-1 ring-inset ring-[#7B5B3A]/30'
+                  : 'bg-white hover:bg-[#FAF8F5]'
               }`}
             >
-              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <div className="flex items-start gap-3 min-w-0">
+                {/* Radio Circle */}
                 <div
-                  className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
+                  className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
                     isSelected ? 'border-[#7B5B3A] bg-[#7B5B3A]' : 'border-[#C8BCB0] bg-white'
                   }`}
                 >
                   {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                 </div>
 
-                <div className="min-w-0">
-                  <h4 className="text-xs sm:text-[13px] font-bold text-[#2C1D13] leading-tight truncate uppercase tracking-tight">
+                <div className="min-w-0 space-y-0.5">
+                  {/* Courier / Method Name */}
+                  <div className="text-xs sm:text-[13px] font-semibold text-[#2C1D13] leading-snug">
                     {option.name}
-                  </h4>
-                  <div className="flex items-center gap-1.5 text-[10.5px] sm:text-xs font-medium text-[#7A6F66] mt-0.5">
-                    <span>{option.deliveryTime}</span>
-                    {calc.rateHint && (
-                      <>
-                        <span className="text-[#C8BCB0]">•</span>
-                        <span className="text-[#8C6D4C] font-semibold">{calc.rateHint}</span>
-                      </>
-                    )}
+                  </div>
+
+                  {/* Dynamic Calendar Date Range */}
+                  <div className="text-[11px] sm:text-xs font-bold text-[#2C1D13]">
+                    {estimate.dateRangeText}
+                  </div>
+
+                  {/* Dispatch note */}
+                  <div className="text-[10px] sm:text-[11px] text-[#7A6F66]">
+                    {dispatchSubtext}
                   </div>
                 </div>
               </div>
 
-              {/* Right side: Official Courier Logo + Price Pill */}
-              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                {renderCourierLogo(option.id)}
+              {/* Right side: Price + Courier Logo */}
+              <div className="flex flex-col items-end gap-1.5 shrink-0 pl-2">
+                <div className="text-xs sm:text-[13px] font-bold text-[#2C1D13]">
+                  {isFree ? (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10.5px] sm:text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      FREE
+                    </span>
+                  ) : (
+                    <span>{calc.priceLabel}</span>
+                  )}
+                </div>
 
-                {isFree ? (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10.5px] sm:text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
-                    <span className="animate-pulse">FREE</span>
-                  </span>
-                ) : (
-                  <span
-                    className={`text-xs sm:text-[13px] font-bold px-2.5 py-1 rounded-md transition-colors ${
-                      isSelected
-                        ? 'bg-[#7B5B3A] text-white'
-                        : 'bg-[#F2ECE4] text-[#2C1D13]'
-                    }`}
-                  >
-                    {calc.priceLabel}
-                  </span>
-                )}
+                {renderCourierLogo(option.id)}
               </div>
             </div>
           );

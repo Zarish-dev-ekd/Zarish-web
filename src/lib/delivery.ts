@@ -9,6 +9,9 @@ export interface DeliveryOption {
   badge?: string;
   isBlinkingFree?: boolean;
   isActive?: boolean;
+  minDays?: number;
+  maxDays?: number;
+  defaultNote?: string;
 }
 
 export interface DeliveryConfig {
@@ -19,42 +22,124 @@ export interface DeliveryConfig {
 export const DEFAULT_KERALA_OPTIONS: DeliveryOption[] = [
   {
     id: 'india_post_parcel',
-    name: 'India Post Parcel',
+    name: 'Standard delivery via India post',
     deliveryTime: '3-5 Days',
     price: 0,
     priceLabel: 'FREE',
     badge: 'FREE',
     isBlinkingFree: true,
     isActive: true,
-  },
-  {
-    id: 'ems_speed_post',
-    name: 'EMS Speed Post',
-    deliveryTime: '1-3 Days',
-    price: 50,
-    priceLabel: '+₹50',
-    isActive: true,
+    minDays: 3,
+    maxDays: 5,
+    defaultNote: 'Ships next day',
   },
   {
     id: 'dtdc',
-    name: 'DTDC Express',
+    name: 'Express 1-2 day delivery via DTDC',
     deliveryTime: '1-2 Days',
     price: 50,
     priceLabel: '+₹50',
     isActive: true,
+    minDays: 1,
+    maxDays: 2,
+    defaultNote: 'Ships same day(until 4pm IST)',
+  },
+  {
+    id: 'ems_speed_post',
+    name: 'EMS Speed post',
+    deliveryTime: '1-3 Days',
+    price: 50,
+    priceLabel: '+₹50',
+    isActive: true,
+    minDays: 1,
+    maxDays: 3,
+    defaultNote: 'Fast reliable delivery',
   },
 ];
 
 export const DEFAULT_OTHER_STATE_OPTIONS: DeliveryOption[] = [
   {
     id: 'ems_speed_post',
-    name: 'EMS Speed Post',
+    name: 'EMS Speed post (Interstate Express)',
     deliveryTime: '2-5 Days',
     price: 50,
     priceLabel: '+₹50',
     isActive: true,
+    minDays: 2,
+    maxDays: 5,
+    defaultNote: 'Fast reliable delivery',
   },
 ];
+
+/**
+ * Calculates dynamic calendar delivery dates based on current Indian Standard Time (IST).
+ * Takes into account operating hours and skips Sundays for dispatch & transit.
+ */
+export function getEstimatedDeliveryDates(
+  minDays: number,
+  maxDays: number,
+  referenceDate: Date = new Date()
+): {
+  dateRangeText: string;
+  dispatchNote: string;
+} {
+  // Convert referenceDate to IST (UTC + 5:30)
+  const utc = referenceDate.getTime() + referenceDate.getTimezoneOffset() * 60000;
+  const istDate = new Date(utc + 3600000 * 5.5);
+
+  const istHour = istDate.getHours();
+  const istDay = istDate.getDay(); // 0 is Sunday
+
+  // Determine dispatch start date (skipping Sundays)
+  const dispatchDate = new Date(istDate);
+
+  let shipsToday = false;
+  if (istDay !== 0 && istHour < 16) {
+    shipsToday = true;
+  } else {
+    // Ships next business day
+    dispatchDate.setDate(dispatchDate.getDate() + 1);
+    if (dispatchDate.getDay() === 0) {
+      // If next day is Sunday, ship on Monday
+      dispatchDate.setDate(dispatchDate.getDate() + 1);
+    }
+  }
+
+  // Calculate delivery date adding working/transit days (skips Sundays)
+  function addTransitDays(startDate: Date, transitDays: number): Date {
+    const result = new Date(startDate);
+    let added = 0;
+    while (added < transitDays) {
+      result.setDate(result.getDate() + 1);
+      if (result.getDay() !== 0) {
+        added++;
+      }
+    }
+    return result;
+  }
+
+  const deliveryMin = addTransitDays(dispatchDate, minDays);
+  const deliveryMax = addTransitDays(dispatchDate, maxDays);
+
+  const formatDayMonth = (d: Date) => {
+    const dayStr = d.toLocaleDateString('en-IN', { weekday: 'short' });
+    const dateNum = d.getDate();
+    const monthStr = d.toLocaleDateString('en-IN', { month: 'short' });
+    return `${dayStr}, ${dateNum} ${monthStr}`;
+  };
+
+  const minStr = formatDayMonth(deliveryMin);
+  const maxStr = formatDayMonth(deliveryMax);
+
+  const dateRangeText = minStr === maxStr ? minStr : `${minStr}–${maxStr}`;
+
+  return {
+    dateRangeText,
+    dispatchNote: shipsToday
+      ? 'Ships same day(until 4pm IST)'
+      : 'Ships next day',
+  };
+}
 
 export const DEFAULT_DELIVERY_CONFIG: DeliveryConfig = {
   kerala: DEFAULT_KERALA_OPTIONS,
@@ -251,13 +336,22 @@ export function resolveDeliveryDetails(
   deliveryMethodTitle: string;
   priceLabel: string;
   rateHint?: string;
+  estimatedDateRange?: string;
 } {
   const { isKerala, options, defaultMethodId } = getDeliveryOptions(stateName, config);
 
   const matched = options.find((opt) => opt.id === selectedMethodId) || options[0];
   const activeMethodId = matched?.id || defaultMethodId || (isKerala ? 'india_post_parcel' : 'ems_speed_post');
-  const methodName = matched?.name || (isKerala ? 'India Post Parcel' : 'EMS Speed Post');
+  const methodName = matched?.name || (isKerala ? 'Standard delivery via India post' : 'EMS Speed post');
   const deliveryTime = matched?.deliveryTime || (isKerala ? '3-5 Days' : '2-5 Days');
+
+  const minDays =
+    matched?.minDays ||
+    (activeMethodId.includes('parcel') ? 3 : activeMethodId.includes('dtdc') ? 1 : 1);
+  const maxDays =
+    matched?.maxDays ||
+    (activeMethodId.includes('parcel') ? 5 : activeMethodId.includes('dtdc') ? 2 : 3);
+  const estimate = getEstimatedDeliveryDates(minDays, maxDays);
 
   const calc = calculateDeliveryFee(activeMethodId, stateName, quantity, config);
 
@@ -267,9 +361,10 @@ export function resolveDeliveryDetails(
     methodName,
     deliveryTime,
     deliveryFee: calc.fee,
-    deliveryMethodTitle: `${methodName} (${deliveryTime})`,
+    deliveryMethodTitle: `${methodName} (${estimate.dateRangeText})`,
     priceLabel: calc.priceLabel,
     rateHint: calc.rateHint,
+    estimatedDateRange: estimate.dateRangeText,
   };
 }
 
