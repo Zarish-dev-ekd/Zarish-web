@@ -188,7 +188,8 @@ export async function getLatestProducts(limit = 8): Promise<Product[]> {
         *,
         category:categories(*),
         images:product_images(*),
-        variants:product_variants(*, size:sizes(*))
+        variants:product_variants(*, size:sizes(*)),
+        badge:product_badges(*)
       `)
       .eq('is_active', true)
       .order('created_at', { ascending: false })
@@ -210,7 +211,8 @@ export async function getNewArrivalProducts(limit = 24): Promise<Product[]> {
         *,
         category:categories(*),
         images:product_images(*),
-        variants:product_variants(*, size:sizes(*))
+        variants:product_variants(*, size:sizes(*)),
+        badge:product_badges(*)
       `)
       .eq('is_active', true)
       .eq('is_new_arrival', true)
@@ -240,7 +242,8 @@ export async function getProductsPaginated(
         *,
         category:categories(*),
         images:product_images(*),
-        variants:product_variants(*, size:sizes(*))
+        variants:product_variants(*, size:sizes(*)),
+        badge:product_badges(*)
       `,
         { count: 'exact' }
       )
@@ -273,7 +276,8 @@ export const getProductBySlug = cache(async (slug: string): Promise<Product | nu
         *,
         category:categories(*),
         images:product_images(*),
-        variants:product_variants(*, size:sizes(*))
+        variants:product_variants(*, size:sizes(*)),
+        badge:product_badges(*)
       `)
       .eq('slug', slug)
       .eq('is_active', true)
@@ -299,7 +303,8 @@ export async function getRelatedProducts(
         *,
         category:categories(*),
         images:product_images(*),
-        variants:product_variants(*, size:sizes(*))
+        variants:product_variants(*, size:sizes(*)),
+        badge:product_badges(*)
       `)
       .eq('is_active', true)
       .neq('id', currentProductId)
@@ -333,7 +338,8 @@ export async function getFilteredProducts(options?: {
         *,
         category:categories(*),
         images:product_images(*),
-        variants:product_variants(*, size:sizes(*))
+        variants:product_variants(*, size:sizes(*)),
+        badge:product_badges(*)
       `)
       .eq('is_active', true);
 
@@ -419,7 +425,8 @@ export async function searchProducts(searchTerm: string): Promise<Product[]> {
         *,
         category:categories(*),
         images:product_images(*),
-        variants:product_variants(*, size:sizes(*))
+        variants:product_variants(*, size:sizes(*)),
+        badge:product_badges(*)
       `)
       .eq('is_active', true)
       .or(`name.ilike.${term},sku.ilike.${term},description.ilike.${term}`)

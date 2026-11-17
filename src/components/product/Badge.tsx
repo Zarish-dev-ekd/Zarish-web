@@ -71,11 +71,12 @@ export default function Badge({ variant, text, badge, className = '', inline = f
       case 'hanging_flag':
         return (
           <div
-            className={`absolute top-0 left-2.5 sm:left-3.5 z-20 px-2 sm:px-2.5 pt-1.5 pb-2.5 text-center font-bold text-[9px] sm:text-[10px] tracking-wider uppercase shadow-md pointer-events-none select-none ${className}`}
+            className={`absolute top-0 left-2.5 sm:left-3.5 z-20 px-2.5 sm:px-3 pt-1.5 pb-2.5 text-center font-black text-[9px] sm:text-[10px] tracking-wider uppercase shadow-md pointer-events-none select-none whitespace-nowrap ${className}`}
             style={{
               backgroundColor: bg,
               color: fg,
               clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%)',
+              WebkitClipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%)',
             }}
           >
             {label}

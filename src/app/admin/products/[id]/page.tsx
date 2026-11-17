@@ -48,6 +48,7 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
   const [isFeatured, setIsFeatured] = useState(false);
   const [isNewArrival, setIsNewArrival] = useState(true);
   const [isOnSale, setIsOnSale] = useState(false);
+  const [existingCustomTags, setExistingCustomTags] = useState<string[]>([]);
 
   // Size Chart Configuration
   const [sizeChartConfig, setSizeChartConfig] = useState<SizeChartConfig>({
@@ -117,6 +118,11 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
         setIsFeatured(Boolean(p.is_featured));
         setIsNewArrival(Boolean(p.is_new_arrival));
         setIsOnSale(Boolean(p.is_on_sale));
+        setExistingCustomTags(
+          (p.tags || []).filter(
+            (t: string) => !t.startsWith('badge_data:') && !t.startsWith('badge_id:')
+          )
+        );
         if (p.size_chart) {
           setSizeChartConfig(p.size_chart);
         } else {
@@ -129,9 +135,13 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
 
         const loadedBadges = await getProductBadges(supabase);
         setAvailableBadges(loadedBadges);
-        const currentBadge = getProductBadge(p);
-        if (currentBadge) {
-          setSelectedBadgeId(currentBadge.id);
+        if (p.badge_id) {
+          setSelectedBadgeId(p.badge_id);
+        } else {
+          const currentBadge = getProductBadge(p, loadedBadges);
+          if (currentBadge) {
+            setSelectedBadgeId(currentBadge.id);
+          }
         }
 
         // 1. Reconstruct colors & variant stock from product_variants
@@ -475,8 +485,8 @@ export default function AdminEditProductPage({ params }: EditProductPageProps) {
 
       const selectedBadgeObj = availableBadges.find((b) => b.id === selectedBadgeId);
       const tagsList = selectedBadgeObj
-        ? [`badge_data:${JSON.stringify(selectedBadgeObj)}`, `badge_id:${selectedBadgeObj.id}`]
-        : [];
+        ? [...existingCustomTags, `badge_data:${JSON.stringify(selectedBadgeObj)}`, `badge_id:${selectedBadgeObj.id}`]
+        : existingCustomTags;
 
       // 1. Update product table
       const updatePayload: any = {

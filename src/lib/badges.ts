@@ -137,6 +137,27 @@ export async function saveProductBadge(supabase: any, badge: Partial<ProductBadg
       .single();
 
     if (!error && data) {
+      // Sync tags on any products referencing this badge so cached/raw queries stay updated
+      try {
+        const { data: prods } = await supabase
+          .from('products')
+          .select('id, tags')
+          .eq('badge_id', data.id);
+
+        if (prods && prods.length > 0) {
+          for (const p of prods) {
+            const cleanTags = (p.tags || []).filter(
+              (t: string) => !t.startsWith('badge_data:') && !t.startsWith('badge_id:')
+            );
+            cleanTags.push(`badge_data:${JSON.stringify(data)}`);
+            cleanTags.push(`badge_id:${data.id}`);
+            await supabase.from('products').update({ tags: cleanTags }).eq('id', p.id);
+          }
+        }
+      } catch (tagErr) {
+        console.warn('Could not sync tags for updated badge:', tagErr);
+      }
+
       return data;
     }
   } catch (err) {
@@ -186,34 +207,42 @@ export async function deleteProductBadge(supabase: any, badgeId: string): Promis
 /**
  * Extracts and resolves a badge object from a Product record
  */
-export function getProductBadge(product: Partial<Product> | null | undefined): ProductBadge | null {
+export function getProductBadge(
+  product: Partial<Product> | null | undefined,
+  badgesList?: ProductBadge[]
+): ProductBadge | null {
   if (!product) return null;
   if (product.badge) return product.badge;
 
-  // 1. Check if badge is embedded in tags as JSON
+  // 1. Resolve badgeId
+  const badgeId =
+    product.badge_id ||
+    (product.tags && Array.isArray(product.tags)
+      ? product.tags.find((t) => t.startsWith('badge_id:'))?.slice('badge_id:'.length)
+      : null);
+
+  if (badgeId) {
+    if (badgesList && badgesList.length > 0) {
+      const match = badgesList.find((b) => b.id === badgeId);
+      if (match) return match;
+    }
+    const defaultMatch = DEFAULT_PRODUCT_BADGES.find((b) => b.id === badgeId);
+    if (defaultMatch) return defaultMatch;
+  }
+
+  // 2. Check if badge is embedded in tags as JSON (fallback only if consistent)
   if (product.tags && Array.isArray(product.tags)) {
     const badgeDataTag = product.tags.find((t) => t.startsWith('badge_data:'));
     if (badgeDataTag) {
       try {
         const parsed = JSON.parse(badgeDataTag.slice('badge_data:'.length));
         if (parsed && parsed.text && parsed.style) {
-          return parsed as ProductBadge;
+          if (!badgeId || parsed.id === badgeId) {
+            return parsed as ProductBadge;
+          }
         }
       } catch {}
     }
-
-    const badgeIdTag = product.tags.find((t) => t.startsWith('badge_id:'));
-    if (badgeIdTag) {
-      const id = badgeIdTag.slice('badge_id:'.length);
-      const found = DEFAULT_PRODUCT_BADGES.find((b) => b.id === id);
-      if (found) return found;
-    }
-  }
-
-  // 2. Check if badge_id matches one of the defaults
-  if (product.badge_id) {
-    const found = DEFAULT_PRODUCT_BADGES.find((b) => b.id === product.badge_id);
-    if (found) return found;
   }
 
   return null;
