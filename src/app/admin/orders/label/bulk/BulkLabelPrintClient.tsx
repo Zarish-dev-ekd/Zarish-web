@@ -251,15 +251,54 @@ export default function BulkLabelPrintClient({
                   )}
                 </div>
 
+                {/* Packed Item Details: Photo + Name + Size + Qty */}
+                {order.items && order.items.length > 0 && (
+                  <div className="border-b-2 border-black pb-1.5 mb-2 bg-gray-50 p-1.5 rounded-xs">
+                    <span className="text-[9px] font-black uppercase text-gray-700 tracking-wider block mb-1">
+                      PACKED ITEM / CONTENTS:
+                    </span>
+                    <div className="space-y-1">
+                      {order.items.slice(0, 2).map((it, itemIdx) => (
+                        <div key={it.id || itemIdx} className="flex items-center gap-2">
+                          {it.image_url && (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img
+                              src={it.image_url}
+                              alt={it.product_name}
+                              className="w-8 h-9 object-cover rounded-xs border border-black/40 shrink-0 bg-white"
+                            />
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <span className="text-[10px] font-black text-black block truncate leading-tight">
+                              {it.quantity}x {it.product_name}
+                            </span>
+                            <div className="flex items-center gap-1.5 text-[9px] font-bold text-gray-800 mt-0.5">
+                              {it.size && (
+                                <span className="inline-block bg-black text-white px-1.5 py-0.2 rounded-2xs font-mono font-bold text-[8.5px]">
+                                  SIZE: {it.size}
+                                </span>
+                              )}
+                              <span>• ₹{it.unit_price}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Return Address Section */}
-                <div className="border-b border-gray-400 pb-2 mb-2 text-[10px] text-gray-800 leading-snug">
-                  <span className="font-black text-black uppercase tracking-wider block mb-0.5">
+                <div className="border-b border-gray-400 pb-1.5 mb-1.5 text-[9.5px] text-gray-800 leading-snug">
+                  <span className="font-black text-black uppercase tracking-wider block mb-0.5 text-[9px]">
                     IF UNDELIVERED, RETURN TO:
                   </span>
-                  <p className="font-bold text-black">{sender.name}</p>
+                  <p className="font-black text-black">ZARISH BY NEHALA MUFEED</p>
                   <p>{sender.addressLine1}, {sender.addressLine2}</p>
                   <p>{sender.city}, {sender.state} — PIN: <strong>{sender.pincode}</strong></p>
-                  <p>Mob: {sender.mobile} • {sender.email}</p>
+                  <p className="font-bold text-black mt-0.5">
+                    Customer ID: 1511058312 • NHS KOCHI - BNPL A/c 158
+                  </p>
+                  <p className="font-bold text-black">Mob: 9562292945 / {sender.mobile}</p>
                 </div>
 
                 {/* Booking Details Grid */}
@@ -405,15 +444,39 @@ export default function BulkLabelPrintClient({
                     <span className="text-[10px] font-black uppercase tracking-wider text-gray-600 block mb-1">
                       IF UNDELIVERED, RETURN TO:
                     </span>
-                    <strong className="text-[13px] text-black block">{sender.name}</strong>
+                    <strong className="text-[13px] text-black block">ZARISH BY NEHALA MUFEED</strong>
                     <p className="text-gray-800">{sender.addressLine1}, {sender.addressLine2}</p>
                     <p className="text-gray-800">{sender.city}, {sender.state} — PIN: <strong>{sender.pincode}</strong></p>
-                    <p className="text-gray-800 mt-1">Mob: {sender.mobile} • {sender.email}</p>
-                    <div className="mt-3 pt-2 border-t border-gray-200 text-[10px] text-gray-500">
+                    <p className="text-gray-900 font-bold mt-1">Customer ID: 1511058312 • NHS KOCHI - BNPL A/c 158</p>
+                    <p className="text-gray-900 font-bold">Mob: 9562292945 / {sender.mobile}</p>
+                    <div className="mt-2 pt-2 border-t border-gray-200 text-[10px] text-gray-500">
                       <span>Booking Office: <strong>{sender.bookingOfficeName} ({sender.bookingOfficePin})</strong></span>
                     </div>
                   </div>
                 </div>
+
+                {/* A4 Packed Items Strip */}
+                {order.items && order.items.length > 0 && (
+                  <div className="mt-3 pt-2.5 border-t border-gray-200 flex items-center gap-4 flex-wrap">
+                    <span className="text-[10px] font-black uppercase text-gray-600">Contents:</span>
+                    {order.items.slice(0, 3).map((it, itemIdx) => (
+                      <div key={it.id || itemIdx} className="flex items-center gap-2 bg-[#FAF8F5] px-2 py-1 rounded border border-gray-200">
+                        {it.image_url && (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={it.image_url}
+                            alt={it.product_name}
+                            className="w-7 h-8 object-cover rounded-2xs border border-gray-300 shrink-0"
+                          />
+                        )}
+                        <span className="text-[11px] font-bold text-black">
+                          {it.quantity}x {it.product_name}
+                          {it.size ? ` (Size: ${it.size})` : ''}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* SCISSOR CUT LINE */}
