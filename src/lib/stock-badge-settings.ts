@@ -54,7 +54,7 @@ export function saveLocalStockBadgeConfig(config: StockBadgeConfig) {
 export function fetchStockBadgeConfig(): Promise<StockBadgeConfig> {
   if (activeFetchPromise) return activeFetchPromise;
 
-  activeFetchPromise = fetch('/api/stock-badge-settings')
+  activeFetchPromise = fetch('/api/stock-badge-settings', { cache: 'no-store' })
     .then((res) => res.json())
     .then((data) => {
       if (data?.config) {

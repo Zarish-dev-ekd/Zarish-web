@@ -15,6 +15,7 @@ import {
   saveShippingSenderLocally,
   type ShippingSenderInfo,
 } from '@/lib/shipping-sender';
+import { saveLocalStockBadgeConfig } from '@/lib/stock-badge-settings';
 
 function SettingsContent() {
   const searchParams = useSearchParams();
@@ -128,7 +129,7 @@ function SettingsContent() {
 
   // Load stock badge settings from API
   useEffect(() => {
-    fetch('/api/stock-badge-settings')
+    fetch('/api/stock-badge-settings', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data?.config) {
@@ -172,6 +173,7 @@ function SettingsContent() {
         setEnableLowStockBadge(nextConfig.enable_low_stock_badge);
         setLowStockThreshold(nextConfig.low_stock_threshold);
         setShowInStockBadge(nextConfig.show_in_stock_badge);
+        saveLocalStockBadgeConfig(nextConfig);
         setSuccess('Stock badge settings saved! Product cards now reflect this globally.');
       } else {
         throw new Error(data?.error || 'Failed to save');

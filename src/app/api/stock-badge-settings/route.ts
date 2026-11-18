@@ -7,6 +7,13 @@ import { DEFAULT_STOCK_BADGE_CONFIG, type StockBadgeConfig } from '@/lib/stock-b
 import fs from 'fs';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+const NO_STORE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+};
+
 const LOCAL_FILE = path.join(process.cwd(), 'src', 'data', 'stock-badge-settings.json');
 
 function getLocalConfigFile(): StockBadgeConfig {
@@ -52,14 +59,17 @@ export async function GET() {
       .maybeSingle();
 
     if (siteData && (siteData.enable_low_stock_badge !== null || siteData.low_stock_threshold !== null)) {
-      return NextResponse.json({
-        success: true,
-        config: {
-          enable_low_stock_badge: siteData.enable_low_stock_badge ?? DEFAULT_STOCK_BADGE_CONFIG.enable_low_stock_badge,
-          low_stock_threshold: Number(siteData.low_stock_threshold) || DEFAULT_STOCK_BADGE_CONFIG.low_stock_threshold,
-          show_in_stock_badge: siteData.show_in_stock_badge ?? DEFAULT_STOCK_BADGE_CONFIG.show_in_stock_badge,
+      return NextResponse.json(
+        {
+          success: true,
+          config: {
+            enable_low_stock_badge: siteData.enable_low_stock_badge ?? DEFAULT_STOCK_BADGE_CONFIG.enable_low_stock_badge,
+            low_stock_threshold: Number(siteData.low_stock_threshold) || DEFAULT_STOCK_BADGE_CONFIG.low_stock_threshold,
+            show_in_stock_badge: siteData.show_in_stock_badge ?? DEFAULT_STOCK_BADGE_CONFIG.show_in_stock_badge,
+          },
         },
-      });
+        { headers: NO_STORE_HEADERS }
+      );
     }
 
     // Fallback: check store_policies
@@ -71,28 +81,37 @@ export async function GET() {
 
     if (policyData?.content) {
       const parsed = typeof policyData.content === 'string' ? JSON.parse(policyData.content) : policyData.content;
-      return NextResponse.json({
-        success: true,
-        config: {
-          enable_low_stock_badge: parsed.enable_low_stock_badge ?? DEFAULT_STOCK_BADGE_CONFIG.enable_low_stock_badge,
-          low_stock_threshold: Number(parsed.low_stock_threshold) || DEFAULT_STOCK_BADGE_CONFIG.low_stock_threshold,
-          show_in_stock_badge: parsed.show_in_stock_badge ?? DEFAULT_STOCK_BADGE_CONFIG.show_in_stock_badge,
+      return NextResponse.json(
+        {
+          success: true,
+          config: {
+            enable_low_stock_badge: parsed.enable_low_stock_badge ?? DEFAULT_STOCK_BADGE_CONFIG.enable_low_stock_badge,
+            low_stock_threshold: Number(parsed.low_stock_threshold) || DEFAULT_STOCK_BADGE_CONFIG.low_stock_threshold,
+            show_in_stock_badge: parsed.show_in_stock_badge ?? DEFAULT_STOCK_BADGE_CONFIG.show_in_stock_badge,
+          },
         },
-      });
+        { headers: NO_STORE_HEADERS }
+      );
     }
 
     const local = getLocalConfigFile();
-    return NextResponse.json({
-      success: true,
-      config: local,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        config: local,
+      },
+      { headers: NO_STORE_HEADERS }
+    );
   } catch (err: any) {
     const local = getLocalConfigFile();
-    return NextResponse.json({
-      success: true,
-      config: local,
-      warning: err?.message,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        config: local,
+        warning: err?.message,
+      },
+      { headers: NO_STORE_HEADERS }
+    );
   }
 }
 
@@ -154,6 +173,7 @@ export async function POST(request: NextRequest) {
     }
 
     revalidatePath('/');
+    revalidatePath('/products');
     revalidatePath('/shop-by-size');
     revalidatePath('/admin/settings');
     revalidatePath('/admin/badges');

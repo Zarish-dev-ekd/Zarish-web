@@ -5,6 +5,11 @@ import { createClient } from '@/utils/supabase/client';
 import Badge from '@/components/product/Badge';
 import type { ProductBadge, BadgeStyle } from '@/lib/types';
 import { getProductBadges, saveProductBadge, deleteProductBadge, DEFAULT_PRODUCT_BADGES } from '@/lib/badges';
+import {
+  DEFAULT_STOCK_BADGE_CONFIG,
+  saveLocalStockBadgeConfig,
+  type StockBadgeConfig,
+} from '@/lib/stock-badge-settings';
 
 const BADGE_STYLES: { id: BadgeStyle; name: string; tag: string; desc: string }[] = [
   { id: 'corner_ribbon', name: 'Left Corner Ribbon', tag: 'CORNER', desc: 'Folded diagonal ribbon across the top-left corner (Recommended)' },
@@ -42,9 +47,68 @@ export default function AdminBadgesPage() {
   const [bgColor, setBgColor] = useState('#D4AF37');
   const [textColor, setTextColor] = useState('#FFFFFF');
 
+  // Stock Badges ON/OFF State ("IN STOCK" & "ONLY X LEFT")
+  const [stockConfig, setStockConfig] = useState<StockBadgeConfig>(DEFAULT_STOCK_BADGE_CONFIG);
+  const [loadingStockConfig, setLoadingStockConfig] = useState(true);
+  const [savingStockKey, setSavingStockKey] = useState<string | null>(null);
+  const [stockToast, setStockToast] = useState<string | null>(null);
+
   useEffect(() => {
     loadBadges();
+    loadStockConfig();
   }, []);
+
+  async function loadStockConfig() {
+    setLoadingStockConfig(true);
+    try {
+      const res = await fetch('/api/stock-badge-settings', { cache: 'no-store' });
+      const data = await res.json();
+      if (data?.config) {
+        setStockConfig(data.config);
+      }
+    } catch (err) {
+      console.warn('Could not load stock badge settings:', err);
+    } finally {
+      setLoadingStockConfig(false);
+    }
+  }
+
+  async function updateStockConfig(patch: Partial<StockBadgeConfig>, key: string) {
+    const nextConfig: StockBadgeConfig = {
+      enable_low_stock_badge:
+        typeof patch.enable_low_stock_badge === 'boolean'
+          ? patch.enable_low_stock_badge
+          : stockConfig.enable_low_stock_badge,
+      low_stock_threshold:
+        typeof patch.low_stock_threshold === 'number'
+          ? Math.max(1, Math.min(50, patch.low_stock_threshold))
+          : stockConfig.low_stock_threshold,
+      show_in_stock_badge:
+        typeof patch.show_in_stock_badge === 'boolean'
+          ? patch.show_in_stock_badge
+          : stockConfig.show_in_stock_badge,
+    };
+
+    setSavingStockKey(key);
+    try {
+      const res = await fetch('/api/stock-badge-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nextConfig),
+      });
+      const data = await res.json();
+      if (res.ok && data?.success) {
+        setStockConfig(nextConfig);
+        saveLocalStockBadgeConfig(nextConfig);
+        setStockToast('Saved! Storefront badges updated.');
+        setTimeout(() => setStockToast(null), 3000);
+      }
+    } catch (err) {
+      console.error('Failed to save stock badge setting:', err);
+    } finally {
+      setSavingStockKey(null);
+    }
+  }
 
   async function loadBadges() {
     setLoading(true);
@@ -176,6 +240,169 @@ ALTER TABLE public.products ADD COLUMN IF NOT EXISTS badge_id UUID REFERENCES pu
             <span>Create New Badge</span>
           </button>
         </div>
+      </div>
+
+      {/* ─── Stock Status Badges ON / OFF Controls ("IN STOCK" & "ONLY X LEFT") ─── */}
+      <div className="bg-white border border-[#E8E0D5] rounded-xl p-5 mb-8 shadow-xs">
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-4 pb-3 border-b border-[#F0EBE5]">
+          <div>
+            <h3 className="text-base font-semibold text-[#2C241E] m-0">
+              Product Card Stock Badges (ON / OFF)
+            </h3>
+            <p className="text-xs text-[#7A6F66] m-0 mt-0.5">
+              Turn ON or OFF the bottom-right &ldquo;IN STOCK&rdquo; and &ldquo;ONLY X LEFT&rdquo; tags shown on product cards.
+            </p>
+          </div>
+          {stockToast && (
+            <span className="text-xs font-semibold text-[#0E7064] bg-[#E8F5E9] border border-[#C8E6C9] px-3 py-1 rounded-full">
+              ✓ {stockToast}
+            </span>
+          )}
+        </div>
+
+        {loadingStockConfig ? (
+          <div className="py-4 text-xs text-[#7A6F66]">Loading stock badge toggles...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Toggle 1: IN STOCK Badge */}
+            <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-[#FAF7F2] border border-[#EFE8DF]">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase bg-[#0E7064] text-white">
+                    IN STOCK
+                  </span>
+                  <span className="text-sm font-semibold text-[#2C241E]">
+                    In Stock Badge
+                  </span>
+                </div>
+                <p className="text-xs text-[#7A6F66] mt-1 m-0">
+                  {stockConfig.show_in_stock_badge
+                    ? 'Currently ON — visible on available products.'
+                    : 'Currently OFF — hidden for a clean look.'}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                role="switch"
+                aria-checked={stockConfig.show_in_stock_badge}
+                disabled={savingStockKey !== null}
+                onClick={() =>
+                  updateStockConfig(
+                    { show_in_stock_badge: !stockConfig.show_in_stock_badge },
+                    'in_stock'
+                  )
+                }
+                className={`relative inline-flex h-7 w-14 shrink-0 items-center rounded-full transition-colors cursor-pointer disabled:opacity-50 ${
+                  stockConfig.show_in_stock_badge ? 'bg-[#0E7064]' : 'bg-[#D5CCC2]'
+                }`}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                    stockConfig.show_in_stock_badge ? 'translate-x-8' : 'translate-x-1'
+                  }`}
+                />
+                <span
+                  className={`absolute text-[9px] font-black uppercase pointer-events-none ${
+                    stockConfig.show_in_stock_badge
+                      ? 'left-1.5 text-white'
+                      : 'right-1.5 text-[#5C534A]'
+                  }`}
+                >
+                  {savingStockKey === 'in_stock'
+                    ? '...'
+                    : stockConfig.show_in_stock_badge
+                      ? 'ON'
+                      : 'OFF'}
+                </span>
+              </button>
+            </div>
+
+            {/* Toggle 2: ONLY X LEFT Low Stock Badge */}
+            <div className="flex flex-col justify-between gap-3 p-4 rounded-xl bg-[#FAF7F2] border border-[#EFE8DF]">
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase bg-[#C0392B] text-white">
+                      ONLY {stockConfig.low_stock_threshold} LEFT
+                    </span>
+                    <span className="text-sm font-semibold text-[#2C241E]">
+                      Low Stock Badge
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#7A6F66] mt-1 m-0">
+                    {stockConfig.enable_low_stock_badge
+                      ? `Currently ON — shows when stock ≤ ${stockConfig.low_stock_threshold}.`
+                      : 'Currently OFF — hidden on all products.'}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={stockConfig.enable_low_stock_badge}
+                  disabled={savingStockKey !== null}
+                  onClick={() =>
+                    updateStockConfig(
+                      { enable_low_stock_badge: !stockConfig.enable_low_stock_badge },
+                      'low_stock'
+                    )
+                  }
+                  className={`relative inline-flex h-7 w-14 shrink-0 items-center rounded-full transition-colors cursor-pointer disabled:opacity-50 ${
+                    stockConfig.enable_low_stock_badge ? 'bg-[#C0392B]' : 'bg-[#D5CCC2]'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                      stockConfig.enable_low_stock_badge ? 'translate-x-8' : 'translate-x-1'
+                    }`}
+                  />
+                  <span
+                    className={`absolute text-[9px] font-black uppercase pointer-events-none ${
+                      stockConfig.enable_low_stock_badge
+                        ? 'left-1.5 text-white'
+                        : 'right-1.5 text-[#5C534A]'
+                    }`}
+                  >
+                    {savingStockKey === 'low_stock'
+                      ? '...'
+                      : stockConfig.enable_low_stock_badge
+                        ? 'ON'
+                        : 'OFF'}
+                  </span>
+                </button>
+              </div>
+
+              {stockConfig.enable_low_stock_badge && (
+                <div className="flex items-center gap-2 pt-2 border-t border-[#EAE2D7] text-xs text-[#2C241E]">
+                  <span className="font-medium text-[#7A6F66]">Show when stock ≤</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={50}
+                    value={stockConfig.low_stock_threshold}
+                    onChange={(e) =>
+                      setStockConfig((prev) => ({
+                        ...prev,
+                        low_stock_threshold: Math.max(1, parseInt(e.target.value) || 1),
+                      }))
+                    }
+                    onBlur={() =>
+                      updateStockConfig(
+                        { low_stock_threshold: stockConfig.low_stock_threshold },
+                        'threshold'
+                      )
+                    }
+                    className="w-14 px-2 py-1 text-xs text-center font-bold border border-[#E8E0D5] rounded bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
+                  />
+                  <span className="text-[#7A6F66]">
+                    {savingStockKey === 'threshold' ? 'Saving...' : 'units'}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ─── Badges Showcase Grid ───────────────────────────────── */}
