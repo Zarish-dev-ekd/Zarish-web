@@ -31,7 +31,7 @@ export const DEFAULT_KERALA_OPTIONS: DeliveryOption[] = [
     isActive: true,
     minDays: 3,
     maxDays: 5,
-    defaultNote: 'Ships next day',
+    defaultNote: 'Reliable doorstep delivery',
   },
   {
     id: 'dtdc',
@@ -42,7 +42,7 @@ export const DEFAULT_KERALA_OPTIONS: DeliveryOption[] = [
     isActive: true,
     minDays: 1,
     maxDays: 2,
-    defaultNote: 'Ships same day(until 4pm IST)',
+    defaultNote: 'Same-day shipping until 5pm IST.',
   },
   {
     id: 'ems_speed_post',
@@ -53,7 +53,7 @@ export const DEFAULT_KERALA_OPTIONS: DeliveryOption[] = [
     isActive: true,
     minDays: 1,
     maxDays: 3,
-    defaultNote: 'Fast reliable delivery',
+    defaultNote: 'Fast service, convenient home delivery.',
   },
 ];
 
@@ -67,7 +67,7 @@ export const DEFAULT_OTHER_STATE_OPTIONS: DeliveryOption[] = [
     isActive: true,
     minDays: 2,
     maxDays: 5,
-    defaultNote: 'Fast reliable delivery',
+    defaultNote: 'Fast service, convenient home delivery.',
   },
 ];
 
@@ -94,7 +94,7 @@ export function getEstimatedDeliveryDates(
   const dispatchDate = new Date(istDate);
 
   let shipsToday = false;
-  if (istDay !== 0 && istHour < 16) {
+  if (istDay !== 0 && istHour < 17) {
     shipsToday = true;
   } else {
     // Ships next business day
@@ -136,8 +136,8 @@ export function getEstimatedDeliveryDates(
   return {
     dateRangeText,
     dispatchNote: shipsToday
-      ? 'Ships same day(until 4pm IST)'
-      : 'Ships next day',
+      ? 'Same-day shipping until 5pm IST.'
+      : 'Reliable doorstep delivery',
   };
 }
 

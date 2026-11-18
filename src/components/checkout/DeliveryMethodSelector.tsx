@@ -116,13 +116,23 @@ export default function DeliveryMethodSelector({
             (option.id.includes('parcel') ? 5 : option.id.includes('dtdc') ? 2 : 3);
           const estimate = getEstimatedDeliveryDates(minDays, maxDays);
 
+          const LEGACY_NOTES = new Set([
+            'Ships next day',
+            'Ships same day(until 4pm IST)',
+            'Fast reliable delivery',
+          ]);
+          const customNote =
+            option.defaultNote && !LEGACY_NOTES.has(option.defaultNote)
+              ? option.defaultNote
+              : null;
+
           const dispatchSubtext =
-            option.defaultNote ||
+            customNote ||
             (option.id.includes('dtdc')
-              ? 'Ships same day(until 4pm IST)'
+              ? 'Same-day shipping until 5pm IST.'
               : option.id.includes('speed') || option.id.includes('ems')
-                ? 'Fast reliable delivery'
-                : 'Ships next day');
+                ? 'Fast service, convenient home delivery.'
+                : 'Reliable doorstep delivery');
 
           return (
             <div
