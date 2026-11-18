@@ -125,8 +125,12 @@ export default function HeroSection({ hero, slides }: HeroSectionProps) {
               ) : (
                 <div className="w-full h-full bg-gradient-to-tr from-[#F0E4D8] to-[#FAF6F0]" />
               )}
-              {/* Minimal, soft ivory gradient only at the very bottom on mobile — leaves model's face, body, and backdrop 100% crystal-clear */}
-              <div className="absolute bottom-0 inset-x-0 h-[44%] bg-gradient-to-t from-[#FAF6F0] via-[#FAF6F0]/75 via-32% to-transparent pointer-events-none" />
+              {/* Soft readability gradient — lighter when banner has no title/subtitle (pre-designed graphic) */}
+              {(slide.title || slide.subtitle || slide.eyebrow) ? (
+                <div className="absolute bottom-0 inset-x-0 h-[44%] bg-gradient-to-t from-[#FAF6F0] via-[#FAF6F0]/75 via-32% to-transparent pointer-events-none" />
+              ) : (
+                <div className="absolute bottom-0 inset-x-0 h-[24%] bg-gradient-to-t from-black/35 to-transparent pointer-events-none" />
+              )}
             </div>
 
             {/* Desktop Full-Cover Banner Background (> 768px) */}
@@ -143,23 +147,34 @@ export default function HeroSection({ hero, slides }: HeroSectionProps) {
               ) : (
                 <div className="w-full h-full bg-gradient-to-tr from-[#F0E4D8] to-[#FAF6F0]" />
               )}
-              {/* Ultra-subtle text-readability gradient only on the far left margin — leaves 70%+ of the photo, model, and florals 100% crystal-clear */}
-              <div className="absolute inset-0 bg-gradient-to-r from-[#FAF6F0]/80 via-[#FAF6F0]/35 via-24% via-transparent via-36% to-transparent pointer-events-none" />
+              {/* Ultra-subtle text-readability gradient only when banner displays text overlay */}
+              {(slide.title || slide.subtitle || slide.eyebrow) && (
+                <div className="absolute inset-0 bg-gradient-to-r from-[#FAF6F0]/80 via-[#FAF6F0]/35 via-24% via-transparent via-36% to-transparent pointer-events-none" />
+              )}
             </div>
           </div>
         );
       })}
 
+      {/* Clickable full-banner link when no CTA button text is set but URL exists */}
+      {!currentSlide?.cta_text && currentSlide?.cta_url && (
+        <Link
+          href={currentSlide.cta_url}
+          aria-label={currentSlide.title || currentSlide.campaign_badge || 'Shop Banner'}
+          className="absolute inset-0 z-10"
+        />
+      )}
+
       {/* ───────────────────────────────────────────────────────────── */}
       {/* MOBILE HERO VIEW (<= 768px): Clean, Neat & Minimalist Luxury  */}
       {/* ───────────────────────────────────────────────────────────── */}
-      <div className="relative z-10 w-full md:hidden flex flex-col justify-end px-5 sm:px-8 pb-5 pt-12 h-full">
-        {/* Eyebrow - Only if provided in DB */}
-        {currentSlide?.eyebrow && (
-          <div className="text-[10px] sm:text-xs font-semibold tracking-[0.25em] uppercase text-[#7B5B3A] mb-1.5 flex items-center transition-all duration-500">
-            <span>{currentSlide.eyebrow}</span>
+      <div className="relative z-10 w-full md:hidden flex flex-col justify-end px-5 sm:px-8 pb-5 pt-12 h-full pointer-events-none">
+        {/* Eyebrow & Campaign Badge (renders even if only campaign_badge is set) */}
+        {(currentSlide?.eyebrow || currentSlide?.campaign_badge) && (
+          <div className="text-[10px] sm:text-xs font-semibold tracking-[0.25em] uppercase text-[#7B5B3A] mb-1.5 flex items-center gap-2 flex-wrap transition-all duration-500">
+            {currentSlide?.eyebrow && <span>{currentSlide.eyebrow}</span>}
             {currentSlide?.campaign_badge && (
-              <span className="ml-2 px-2 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase bg-[#8B4E5A] text-white">
+              <span className="px-2.5 py-0.5 rounded text-[9.5px] font-bold tracking-wider uppercase bg-[#8B4E5A] text-white shadow-xs">
                 {currentSlide.campaign_badge}
               </span>
             )}
@@ -184,16 +199,15 @@ export default function HeroSection({ hero, slides }: HeroSectionProps) {
         {currentSlide?.cta_text && (
           <Link
             href={currentSlide.cta_url || '/products'}
-            className="inline-flex items-center justify-center gap-2 self-start rounded-full bg-[#2C1D13] hover:bg-[#3D2B1F] text-white px-7 py-3 text-xs font-semibold tracking-wider uppercase transition-all duration-300 shadow-[0_4px_16px_rgba(44,29,19,0.22)] w-full sm:w-auto mb-5"
+            className="pointer-events-auto inline-flex items-center justify-center gap-2 self-start rounded-full bg-[#2C1D13] hover:bg-[#3D2B1F] text-white px-7 py-3 text-xs font-semibold tracking-wider uppercase transition-all duration-300 shadow-[0_4px_16px_rgba(44,29,19,0.22)] w-full sm:w-auto mb-5"
           >
             <span>{currentSlide.cta_text}</span>
-          
           </Link>
         )}
 
         {/* Mobile Slide Indicators (Only shown if 2+ banners are configured) */}
         {total > 1 && (
-          <div className="flex items-center justify-center gap-2 pt-4">
+          <div className="pointer-events-auto flex items-center justify-center gap-2 pt-4">
             {allSlides.map((_, idx) => (
               <button
                 key={idx}
@@ -215,15 +229,15 @@ export default function HeroSection({ hero, slides }: HeroSectionProps) {
       {/* ───────────────────────────────────────────────────────────── */}
       {/* DESKTOP HERO VIEW (> 768px): Original Full Panorama Layout     */}
       {/* ───────────────────────────────────────────────────────────── */}
-      <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-14 py-8 md:py-16 h-full hidden md:flex flex-col justify-center">
+      <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-14 py-8 md:py-16 h-full hidden md:flex flex-col justify-center pointer-events-none">
         {/* Left Column Text */}
         <div className="w-full md:max-w-md lg:max-w-lg flex flex-col justify-center">
-          {/* Eyebrow - Only if provided in DB */}
-          {currentSlide?.eyebrow && (
-            <div className="text-[11px] md:text-xs font-semibold tracking-[0.25em] uppercase text-[#7B5B3A] mb-2 md:mb-3.5 flex items-center transition-all duration-500">
-              <span>{currentSlide.eyebrow}</span>
+          {/* Eyebrow & Campaign Badge (renders even if only campaign_badge is set) */}
+          {(currentSlide?.eyebrow || currentSlide?.campaign_badge) && (
+            <div className="text-[11px] md:text-xs font-semibold tracking-[0.25em] uppercase text-[#7B5B3A] mb-2 md:mb-3.5 flex items-center gap-2.5 flex-wrap transition-all duration-500">
+              {currentSlide?.eyebrow && <span>{currentSlide.eyebrow}</span>}
               {currentSlide?.campaign_badge && (
-                <span className="ml-2.5 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-[#8B4E5A] text-white">
+                <span className="px-2.5 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-[#8B4E5A] text-white shadow-xs">
                   {currentSlide.campaign_badge}
                 </span>
               )}
@@ -248,10 +262,9 @@ export default function HeroSection({ hero, slides }: HeroSectionProps) {
           {currentSlide?.cta_text && (
             <Link
               href={currentSlide?.cta_url || '/products'}
-              className="inline-flex items-center justify-center gap-2 self-start rounded-full bg-[#3D2B1F] hover:bg-[#5C3D2E] text-white px-8 py-3.5 text-xs md:text-sm font-semibold tracking-wider uppercase transition-all duration-300 shadow-[0_4px_16px_rgba(61,43,31,0.22)] hover:shadow-[0_6px_22px_rgba(61,43,31,0.32)] hover:-translate-y-0.5 w-full sm:w-auto"
+              className="pointer-events-auto inline-flex items-center justify-center gap-2 self-start rounded-full bg-[#3D2B1F] hover:bg-[#5C3D2E] text-white px-8 py-3.5 text-xs md:text-sm font-semibold tracking-wider uppercase transition-all duration-300 shadow-[0_4px_16px_rgba(61,43,31,0.22)] hover:shadow-[0_6px_22px_rgba(61,43,31,0.32)] hover:-translate-y-0.5 w-full sm:w-auto"
             >
               <span>{currentSlide.cta_text}</span>
-           
             </Link>
           )}
         </div>

@@ -8,8 +8,11 @@ import { optimizeCloudinaryUrl } from '@/lib/utils';
 
 export default function AdminHeroPage() {
   const [slides, setSlides] = useState<HeroSlide[]>([]);
+  const [productsList, setProductsList] = useState<{ id: string; name: string; slug: string }[]>([]);
+  const [categoriesList, setCategoriesList] = useState<{ id: string; name: string; slug: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -21,8 +24,8 @@ export default function AdminHeroPage() {
   const [eyebrow, setEyebrow] = useState('MODEST FASHION');
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
-  const [ctaText, setCtaText] = useState('SHOP NEW ARRIVALS');
-  const [ctaUrl, setCtaUrl] = useState('/collections');
+  const [ctaText, setCtaText] = useState('SHOP NOW');
+  const [ctaUrl, setCtaUrl] = useState('/products');
   const [imageUrl, setImageUrl] = useState('');
   const [mobileImageUrl, setMobileImageUrl] = useState('');
   const [overlayText, setOverlayText] = useState('Modesty\nLooks\nBeautiful\nOn You ♡');
@@ -34,13 +37,28 @@ export default function AdminHeroPage() {
   const fetchSlides = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('hero_slides')
-        .select('*')
-        .order('display_order', { ascending: true });
+      const [{ data, error }, { data: prods }, { data: cats }] = await Promise.all([
+        supabase
+          .from('hero_slides')
+          .select('*')
+          .order('display_order', { ascending: true }),
+        supabase
+          .from('products')
+          .select('id, name, slug')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(100),
+        supabase
+          .from('categories')
+          .select('id, name, slug')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true }),
+      ]);
 
       if (error) throw error;
       setSlides(data || []);
+      if (prods) setProductsList(prods);
+      if (cats) setCategoriesList(cats);
     } catch (err: any) {
       console.error('Error fetching hero slides:', err);
       setError(err?.message || 'Failed to load hero slides');
@@ -61,28 +79,61 @@ export default function AdminHeroPage() {
 
     if (existing) {
       setSlideId(existing.id);
-      setEyebrow(existing.eyebrow || 'MODEST FASHION');
+      setEyebrow(existing.eyebrow ?? '');
       setTitle(existing.title || '');
       setSubtitle(existing.subtitle || '');
-      setCtaText(existing.cta_text || 'SHOP NEW ARRIVALS');
-      setCtaUrl(existing.cta_url || '/collections');
+      setCtaText(existing.cta_text ?? '');
+      setCtaUrl(existing.cta_url || '/products');
       setImageUrl(existing.image_url || '');
       setMobileImageUrl(existing.mobile_image_url || '');
-      setOverlayText(existing.overlay_text || 'Modesty\nLooks\nBeautiful\nOn You ♡');
+      setOverlayText(existing.overlay_text || '');
       setCampaignBadge(existing.campaign_badge || '');
       setIsActive(existing.is_active ?? true);
     } else {
       setSlideId(null);
-      setEyebrow(slotIndex === 1 ? 'NEW ARRIVALS' : slotIndex === 2 ? 'SIGNATURE EDIT' : 'MODEST FASHION');
+      setEyebrow(slotIndex === 1 ? 'BACK IN STOCK' : slotIndex === 2 ? 'SIGNATURE EDIT' : 'MODEST FASHION');
       setTitle('');
       setSubtitle('');
-      setCtaText('EXPLORE COLLECTION');
-      setCtaUrl('/collections');
+      setCtaText('SHOP NOW');
+      setCtaUrl('/products');
       setImageUrl('');
       setMobileImageUrl('');
-      setOverlayText('Grace\nIn Every\nThread ♡');
-      setCampaignBadge('');
+      setOverlayText('');
+      setCampaignBadge(slotIndex === 1 ? 'RESTOCKED' : '');
       setIsActive(true);
+    }
+  };
+
+  const applyRestockPreset = () => {
+    setCampaignBadge('RESTOCKED');
+    setEyebrow('BACK IN STOCK');
+    setCtaText('SHOP NOW');
+    if (!title.trim()) {
+      setTitle('YOUR FAVOURITES RESTOCKED');
+    }
+    if (!subtitle.trim()) {
+      setSubtitle('Our most-loved styles are back in stock. Grab yours before they sell out again.');
+    }
+  };
+
+  const handleToggleActive = async (slide: HeroSlide) => {
+    setTogglingId(slide.id);
+    setError(null);
+    try {
+      const nextActive = !slide.is_active;
+      const { error: updateErr } = await supabase
+        .from('hero_slides')
+        .update({ is_active: nextActive })
+        .eq('id', slide.id);
+      if (updateErr) throw updateErr;
+      setSlides((prev) =>
+        prev.map((s) => (s.id === slide.id ? { ...s, is_active: nextActive } : s))
+      );
+      setSuccess(`Banner ${nextActive ? 'turned ON (Live)' : 'turned OFF (Hidden)'}.`);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to update banner status');
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -94,10 +145,6 @@ export default function AdminHeroPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) {
-      setError('Please provide a banner title.');
-      return;
-    }
     if (!imageUrl && !mobileImageUrl) {
       setError('Please upload at least one image (Desktop or Mobile).');
       return;
@@ -109,15 +156,15 @@ export default function AdminHeroPage() {
 
     try {
       const slideData = {
-        eyebrow: eyebrow.trim() || 'MODEST FASHION',
+        eyebrow: eyebrow.trim(),
         title: title.trim(),
         subtitle: subtitle.trim(),
-        cta_text: ctaText.trim() || 'SHOP NEW ARRIVALS',
-        cta_url: ctaUrl.trim() || '/collections',
+        cta_text: ctaText.trim(),
+        cta_url: ctaUrl.trim() || '/products',
         image_url: imageUrl || mobileImageUrl,
         mobile_image_url: mobileImageUrl.trim() || null,
         overlay_text: overlayText.trim() || null,
-        image_alt: `${title} - ZARISH`,
+        image_alt: title.trim() ? `${title.trim()} - ZARISH` : `${campaignBadge.trim() || 'Featured'} Banner - ZARISH`,
         campaign_badge: campaignBadge.trim() || null,
         is_active: isActive,
         display_order: editingSlot ?? 0,
@@ -231,13 +278,23 @@ export default function AdminHeroPage() {
                   </div>
 
                   {isConfigured && (
-                    <span
-                      className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
-                        slide.is_active ? 'bg-[#E8F5E9] text-[#2E7D32]' : 'bg-[#FFEBEE] text-[#C62828]'
+                    <button
+                      type="button"
+                      disabled={togglingId === slide.id}
+                      onClick={() => handleToggleActive(slide)}
+                      className={`text-[11px] px-2.5 py-0.5 rounded-full font-bold transition-colors cursor-pointer disabled:opacity-50 ${
+                        slide.is_active
+                          ? 'bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] hover:bg-[#C8E6C9]'
+                          : 'bg-[#FFEBEE] text-[#C62828] border border-[#FFCDD2] hover:bg-[#FFCDD2]'
                       }`}
+                      title="Click to turn this banner ON or OFF on storefront"
                     >
-                      {slide.is_active ? 'Active' : 'Draft'}
-                    </span>
+                      {togglingId === slide.id
+                        ? '...'
+                        : slide.is_active
+                          ? '● ON (Active)'
+                          : '○ OFF (Hidden)'}
+                    </button>
                   )}
                 </div>
 
@@ -254,7 +311,7 @@ export default function AdminHeroPage() {
                           /* eslint-disable-next-line @next/next/no-img-element */
                           <img
                             src={optimizeCloudinaryUrl(slide.image_url, { width: 300 })}
-                            alt={slide.title}
+                            alt={slide.title || 'Banner'}
                             className="w-full h-[85px] object-cover rounded border border-[#E8E0D5]"
                           />
                         ) : (
@@ -270,7 +327,7 @@ export default function AdminHeroPage() {
                           /* eslint-disable-next-line @next/next/no-img-element */
                           <img
                             src={optimizeCloudinaryUrl(slide.mobile_image_url, { width: 140 })}
-                            alt={slide.title}
+                            alt={slide.title || 'Banner'}
                             className="w-full h-[85px] object-cover rounded border border-[#E8E0D5]"
                           />
                         ) : (
@@ -279,15 +336,25 @@ export default function AdminHeroPage() {
                       </div>
                     </div>
 
-                    <div className="text-[11px] text-[#7A6F66] uppercase tracking-[0.08em]">
-                      {slide.eyebrow || 'MODEST FASHION'}
+                    <div className="flex items-center gap-1.5 flex-wrap text-[11px] text-[#7A6F66] uppercase tracking-[0.08em]">
+                      {slide.eyebrow && <span>{slide.eyebrow}</span>}
+                      {slide.campaign_badge && (
+                        <span className="px-1.5 py-0.5 rounded bg-[#8B4E5A] text-white text-[9px] font-bold tracking-wider">
+                          {slide.campaign_badge}
+                        </span>
+                      )}
                     </div>
-                    <h4 className="m-0 mt-0.5 mb-1.5 text-base font-bold text-[#2C241E]">
-                      {slide.title}
+                    <h4 className="m-0 mt-0.5 mb-1 text-base font-bold text-[#2C241E]">
+                      {slide.title || '(Image-only graphic banner)'}
                     </h4>
                     <p className="m-0 text-xs text-[#7A6F66] line-clamp-2">
                       {slide.subtitle || 'No subtitle configured.'}
                     </p>
+                    {slide.cta_url && (
+                      <div className="mt-2 text-[11px] font-mono text-[#7B5B3A] bg-[#FAF6F0] px-2 py-1 rounded border border-[#EFE6DA] truncate">
+                        🔗 {slide.cta_text ? `${slide.cta_text} → ` : ''}{slide.cta_url}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="py-7 px-3 text-center">
@@ -296,7 +363,7 @@ export default function AdminHeroPage() {
                       Banner slot {slotIndex + 1} is currently empty.
                     </p>
                     <span className="text-[11px] text-[#7A6F66]">
-                      Upload desktop & mobile images to activate.
+                      Upload desktop & mobile images to activate (great for Restock banners).
                     </span>
                   </div>
                 )}
@@ -334,17 +401,26 @@ export default function AdminHeroPage() {
       {/* ─── Editor Form for Selected Slot ───────────────────────── */}
       {editingSlot !== null && (
         <div className="bg-white border-2 border-[#7B5B3A] rounded-lg p-6 mb-8 shadow-md">
-          <div className="flex justify-between items-center mb-5 border-b border-[#E8E0D5] pb-3">
+          <div className="flex justify-between items-center flex-wrap gap-3 mb-5 border-b border-[#E8E0D5] pb-3">
             <h3 className="text-lg font-semibold m-0 text-[#2C241E]">
               {slideId ? `Edit Banner Slot ${editingSlot + 1}` : `Add New Banner in Slot ${editingSlot + 1}`}
             </h3>
-            <button
-              type="button"
-              className="inline-flex items-center justify-center gap-2 px-3.5 py-1.5 text-xs font-medium rounded-md border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors"
-              onClick={closeEditor}
-            >
-              Close Editor
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={applyRestockPreset}
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-md bg-[#8B4E5A] text-white hover:bg-[#733D48] transition-colors cursor-pointer"
+              >
+                ✨ Use Restock Preset
+              </button>
+              <button
+                type="button"
+                className="inline-flex items-center justify-center gap-2 px-3.5 py-1.5 text-xs font-medium rounded-md border border-[#E8E0D5] bg-white text-[#2C241E] hover:bg-[#F8F5F0] transition-colors"
+                onClick={closeEditor}
+              >
+                Close Editor
+              </button>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit}>
@@ -409,7 +485,7 @@ export default function AdminHeroPage() {
                 <input
                   type="text"
                   className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
-                  placeholder="e.g. EXCLUSIVE or NEW"
+                  placeholder="e.g. RESTOCKED, EXCLUSIVE, or NEW"
                   value={campaignBadge}
                   onChange={(e) => setCampaignBadge(e.target.value)}
                 />
@@ -417,19 +493,23 @@ export default function AdminHeroPage() {
             </div>
 
             <div className="mb-5">
-              <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Main Heading (Title) *</label>
+              <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">
+                Main Heading (Title — Optional)
+              </label>
               <input
                 type="text"
                 className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
-                placeholder="BEAUTY IN MODESTY"
+                placeholder="e.g. YOUR FAVOURITES RESTOCKED (leave blank if your image already has text)"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                required
               />
+              <span className="text-[11px] text-[#7A6F66] mt-1 block">
+                Tip: Leave Title, Eyebrow & Subtitle blank if you uploaded a pre-designed graphic banner that already has text on it.
+              </span>
             </div>
 
             <div className="mb-5">
-              <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Subtitle / Description</label>
+              <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Subtitle / Description (Optional)</label>
               <textarea
                 className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
                 rows={2}
@@ -440,7 +520,7 @@ export default function AdminHeroPage() {
             </div>
 
             <div className="mb-5">
-              <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Floating Calligraphy Script (Top Right)</label>
+              <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Floating Calligraphy Script (Optional)</label>
               <textarea
                 className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
                 rows={3}
@@ -453,27 +533,106 @@ export default function AdminHeroPage() {
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="mb-5">
-                <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Button Text</label>
-                <input
-                  type="text"
-                  className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
-                  placeholder="SHOP NEW ARRIVALS"
-                  value={ctaText}
-                  onChange={(e) => setCtaText(e.target.value)}
-                />
+            {/* ─── Quick Destination Link Picker (Product / Category / Collection) ─── */}
+            <div className="bg-[#FAF8F5] border border-[#E8E0D5] rounded-lg p-4 mb-5">
+              <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+                <div>
+                  <strong className="text-[13px] text-[#2C241E] block">
+                    🔗 Where should clicking &ldquo;SHOP NOW&rdquo; go?
+                  </strong>
+                  <span className="text-[11px] text-[#7A6F66]">
+                    Pick any product, category, or collection below to auto-fill the Button Link.
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setCtaUrl('/products')}
+                    className="px-2.5 py-1 text-[11px] font-semibold rounded bg-white border border-[#E8E0D5] text-[#2C241E] hover:border-[#7B5B3A] cursor-pointer"
+                  >
+                    Shop All
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCtaUrl('/collections/new-arrivals')}
+                    className="px-2.5 py-1 text-[11px] font-semibold rounded bg-white border border-[#E8E0D5] text-[#2C241E] hover:border-[#7B5B3A] cursor-pointer"
+                  >
+                    New Arrivals
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCtaUrl('/products?sale=true')}
+                    className="px-2.5 py-1 text-[11px] font-semibold rounded bg-white border border-[#E8E0D5] text-[#2C241E] hover:border-[#7B5B3A] cursor-pointer"
+                  >
+                    Sale / Offers
+                  </button>
+                </div>
               </div>
 
-              <div className="mb-5">
-                <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Button Link</label>
-                <input
-                  type="text"
-                  className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
-                  placeholder="/collections"
-                  value={ctaUrl}
-                  onChange={(e) => setCtaUrl(e.target.value)}
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                <div>
+                  <label className="block text-[11px] font-semibold text-[#7A6F66] uppercase tracking-wider mb-1">
+                    Pick a Specific Product (Restocked Dress)
+                  </label>
+                  <select
+                    value={productsList.some((p) => `/products/${p.slug}` === ctaUrl) ? ctaUrl : ''}
+                    onChange={(e) => {
+                      if (e.target.value) setCtaUrl(e.target.value);
+                    }}
+                    className="w-full px-3 py-2 text-xs border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
+                  >
+                    <option value="">-- Select a product --</option>
+                    {productsList.map((p) => (
+                      <option key={p.id} value={`/products/${p.slug}`}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-[#7A6F66] uppercase tracking-wider mb-1">
+                    Or Pick a Category (e.g. Restocked)
+                  </label>
+                  <select
+                    value={categoriesList.some((c) => `/products?category=${c.slug}` === ctaUrl) ? ctaUrl : ''}
+                    onChange={(e) => {
+                      if (e.target.value) setCtaUrl(e.target.value);
+                    }}
+                    className="w-full px-3 py-2 text-xs border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none focus:border-[#7B5B3A]"
+                  >
+                    <option value="">-- Select a category --</option>
+                    {categoriesList.map((c) => (
+                      <option key={c.id} value={`/products?category=${c.slug}`}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Button Text</label>
+                  <input
+                    type="text"
+                    className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
+                    placeholder="SHOP NOW (leave blank for full-banner click)"
+                    value={ctaText}
+                    onChange={(e) => setCtaText(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-semibold text-[#2C241E] mb-1.5">Button Link (Auto-filled or Custom URL)</label>
+                  <input
+                    type="text"
+                    className="w-full px-3.5 py-2.5 text-sm font-mono border border-[#E8E0D5] rounded-md bg-white text-[#2C241E] outline-none transition-colors duration-200 focus:border-[#7B5B3A] focus:ring-2 focus:ring-[#7B5B3A]/15"
+                    placeholder="/products/hit-bird-co-ord-set"
+                    value={ctaUrl}
+                    onChange={(e) => setCtaUrl(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
 
