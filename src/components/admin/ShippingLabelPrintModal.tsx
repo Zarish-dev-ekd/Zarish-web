@@ -20,6 +20,14 @@ export type ShippingLabelPaperFormat = 'thermal_4x6' | 'a4_sheet';
 
 const FORMAT_STORAGE_KEY = 'zarish_shipping_label_format_v1';
 
+export const isConfirmedPaidOrder = (order: Order): boolean => {
+  const isPaid = order.payment_status?.toLowerCase() === 'paid';
+  const isConfirmedStatus = ['confirmed', 'processing', 'shipped'].includes(
+    order.order_status?.toLowerCase()
+  );
+  return (isPaid || isConfirmedStatus) && order.order_status?.toLowerCase() !== 'cancelled';
+};
+
 export default function ShippingLabelPrintModal({
   orders,
   onClose,
@@ -35,6 +43,18 @@ export default function ShippingLabelPrintModal({
     return 'thermal_4x6';
   });
   const [mounted, setMounted] = useState(false);
+
+  const confirmedOrders = orders.filter(isConfirmedPaidOrder);
+  const pendingOrders = orders.filter((o) => !isConfirmedPaidOrder(o));
+  const hasPending = pendingOrders.length > 0;
+
+  // Default to confirmed only if any confirmed order is present
+  const [filterConfirmedOnly, setFilterConfirmedOnly] = useState<boolean>(() => {
+    return confirmedOrders.length > 0;
+  });
+
+  const activeOrders =
+    filterConfirmedOnly && confirmedOrders.length > 0 ? confirmedOrders : orders;
 
   useEffect(() => {
     setMounted(true);
@@ -75,7 +95,7 @@ export default function ShippingLabelPrintModal({
     window.print();
   };
 
-  const totalSheets = Math.ceil(orders.length / 4);
+  const totalSheets = Math.ceil(activeOrders.length / 4);
 
   return (
     <>
@@ -239,8 +259,8 @@ export default function ShippingLabelPrintModal({
               <span className="text-xl">🖨️</span>
               <div>
                 <h3 className="text-sm sm:text-base font-bold tracking-wide">
-                  Delivery Box Shipping Labels ({orders.length}{' '}
-                  {orders.length === 1 ? 'Order' : 'Orders'})
+                  Delivery Box Shipping Labels ({activeOrders.length}{' '}
+                  {activeOrders.length === 1 ? 'Order' : 'Orders'})
                 </h3>
                 <p className="text-[11px] text-[#C4B5A5]">
                   Select label size &middot; Compatible with 4&quot;&times;6&quot; Helett thermal roll &amp; A4 paper
@@ -304,6 +324,32 @@ export default function ShippingLabelPrintModal({
             </div>
           </div>
 
+          {/* Safety Shield Banner if Unpaid/Pending Orders Present */}
+          {hasPending && (
+            <div className="px-5 py-2.5 bg-[#FEF3C7] border-b border-[#FDE68A] flex items-center justify-between text-xs text-[#92400E] flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🛡️</span>
+                <div>
+                  <span className="font-bold">Safety Shield Active:</span>{' '}
+                  <span>
+                    {filterConfirmedOnly
+                      ? `Excluded ${pendingOrders.length} unpaid/pending order(s) so they are not accidentally dispatched.`
+                      : `⚠️ Warning: Showing all orders including ${pendingOrders.length} unpaid/pending order(s).`}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setFilterConfirmedOnly(!filterConfirmedOnly)}
+                className="px-2.5 py-1 rounded bg-[#B45309] hover:bg-[#92400E] text-white text-[11px] font-bold transition-all cursor-pointer shadow-xs"
+              >
+                {filterConfirmedOnly
+                  ? `Include Pending (${orders.length})`
+                  : `Filter to Confirmed (${confirmedOrders.length})`}
+              </button>
+            </div>
+          )}
+
           {/* Info Banner */}
           <div className="px-5 py-2.5 bg-[#F3ECE2] border-b border-[#E8E0D5] flex items-center justify-between text-xs text-[#5C4A3C] flex-wrap gap-2">
             {paperFormat === 'thermal_4x6' ? (
@@ -312,8 +358,8 @@ export default function ShippingLabelPrintModal({
                   <span className="font-semibold text-[#2C241E]">🏷️ Format:</span>
                   <span>
                     Direct Thermal 4&quot;&times;6&quot; (100&times;150mm) &middot; 1 Sticker per Order &middot;
-                    Perfect fit for Helett / Zebra thermal printers &middot; {orders.length}{' '}
-                    {orders.length === 1 ? 'Sticker' : 'Stickers'}
+                    Perfect fit for Helett / Zebra thermal printers &middot; {activeOrders.length}{' '}
+                    {activeOrders.length === 1 ? 'Sticker' : 'Stickers'}
                   </span>
                 </div>
                 <div className="text-[11px] text-[#7A6F66]">
@@ -341,11 +387,11 @@ export default function ShippingLabelPrintModal({
             {paperFormat === 'thermal_4x6' ? (
               /* ── 4"x6" Thermal Sticker Roll Preview ── */
               <div className="max-w-xl mx-auto space-y-6">
-                {orders.map((order, idx) => (
+                {activeOrders.map((order, idx) => (
                   <div key={order.id || idx} className="flex flex-col items-center">
                     <div className="w-full max-w-[100mm] text-[11px] font-bold text-[#7A6F66] uppercase tracking-wider mb-1.5 flex items-center justify-between px-1">
                       <span>
-                        🏷️ Sticker #{idx + 1} of {orders.length} (4&quot;&times;6&quot; Thermal Roll)
+                        🏷️ Sticker #{idx + 1} of {activeOrders.length} (4&quot;&times;6&quot; Thermal Roll)
                       </span>
                       <span className="font-mono text-black">#{order.order_number}</span>
                     </div>
@@ -359,7 +405,7 @@ export default function ShippingLabelPrintModal({
             ) : (
               /* ── A4 Sheet (4 per page) Preview ── */
               Array.from({ length: totalSheets }).map((_, sheetIdx) => {
-                const sheetOrders = orders.slice(sheetIdx * 4, sheetIdx * 4 + 4);
+                const sheetOrders = activeOrders.slice(sheetIdx * 4, sheetIdx * 4 + 4);
                 return (
                   <div key={sheetIdx} className="max-w-4xl mx-auto">
                     <div className="text-[11px] font-bold text-[#7A6F66] uppercase tracking-wider mb-2 flex items-center justify-between">
@@ -446,7 +492,7 @@ export default function ShippingLabelPrintModal({
           <div id="shipping-print-portal" aria-hidden="true">
             {paperFormat === 'thermal_4x6' ? (
               /* ── 4"x6" Thermal Format: 1 Sticker per Order ── */
-              orders.map((order, idx) => (
+              activeOrders.map((order, idx) => (
                 <div key={`print-thermal-${order.id || idx}`} className="print-thermal-card">
                   <ShippingLabelThermalContent order={order} senderInfo={senderInfo} />
                 </div>
@@ -454,7 +500,7 @@ export default function ShippingLabelPrintModal({
             ) : (
               /* ── A4 Sheet Format: 4 Orders per Sheet ── */
               Array.from({ length: totalSheets }).map((_, sheetIdx) => {
-                const sheetOrders = orders.slice(sheetIdx * 4, sheetIdx * 4 + 4);
+                const sheetOrders = activeOrders.slice(sheetIdx * 4, sheetIdx * 4 + 4);
                 return (
                   <div key={`print-sheet-${sheetIdx}`} className="print-page-stack">
                     {sheetOrders.map((order) => (
@@ -541,9 +587,17 @@ function ShippingLabelThermalContent({
   });
 
   const barcodeValue = (order.tracking_number || order.order_number || '').trim();
+  const isPaid = isConfirmedPaidOrder(order);
 
   return (
     <div className="w-full h-full flex flex-col justify-between text-black font-sans leading-tight">
+      {/* UNPAID / PENDING WARNING IF FORCED TO PRINT */}
+      {!isPaid && (
+        <div className="bg-amber-100 border border-amber-600 text-amber-950 font-black text-[8px] uppercase tracking-wider py-0.5 px-1 text-center rounded-2xs mb-1">
+          ⚠️ UNPAID / PAYMENT PENDING — VERIFY BEFORE SHIPPING
+        </div>
+      )}
+
       {/* ── 1. HEADER: BRAND LOGO + COURIER + ORDER NUMBER ── */}
       <div className="border-b-2 border-black pb-1.5 flex items-start justify-between">
         <div className="flex flex-col">
@@ -777,6 +831,7 @@ function ShippingLabelRowContent({
     month: 'short',
     year: 'numeric',
   });
+  const isPaid = isConfirmedPaidOrder(order);
 
   return (
     <div className="w-full h-full flex items-stretch text-black font-sans leading-tight">
@@ -789,6 +844,12 @@ function ShippingLabelRowContent({
           <strong className="text-[15px] font-mono font-black tracking-tight text-black block truncate mt-0.5">
             {order.order_number}
           </strong>
+
+          {!isPaid && (
+            <div className="mt-1 bg-amber-100 border border-amber-500 text-amber-900 text-[7.5px] font-black uppercase tracking-wider px-1 py-0.2 rounded-2xs inline-block">
+              ⚠️ PENDING PAYMENT
+            </div>
+          )}
 
           <div className="mt-2">
             <span className="inline-block px-2.5 py-0.5 rounded bg-black text-white font-bold text-[9.5px] uppercase tracking-wider">

@@ -269,19 +269,41 @@ export default function AdminOrdersPage() {
     }
   };
 
+  const isConfirmedPaidOrder = (order: Order) => {
+    const isPaid = order.payment_status?.toLowerCase() === 'paid';
+    const isConfirmedStatus = ['confirmed', 'processing', 'shipped'].includes(
+      order.order_status?.toLowerCase()
+    );
+    return (isPaid || isConfirmedStatus) && order.order_status?.toLowerCase() !== 'cancelled';
+  };
+
   const toggleSelectOrder = (orderId: string) => {
     setSelectedOrderIds((prev) =>
       prev.includes(orderId) ? prev.filter((id) => id !== orderId) : [...prev, orderId]
     );
   };
 
-  const toggleSelectAll = (targetOrders: Order[]) => {
-    const targetIds = targetOrders.map((o) => o.id);
-    const allSelected = targetIds.length > 0 && targetIds.every((id) => selectedOrderIds.includes(id));
+  const toggleSelectAll = (targetOrders: Order[], confirmedOnly: boolean = true) => {
+    const candidates = confirmedOnly
+      ? targetOrders.filter(isConfirmedPaidOrder)
+      : targetOrders;
+    const candidateIds = candidates.map((o) => o.id);
+    const allSelected =
+      candidateIds.length > 0 && candidateIds.every((id) => selectedOrderIds.includes(id));
+
     if (allSelected) {
       setSelectedOrderIds([]);
     } else {
-      setSelectedOrderIds(targetIds);
+      setSelectedOrderIds(candidateIds);
+      const skippedPending = targetOrders.length - candidates.length;
+      if (confirmedOnly && skippedPending > 0) {
+        showToast(
+          `✓ Selected ${candidateIds.length} Confirmed orders (${skippedPending} unpaid pending orders excluded)`,
+          'success'
+        );
+      } else {
+        showToast(`✓ Selected ${candidateIds.length} orders`, 'success');
+      }
     }
   };
 
@@ -343,10 +365,10 @@ export default function AdminOrdersPage() {
 
   const handleBulkBookIndiaPost = async () => {
     const unbooked = orders.filter(
-      (o) => selectedOrderIds.includes(o.id) && !o.tracking_number
+      (o) => selectedOrderIds.includes(o.id) && !o.tracking_number && isConfirmedPaidOrder(o)
     );
     if (unbooked.length === 0) {
-      showToast('All selected orders already have India Post barcodes assigned', 'success');
+      showToast('All selected confirmed orders already have India Post barcodes assigned', 'success');
       return;
     }
 
@@ -765,6 +787,68 @@ export default function AdminOrdersPage() {
           </div>
         ) : (
           <>
+            {/* ─── QUICK BULK SELECTION CONTROLS (Mobile + Desktop) ─── */}
+            {(() => {
+              const confirmedInFilter = filteredOrders.filter(isConfirmedPaidOrder);
+              const allConfirmedSelected =
+                confirmedInFilter.length > 0 &&
+                confirmedInFilter.every((o) => selectedOrderIds.includes(o.id));
+
+              return (
+                <div className="flex items-center justify-between bg-[#FAF8F5] border border-[#E8E0D5] rounded-xl px-3.5 py-2.5 mb-3.5 flex-wrap gap-2 text-xs">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-[#2C241E] text-xs flex items-center gap-1.5">
+                      <span>☑️ Quick Select:</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => toggleSelectAll(filteredOrders, true)}
+                      className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 ${
+                        allConfirmedSelected
+                          ? 'bg-[#2E7D32] text-white shadow-xs'
+                          : 'bg-white hover:bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]'
+                      }`}
+                      title="Select only confirmed and paid orders, skipping unpaid checkout attempts"
+                    >
+                      <span>✓ Confirmed Only</span>
+                      <span
+                        className={`px-1.5 py-0.2 rounded-full text-[10.5px] font-mono ${
+                          allConfirmedSelected
+                            ? 'bg-white text-[#2E7D32] font-black'
+                            : 'bg-[#E8F5E9] text-[#2E7D32]'
+                        }`}
+                      >
+                        {confirmedInFilter.length}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toggleSelectAll(filteredOrders, false)}
+                      className="px-3 py-1.5 rounded-lg bg-white hover:bg-gray-100 text-[#5C4A3C] border border-[#E8E0D5] font-semibold text-xs transition-colors cursor-pointer active:scale-95"
+                      title="Select all orders in current filter including unpaid"
+                    >
+                      All ({filteredOrders.length})
+                    </button>
+                    {selectedOrderIds.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedOrderIds([])}
+                        className="px-2.5 py-1.5 text-[#7A6F66] hover:text-[#2C241E] text-xs font-semibold transition-colors cursor-pointer"
+                      >
+                        Clear Selection
+                      </button>
+                    )}
+                  </div>
+
+                  {selectedOrderIds.length > 0 && (
+                    <div className="text-xs text-[#7B5B3A] font-bold">
+                      {selectedOrderIds.length} of {filteredOrders.length} selected
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
             {/* ─── MOBILE VIEW: Touch-Friendly Responsive Card List (< md) ─── */}
             <div className="md:hidden space-y-3">
               {filteredOrders.map((order) => {
@@ -1060,16 +1144,16 @@ export default function AdminOrdersPage() {
                       <input
                         type="checkbox"
                         checked={
-                          filteredOrders.length > 0 &&
-                          filteredOrders.every((o) => selectedOrderIds.includes(o.id))
+                          filteredOrders.filter(isConfirmedPaidOrder).length > 0 &&
+                          filteredOrders.filter(isConfirmedPaidOrder).every((o) => selectedOrderIds.includes(o.id))
                         }
-                        onChange={() => toggleSelectAll(filteredOrders)}
+                        onChange={() => toggleSelectAll(filteredOrders, true)}
                         className="w-4 h-4 rounded border-[#D8C8BA] text-[#7B5B3A] focus:ring-[#7B5B3A] cursor-pointer accent-[#7B5B3A]"
                         title={
-                          filteredOrders.length > 0 &&
-                          filteredOrders.every((o) => selectedOrderIds.includes(o.id))
-                            ? 'Deselect All'
-                            : 'Select All Orders'
+                          filteredOrders.filter(isConfirmedPaidOrder).length > 0 &&
+                          filteredOrders.filter(isConfirmedPaidOrder).every((o) => selectedOrderIds.includes(o.id))
+                            ? 'Deselect Confirmed Orders'
+                            : `Select All Confirmed Orders (${filteredOrders.filter(isConfirmedPaidOrder).length}) — Pending orders skipped`
                         }
                       />
                     </th>
@@ -1846,144 +1930,181 @@ export default function AdminOrdersPage() {
       })()}
 
       {/* Floating Bulk Actions Bar */}
-      {selectedOrderIds.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[99999] w-[95%] max-w-3xl bg-[#2C241E] text-white px-4 sm:px-6 py-3.5 rounded-2xl shadow-2xl border border-[#4A3B2C] flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-5 duration-200">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <span className="flex items-center justify-center w-7 h-7 rounded-full bg-[#E5D2BA] text-[#2C241E] font-bold text-xs">
-              {selectedOrderIds.length}
-            </span>
-            <div>
-              <div className="text-xs sm:text-sm font-semibold tracking-wide">
-                {selectedOrderIds.length === 1 ? '1 order selected' : `${selectedOrderIds.length} orders selected`}
+      {selectedOrderIds.length > 0 && (() => {
+        const selectedList = orders.filter((o) => selectedOrderIds.includes(o.id));
+        const confirmedSelected = selectedList.filter(isConfirmedPaidOrder);
+        const pendingSelectedCount = selectedList.length - confirmedSelected.length;
+
+        return (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[99999] w-[95%] max-w-3xl bg-[#2C241E] text-white px-4 sm:px-6 py-3.5 rounded-2xl shadow-2xl border border-[#4A3B2C] flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-5 duration-200">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <span className="flex items-center justify-center w-7 h-7 rounded-full bg-[#E5D2BA] text-[#2C241E] font-bold text-xs">
+                {selectedOrderIds.length}
+              </span>
+              <div>
+                <div className="text-xs sm:text-sm font-semibold tracking-wide flex items-center gap-1.5 flex-wrap">
+                  <span>
+                    {selectedOrderIds.length === 1
+                      ? '1 order selected'
+                      : `${selectedOrderIds.length} orders selected`}
+                  </span>
+                  {pendingSelectedCount > 0 ? (
+                    <span className="bg-amber-500/25 text-amber-300 border border-amber-400/30 text-[10px] px-1.5 py-0.2 rounded font-medium">
+                      ⚠️ {pendingSelectedCount} unpaid pending
+                    </span>
+                  ) : (
+                    <span className="bg-emerald-500/25 text-emerald-300 border border-emerald-400/30 text-[10px] px-1.5 py-0.2 rounded font-medium">
+                      ✓ All Confirmed
+                    </span>
+                  )}
+                </div>
+                <div className="text-[11px] text-[#C4B5A5] hidden sm:block">
+                  {pendingSelectedCount > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedOrderIds(confirmedSelected.map((o) => o.id))}
+                      className="text-amber-300 underline hover:text-white cursor-pointer font-bold"
+                    >
+                      Click to keep only Confirmed ({confirmedSelected.length})
+                    </button>
+                  ) : (
+                    'Bulk status change & dispatch ready'
+                  )}
+                </div>
               </div>
-              <div className="text-[11px] text-[#C4B5A5] hidden sm:block">
-                Bulk status change & customer dispatch
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Quick Status Buttons */}
+              <div className="hidden md:flex items-center gap-1.5">
+                <button
+                  type="button"
+                  disabled={bulkUpdating}
+                  onClick={() => handleBulkUpdateStatus('delivered')}
+                  className="px-2.5 py-1.5 rounded-lg bg-[#0E7064] hover:bg-[#115E59] text-white text-xs font-semibold transition-all disabled:opacity-50 cursor-pointer shadow-sm"
+                  title="Mark all selected orders as Delivered"
+                >
+                  ✓ Delivered
+                </button>
+                <button
+                  type="button"
+                  disabled={bulkUpdating}
+                  onClick={() => handleBulkUpdateStatus('shipped')}
+                  className="px-2.5 py-1.5 rounded-lg bg-[#1E40AF] hover:bg-[#1D4ED8] text-white text-xs font-semibold transition-all disabled:opacity-50 cursor-pointer shadow-sm"
+                  title="Mark as Shipped and notify customers"
+                >
+                  🚀 Shipped
+                </button>
+                <button
+                  type="button"
+                  disabled={bulkUpdating}
+                  onClick={() => handleBulkUpdateStatus('processing')}
+                  className="px-2.5 py-1.5 rounded-lg bg-[#854D0E] hover:bg-[#A16207] text-white text-xs font-semibold transition-all disabled:opacity-50 cursor-pointer shadow-sm"
+                  title="Mark as Processing"
+                >
+                  ⚙️ Processing
+                </button>
               </div>
+
+              {/* Status Dropdown + Apply Button */}
+              <div className="flex items-center gap-1.5 bg-black/30 p-1 rounded-xl border border-[#4A3B2C]">
+                <select
+                  value={bulkTargetStatus}
+                  onChange={(e) => setBulkTargetStatus(e.target.value)}
+                  disabled={bulkUpdating}
+                  className="bg-transparent text-white text-xs font-medium px-2 py-1 outline-none border-none cursor-pointer focus:ring-0"
+                >
+                  <option value="delivered" className="bg-[#2C241E] text-white">Delivered</option>
+                  <option value="shipped" className="bg-[#2C241E] text-white">Shipped</option>
+                  <option value="processing" className="bg-[#2C241E] text-white">Processing</option>
+                  <option value="confirmed" className="bg-[#2C241E] text-white">Confirmed</option>
+                  <option value="placed" className="bg-[#2C241E] text-white">Placed</option>
+                  <option value="cancelled" className="bg-[#2C241E] text-white">Cancelled</option>
+                </select>
+
+                <button
+                  type="button"
+                  disabled={bulkUpdating}
+                  onClick={() => handleBulkUpdateStatus()}
+                  className="px-3 py-1.5 rounded-lg bg-[#E5D2BA] hover:bg-[#D4BEA3] text-[#2C241E] text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
+                >
+                  {bulkUpdating ? 'Updating...' : 'Apply'}
+                </button>
+              </div>
+
+              {/* 1-Click Bulk Book with India Post */}
+              {orders.some((o) => selectedOrderIds.includes(o.id) && !o.tracking_number && isConfirmedPaidOrder(o)) && (
+                <button
+                  type="button"
+                  disabled={bulkBookingIP || bulkUpdating}
+                  onClick={handleBulkBookIndiaPost}
+                  className="px-3 py-1.5 rounded-lg bg-[#D97706] hover:bg-[#B45309] text-white text-xs font-bold transition-all disabled:opacity-50 cursor-pointer flex items-center gap-1.5 shadow-sm"
+                  title="Automatically book all selected unbooked confirmed orders with India Post in 1 click"
+                >
+                  <span>⚡</span>
+                  <span>
+                    {bulkBookingIP
+                      ? 'Booking...'
+                      : `Bulk Book IP (${
+                          orders.filter((o) => selectedOrderIds.includes(o.id) && !o.tracking_number && isConfirmedPaidOrder(o)).length
+                        })`}
+                  </span>
+                </button>
+              )}
+
+              {/* Bulk Print Official India Post Barcode Labels (Confirmed Only) */}
+              <a
+                href={`/admin/orders/label/bulk?ids=${(confirmedSelected.length > 0 ? confirmedSelected : selectedList).map((o) => o.id).join(',')}`}
+                target="_blank"
+                rel="noreferrer"
+                className="px-3 py-1.5 rounded-lg bg-[#C4161C] hover:bg-[#A31217] text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+                title="Bulk print official India Post A6/A4 labels with Code 128 barcodes & post office receipts"
+              >
+                <span>📮</span>
+                <span>Print IP Labels ({confirmedSelected.length > 0 ? confirmedSelected.length : selectedList.length})</span>
+              </a>
+
+              {/* Bulk Print Delivery Box Labels (Confirmed Only) */}
+              <button
+                type="button"
+                disabled={bulkUpdating}
+                onClick={() => {
+                  if (confirmedSelected.length > 0) {
+                    if (pendingSelectedCount > 0) {
+                      showToast(
+                        `🛡️ Excluded ${pendingSelectedCount} unpaid pending order(s). Printing ${confirmedSelected.length} confirmed orders.`,
+                        'success'
+                      );
+                    }
+                    setPrintingOrders(confirmedSelected);
+                  } else if (selectedList.length > 0) {
+                    showToast('Selected orders are unpaid/pending. Opening with safety banner.', 'error');
+                    setPrintingOrders(selectedList);
+                  } else {
+                    showToast('Please select orders to print', 'error');
+                  }
+                }}
+                className="px-3 py-1.5 rounded-lg bg-[#FAF6F0] hover:bg-white text-[#2C241E] text-xs font-bold transition-all disabled:opacity-50 cursor-pointer flex items-center gap-1.5 shadow-xs"
+                title="Print delivery box seals (4x6 thermal roll or A4 sheets)"
+              >
+                <span>📦</span>
+                <span>Box Labels ({confirmedSelected.length > 0 ? confirmedSelected.length : selectedList.length})</span>
+              </button>
+
+              {/* Clear selection */}
+              <button
+                type="button"
+                disabled={bulkUpdating}
+                onClick={() => setSelectedOrderIds([])}
+                className="p-1.5 text-[#C4B5A5] hover:text-white transition-colors cursor-pointer text-xs"
+                title="Deselect all"
+              >
+                ✕
+              </button>
             </div>
           </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Quick Status Buttons */}
-            <div className="hidden md:flex items-center gap-1.5">
-              <button
-                type="button"
-                disabled={bulkUpdating}
-                onClick={() => handleBulkUpdateStatus('delivered')}
-                className="px-2.5 py-1.5 rounded-lg bg-[#0E7064] hover:bg-[#115E59] text-white text-xs font-semibold transition-all disabled:opacity-50 cursor-pointer shadow-sm"
-                title="Mark all selected orders as Delivered"
-              >
-                ✓ Delivered
-              </button>
-              <button
-                type="button"
-                disabled={bulkUpdating}
-                onClick={() => handleBulkUpdateStatus('shipped')}
-                className="px-2.5 py-1.5 rounded-lg bg-[#1E40AF] hover:bg-[#1D4ED8] text-white text-xs font-semibold transition-all disabled:opacity-50 cursor-pointer shadow-sm"
-                title="Mark as Shipped and notify customers"
-              >
-                🚀 Shipped
-              </button>
-              <button
-                type="button"
-                disabled={bulkUpdating}
-                onClick={() => handleBulkUpdateStatus('processing')}
-                className="px-2.5 py-1.5 rounded-lg bg-[#854D0E] hover:bg-[#A16207] text-white text-xs font-semibold transition-all disabled:opacity-50 cursor-pointer shadow-sm"
-                title="Mark as Processing"
-              >
-                ⚙️ Processing
-              </button>
-            </div>
-
-            {/* Status Dropdown + Apply Button */}
-            <div className="flex items-center gap-1.5 bg-black/30 p-1 rounded-xl border border-[#4A3B2C]">
-              <select
-                value={bulkTargetStatus}
-                onChange={(e) => setBulkTargetStatus(e.target.value)}
-                disabled={bulkUpdating}
-                className="bg-transparent text-white text-xs font-medium px-2 py-1 outline-none border-none cursor-pointer focus:ring-0"
-              >
-                <option value="delivered" className="bg-[#2C241E] text-white">Delivered</option>
-                <option value="shipped" className="bg-[#2C241E] text-white">Shipped</option>
-                <option value="processing" className="bg-[#2C241E] text-white">Processing</option>
-                <option value="confirmed" className="bg-[#2C241E] text-white">Confirmed</option>
-                <option value="placed" className="bg-[#2C241E] text-white">Placed</option>
-                <option value="cancelled" className="bg-[#2C241E] text-white">Cancelled</option>
-              </select>
-
-              <button
-                type="button"
-                disabled={bulkUpdating}
-                onClick={() => handleBulkUpdateStatus()}
-                className="px-3 py-1.5 rounded-lg bg-[#E5D2BA] hover:bg-[#D4BEA3] text-[#2C241E] text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
-              >
-                {bulkUpdating ? 'Updating...' : 'Apply'}
-              </button>
-            </div>
-
-            {/* 1-Click Bulk Book with India Post */}
-            {orders.some((o) => selectedOrderIds.includes(o.id) && !o.tracking_number) && (
-              <button
-                type="button"
-                disabled={bulkBookingIP || bulkUpdating}
-                onClick={handleBulkBookIndiaPost}
-                className="px-3 py-1.5 rounded-lg bg-[#D97706] hover:bg-[#B45309] text-white text-xs font-bold transition-all disabled:opacity-50 cursor-pointer flex items-center gap-1.5 shadow-sm"
-                title="Automatically book all selected unbooked orders with India Post in 1 click"
-              >
-                <span>⚡</span>
-                <span>
-                  {bulkBookingIP
-                    ? 'Booking...'
-                    : `Bulk Book IP (${
-                        orders.filter((o) => selectedOrderIds.includes(o.id) && !o.tracking_number).length
-                      })`}
-                </span>
-              </button>
-            )}
-
-            {/* Bulk Print Official India Post Barcode Labels */}
-            <a
-              href={`/admin/orders/label/bulk?ids=${selectedOrderIds.join(',')}`}
-              target="_blank"
-              rel="noreferrer"
-              className="px-3 py-1.5 rounded-lg bg-[#C4161C] hover:bg-[#A31217] text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
-              title="Bulk print official India Post A6/A4 labels with Code 128 barcodes & post office receipts"
-            >
-              <span>📮</span>
-              <span>Print IP Labels ({selectedOrderIds.length})</span>
-            </a>
-
-            {/* Bulk Print Delivery Box Labels */}
-            <button
-              type="button"
-              disabled={bulkUpdating}
-              onClick={() => {
-                const selected = orders.filter((o) => selectedOrderIds.includes(o.id));
-                if (selected.length > 0) {
-                  setPrintingOrders(selected);
-                } else {
-                  showToast('Please select orders to print', 'error');
-                }
-              }}
-              className="px-3 py-1.5 rounded-lg bg-[#FAF6F0] hover:bg-white text-[#2C241E] text-xs font-bold transition-all disabled:opacity-50 cursor-pointer flex items-center gap-1.5 shadow-xs"
-              title="Print delivery box seals (fitted 4 per A4 sheet)"
-            >
-              <span>📦</span>
-              <span>Box Seals ({selectedOrderIds.length})</span>
-            </button>
-
-            {/* Clear selection */}
-            <button
-              type="button"
-              disabled={bulkUpdating}
-              onClick={() => setSelectedOrderIds([])}
-              className="p-1.5 text-[#C4B5A5] hover:text-white transition-colors cursor-pointer text-xs"
-              title="Deselect all"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ─── PRINT SHIPPING LABELS MODAL ─── */}
       {printingOrders && printingOrders.length > 0 && (
