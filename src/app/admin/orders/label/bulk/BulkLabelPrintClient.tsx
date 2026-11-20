@@ -301,12 +301,10 @@ export default function BulkLabelPrintClient({
                     IF UNDELIVERED, RETURN TO:
                   </span>
                   <p className="font-black text-black">ZARISH BY NEHALA MUFEED</p>
-                  <p>{sender.addressLine1}, {sender.addressLine2}</p>
-                  <p>{sender.city}, {sender.state} — PIN: <strong>{sender.pincode}</strong></p>
-                  <p className="font-bold text-black mt-0.5">
-                    Customer ID: 1511058312 • NHS KOCHI - BNPL A/c 158
-                  </p>
-                  <p className="font-bold text-black">Mob: 9562292945 / {sender.mobile}</p>
+                  <p>Convent junction, Ekm, 682011</p>
+                  <p className="font-bold text-black mt-0.5">Customer Id - 1511058312</p>
+                  <p className="font-bold text-black">NHS KOCHI - BNPL A/c 158</p>
+                  <p className="font-black text-black font-mono">9562292945</p>
                 </div>
               </div>
             );
@@ -441,10 +439,10 @@ export default function BulkLabelPrintClient({
                       IF UNDELIVERED, RETURN TO:
                     </span>
                     <strong className="text-[13px] text-black block">ZARISH BY NEHALA MUFEED</strong>
-                    <p className="text-gray-800">{sender.addressLine1}, {sender.addressLine2}</p>
-                    <p className="text-gray-800">{sender.city}, {sender.state} — PIN: <strong>{sender.pincode}</strong></p>
-                    <p className="text-gray-900 font-bold mt-1">Customer ID: 1511058312 • NHS KOCHI - BNPL A/c 158</p>
-                    <p className="text-gray-900 font-bold">Mob: 9562292945 / {sender.mobile}</p>
+                    <p className="text-gray-800">Convent junction, Ekm, 682011</p>
+                    <p className="text-gray-900 font-bold mt-1">Customer Id - 1511058312</p>
+                    <p className="text-gray-900 font-bold">NHS KOCHI - BNPL A/c 158</p>
+                    <p className="text-gray-900 font-black font-mono">9562292945</p>
                     <div className="mt-2 pt-2 border-t border-gray-200 text-[10px] text-gray-500">
                       <span>Booking Office: <strong>{sender.bookingOfficeName} ({sender.bookingOfficePin})</strong></span>
                     </div>

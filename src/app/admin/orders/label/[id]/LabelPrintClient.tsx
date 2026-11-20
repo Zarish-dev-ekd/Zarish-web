@@ -291,12 +291,10 @@ export default function LabelPrintClient({
               IF UNDELIVERED, RETURN TO:
             </span>
             <p className="font-black text-black">ZARISH BY NEHALA MUFEED</p>
-            <p>{sender.addressLine1}, {sender.addressLine2}</p>
-            <p>{sender.city}, {sender.state} — PIN: <strong>{sender.pincode}</strong></p>
-            <p className="font-bold text-black mt-0.5">
-              Customer ID: 1511058312 • NHS KOCHI - BNPL A/c 158
-            </p>
-            <p className="font-bold text-black">Mob: 9562292945 / {sender.mobile}</p>
+            <p>Convent junction, Ekm, 682011</p>
+            <p className="font-bold text-black mt-0.5">Customer Id - 1511058312</p>
+            <p className="font-bold text-black">NHS KOCHI - BNPL A/c 158</p>
+            <p className="font-black text-black font-mono">9562292945</p>
           </div>
         </div>
       )}
@@ -433,16 +431,16 @@ export default function LabelPrintClient({
                 </span>
                 <p className="text-[13px] font-black text-black">ZARISH BY NEHALA MUFEED</p>
                 <p className="text-[11px] text-gray-800 leading-snug mt-0.5">
-                  {sender.addressLine1}, {sender.addressLine2}
-                </p>
-                <p className="text-[11px] text-gray-800 leading-snug">
-                  {sender.city}, {sender.state} — PIN: <strong>{sender.pincode}</strong>
+                  Convent junction, Ekm, 682011
                 </p>
                 <p className="text-[11px] font-bold text-gray-900 leading-snug mt-1">
-                  Customer ID: 1511058312 • NHS KOCHI - BNPL A/c 158
+                  Customer Id - 1511058312
                 </p>
                 <p className="text-[11px] font-bold text-gray-900 leading-snug">
-                  Mob: 9562292945 / {sender.mobile}
+                  NHS KOCHI - BNPL A/c 158
+                </p>
+                <p className="text-[11px] font-black text-black leading-snug font-mono">
+                  9562292945
                 </p>
 
                 <div className="mt-2 pt-2 border-t border-gray-200 text-[10px] text-gray-600">

@@ -26,12 +26,12 @@ const CONTRACT_ID = process.env.INDIAPOST_CONTRACT_ID || '41999655';
 
 // Store default sender / pickup configuration (from client's official postal slip)
 export const STORE_SENDER_CONFIG = {
-  name: process.env.INDIAPOST_SENDER_NAME || 'ZARISH',
-  mobile: process.env.INDIAPOST_SENDER_MOBILE || '9562292980',
+  name: process.env.INDIAPOST_SENDER_NAME || 'ZARISH BY NEHALA MUFEED',
+  mobile: process.env.INDIAPOST_SENDER_MOBILE || '9562292945',
   email: process.env.INDIAPOST_SENDER_EMAIL || 'zarish2025co@gmail.com',
-  addressLine1: process.env.INDIAPOST_SENDER_ADDRESS_1 || 'Convent Junction',
+  addressLine1: process.env.INDIAPOST_SENDER_ADDRESS_1 || 'Convent junction',
   addressLine2: process.env.INDIAPOST_SENDER_ADDRESS_2 || 'NHS KOCHI - BNPL A/c 158',
-  city: process.env.INDIAPOST_SENDER_CITY || 'Ernakulam, Kochi',
+  city: process.env.INDIAPOST_SENDER_CITY || 'Ekm',
   state: process.env.INDIAPOST_SENDER_STATE || 'Kerala',
   pincode: process.env.INDIAPOST_SENDER_PINCODE || '682011',
   bookingOfficeName: process.env.INDIAPOST_BOOKING_OFFICE || 'NHS KOCHI',

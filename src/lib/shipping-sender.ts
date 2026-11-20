@@ -7,11 +7,11 @@ export interface ShippingSenderInfo {
 }
 
 export const DEFAULT_SHIPPING_SENDER_INFO: ShippingSenderInfo = {
-  storeName: 'ZARISH',
-  address: 'Convent Junction, EKM, 682011',
+  storeName: 'ZARISH BY NEHALA MUFEED',
+  address: 'Convent junction, Ekm, 682011',
   customerId: '1511058312',
-  accountInfo: 'NHS KOCHI - BNPL A/C 158',
-  phone: '9562292980',
+  accountInfo: 'NHS KOCHI - BNPL A/c 158',
+  phone: '9562292945',
 };
 
 const LOCAL_STORAGE_KEY = 'zarish_shipping_sender_info_v1';

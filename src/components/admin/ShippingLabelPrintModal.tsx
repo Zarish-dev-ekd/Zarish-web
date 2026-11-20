@@ -638,12 +638,12 @@ function ShippingLabelThermalContent({
           {senderInfo?.address || DEFAULT_SHIPPING_SENDER_INFO.address}
         </div>
         <div className="flex items-center gap-2 text-[8.5px] font-bold text-gray-800 mt-0.5">
-          <span>Customer ID: {senderInfo?.customerId || DEFAULT_SHIPPING_SENDER_INFO.customerId}</span>
+          <span>Customer Id - {senderInfo?.customerId || DEFAULT_SHIPPING_SENDER_INFO.customerId}</span>
           <span>&bull;</span>
           <span>{senderInfo?.accountInfo || DEFAULT_SHIPPING_SENDER_INFO.accountInfo}</span>
         </div>
-        <div className="text-[8.5px] font-black text-black mt-0.5">
-          Mob: 9562292945 / {senderInfo?.phone || DEFAULT_SHIPPING_SENDER_INFO.phone}
+        <div className="text-[8.5px] font-black text-black mt-0.5 font-mono">
+          9562292945
         </div>
       </div>
 
@@ -886,7 +886,7 @@ function ShippingLabelRowContent({
             </div>
             {senderInfo?.customerId && (
               <div className="font-bold text-gray-800 mt-1 text-[9px] truncate">
-                Customer ID: {senderInfo.customerId}
+                Customer Id - {senderInfo.customerId}
               </div>
             )}
             {senderInfo?.accountInfo && (
@@ -894,8 +894,8 @@ function ShippingLabelRowContent({
                 {senderInfo.accountInfo}
               </div>
             )}
-            <div className="font-black text-black text-[9.5px] mt-1.5">
-              Mob: 9562292945 / {senderInfo?.phone || DEFAULT_SHIPPING_SENDER_INFO.phone}
+            <div className="font-black text-black text-[9.5px] mt-1.5 font-mono">
+              9562292945
             </div>
           </div>
         </div>

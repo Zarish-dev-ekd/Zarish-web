@@ -1437,7 +1437,7 @@ function SettingsContent() {
                     type="text"
                     value={senderInfo.phone}
                     onChange={(e) => setSenderInfo({ ...senderInfo, phone: e.target.value })}
-                    placeholder="e.g. 9562292980"
+                    placeholder="e.g. 9562292945"
                     className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-lg bg-[#FAF8F5] text-[#2C241E] font-semibold focus:bg-white focus:border-[#7B5B3A] outline-none"
                     required
                   />
@@ -1453,7 +1453,7 @@ function SettingsContent() {
                   type="text"
                   value={senderInfo.address}
                   onChange={(e) => setSenderInfo({ ...senderInfo, address: e.target.value })}
-                  placeholder="e.g. Convent Junction, EKM, 682011"
+                  placeholder="e.g. Convent junction, Ekm, 682011"
                   className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-lg bg-[#FAF8F5] text-[#2C241E] font-medium focus:bg-white focus:border-[#7B5B3A] outline-none"
                   required
                 />
@@ -1483,7 +1483,7 @@ function SettingsContent() {
                     type="text"
                     value={senderInfo.accountInfo}
                     onChange={(e) => setSenderInfo({ ...senderInfo, accountInfo: e.target.value })}
-                    placeholder="e.g. NHS KOCHI - BNPL A/C 158"
+                    placeholder="e.g. NHS KOCHI - BNPL A/c 158"
                     className="w-full px-3.5 py-2.5 text-sm border border-[#E8E0D5] rounded-lg bg-[#FAF8F5] text-[#2C241E] font-medium focus:bg-white focus:border-[#7B5B3A] outline-none"
                   />
                 </div>
@@ -1498,16 +1498,16 @@ function SettingsContent() {
                   <span className="font-extrabold uppercase text-[10px] text-black block mb-0.5">
                     FROM:
                   </span>
-                  <div className="font-bold text-[11px] text-black">{senderInfo.storeName || 'ZARISH'}</div>
-                  <div>{senderInfo.address || 'Convent Junction, EKM, 682011'}</div>
+                  <div className="font-bold text-[11px] text-black">{senderInfo.storeName || 'ZARISH BY NEHALA MUFEED'}</div>
+                  <div>{senderInfo.address || 'Convent junction, Ekm, 682011'}</div>
                   {senderInfo.customerId && (
-                    <div className="font-medium text-gray-900">Customer ID: {senderInfo.customerId}</div>
+                    <div className="font-medium text-gray-900">Customer Id - {senderInfo.customerId}</div>
                   )}
                   {senderInfo.accountInfo && (
                     <div className="font-medium text-gray-900">{senderInfo.accountInfo}</div>
                   )}
                   {senderInfo.phone && (
-                    <div className="font-bold text-black mt-0.5">Ph: {senderInfo.phone}</div>
+                    <div className="font-bold text-black mt-0.5 font-mono">{senderInfo.phone}</div>
                   )}
                 </div>
               </div>
