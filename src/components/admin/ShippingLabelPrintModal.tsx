@@ -708,37 +708,21 @@ function ShippingLabelThermalContent({
 
         <div className="space-y-1 overflow-hidden">
           {order.items && order.items.length > 0 ? (
-            order.items.slice(0, 2).map((it, idx) => {
+            order.items.slice(0, 3).map((it, idx) => {
               const itemColor =
                 (it as any).color || (it as any).color_name || (it as any).variant_color || null;
               return (
                 <div
                   key={it.id || idx}
-                  className="flex items-center gap-2 bg-gray-50 p-1 rounded-xs border border-gray-300"
+                  className="bg-gray-50 p-1.5 rounded-xs border border-gray-300"
                 >
-                  {it.image_url ? (
-                    <div className="w-8 h-10 rounded-2xs bg-gray-200 border border-gray-400 overflow-hidden shrink-0 relative">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={it.image_url}
-                        alt={it.product_name}
-                        className="w-full h-full object-cover"
-                        style={{ objectPosition: 'center 75%' }}
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-8 h-10 rounded-2xs bg-gray-200 border border-gray-300 flex items-center justify-center text-[10px] shrink-0">
-                      👗
-                    </div>
-                  )}
-
                   <div className="min-w-0 flex-1 leading-tight">
-                    <div className="font-black text-[9.5px] text-black truncate leading-tight">
-                      {it.product_name}
+                    <div className="font-black text-[10px] text-black truncate leading-tight">
+                      {it.quantity}x {it.product_name}
                     </div>
-                    <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                    <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                       {it.size && (
-                        <span className="font-mono font-black px-1.5 py-0.2 rounded-2xs bg-black text-white text-[8px]">
+                        <span className="font-mono font-black px-1.5 py-0.2 rounded-2xs bg-black text-white text-[8.5px]">
                           SIZE: {it.size}
                         </span>
                       )}
@@ -759,9 +743,9 @@ function ShippingLabelThermalContent({
             <div className="text-[8.5px] text-gray-500 italic">No item details</div>
           )}
 
-          {order.items && order.items.length > 2 && (
+          {order.items && order.items.length > 3 && (
             <div className="text-[8px] font-bold text-gray-700 text-right">
-              +{order.items.length - 2} more items packed
+              +{order.items.length - 3} more items packed
             </div>
           )}
         </div>

@@ -205,11 +205,8 @@ export default function LabelPrintClient({
                 className="w-full max-w-[280px] h-12"
               />
             </div>
-            <span className="text-[14px] font-mono font-black tracking-widest block text-black mt-0.5">
+            <span className="text-[15px] font-mono font-black tracking-widest block text-black mt-0.5">
               {trackingBarcode}
-            </span>
-            <span className="text-[10px] text-gray-600 block">
-              Ref: {order.order_number}
             </span>
           </div>
 
@@ -241,44 +238,47 @@ export default function LabelPrintClient({
             )}
           </div>
 
-          {/* Packed Item Details: Photo + Name + Size + Qty */}
+          {/* Packed Item Details: Clean Text + Size + Qty (No photo to prevent dark thermal printer blob) */}
           {order.items && order.items.length > 0 && (
-            <div className="border-b-2 border-black pb-1.5 mb-2 bg-gray-50 p-1.5 rounded-xs">
+            <div className="border-b-2 border-black pb-1.5 mb-2 bg-gray-50 p-2 rounded-xs">
               <span className="text-[9px] font-black uppercase text-gray-700 tracking-wider block mb-1">
                 PACKED ITEM / CONTENTS:
               </span>
               <div className="space-y-1">
-                {order.items.slice(0, 2).map((it, itemIdx) => (
-                  <div key={it.id || itemIdx} className="flex items-center gap-2">
-                    {it.image_url && (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src={it.image_url}
-                        alt={it.product_name}
-                        className="w-8 h-9 object-cover rounded-xs border border-black/40 shrink-0 bg-white"
-                      />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <span className="text-[10px] font-black text-black block truncate leading-tight">
-                        {it.quantity}x {it.product_name}
-                      </span>
-                      <div className="flex items-center gap-1.5 text-[9px] font-bold text-gray-800 mt-0.5">
-                        {it.size && (
-                          <span className="inline-block bg-black text-white px-1.5 py-0.2 rounded-2xs font-mono font-bold text-[8.5px]">
-                            SIZE: {it.size}
+                {order.items.slice(0, 3).map((it, itemIdx) => {
+                  const itemColor =
+                    (it as any).color || (it as any).color_name || (it as any).variant_color || null;
+                  return (
+                    <div key={it.id || itemIdx} className="flex items-center justify-between gap-2 border-b border-gray-200 pb-1 last:border-b-0 last:pb-0">
+                      <div className="min-w-0 flex-1 leading-tight">
+                        <span className="text-[10.5px] font-black text-black block truncate">
+                          {it.quantity}x {it.product_name}
+                        </span>
+                        <div className="flex items-center gap-1.5 text-[9px] font-bold text-gray-800 mt-0.5 flex-wrap">
+                          {it.size && (
+                            <span className="inline-block bg-black text-white px-1.5 py-0.2 rounded-2xs font-mono font-bold text-[8.5px]">
+                              SIZE: {it.size}
+                            </span>
+                          )}
+                          {itemColor && (
+                            <span className="inline-block bg-gray-200 text-black border border-gray-400 px-1.5 py-0.2 rounded-2xs font-bold text-[8px]">
+                              COLOR: {itemColor}
+                            </span>
+                          )}
+                          <span className="inline-block bg-amber-100 text-amber-950 border border-amber-300 px-1.5 py-0.2 rounded-2xs font-black text-[8px]">
+                            QTY: {it.quantity}
                           </span>
-                        )}
-                        <span>• ₹{it.unit_price}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
 
           {/* Return Address Section */}
-          <div className="border-b border-gray-400 pb-1.5 mb-1.5 text-[9.5px] text-gray-800 leading-snug">
+          <div className="text-[9.5px] text-gray-800 leading-snug pt-0.5">
             <span className="font-black text-black uppercase tracking-wider block mb-0.5 text-[9px]">
               IF UNDELIVERED, RETURN TO:
             </span>
@@ -289,18 +289,6 @@ export default function LabelPrintClient({
               Customer ID: 1511058312 • NHS KOCHI - BNPL A/c 158
             </p>
             <p className="font-bold text-black">Mob: 9562292945 / {sender.mobile}</p>
-          </div>
-
-          {/* Booking Details Grid */}
-          <div className="text-[9px] text-gray-700 border-t border-gray-300 pt-1 flex justify-between items-center">
-            <div>
-              <span>Booking Office: <strong>{sender.bookingOfficeName}</strong></span>
-              <span className="block">Date: {bookingDate}</span>
-            </div>
-            <div className="text-right">
-              <span>Payment Mode: <strong>PREPAID (ONLINE)</strong></span>
-              <span className="block font-bold text-black">Total: ₹{order.total_amount}</span>
-            </div>
           </div>
         </div>
       )}
