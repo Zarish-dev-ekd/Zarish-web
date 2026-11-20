@@ -238,9 +238,9 @@ export default function BulkLabelPrintClient({
                   <p className="text-[12px] font-bold text-black leading-tight mt-0.5">
                     {addr.city}, {addr.state}
                   </p>
-                  <div className="mt-1.5 flex items-baseline justify-between bg-black text-white px-2 py-1 rounded-xs">
-                    <span className="text-[10px] font-bold uppercase tracking-wider">PINCODE:</span>
-                    <span className="text-[18px] font-mono font-black tracking-wider">
+                  <div className="mt-1.5 flex items-baseline justify-between border-2 border-black bg-white text-black px-2 py-0.5 rounded-xs">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-black">PINCODE:</span>
+                    <span className="text-[18px] font-mono font-black tracking-wider text-black">
                       {addr.postalCode}
                     </span>
                   </div>
@@ -422,9 +422,9 @@ export default function BulkLabelPrintClient({
                     <p className="text-[12px] font-bold text-gray-900 leading-snug">
                       {addr.city}, {addr.state}
                     </p>
-                    <div className="mt-2 inline-flex items-baseline gap-2 bg-black text-white px-3 py-1 rounded-xs">
-                      <span className="text-[10px] font-bold uppercase tracking-wider">PIN:</span>
-                      <span className="text-[18px] font-mono font-black">{addr.postalCode}</span>
+                    <div className="mt-2 inline-flex items-baseline gap-2 border-2 border-black bg-white text-black px-3 py-0.5 rounded-xs">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-black">PIN:</span>
+                      <span className="text-[18px] font-mono font-black text-black">{addr.postalCode}</span>
                     </div>
                     {customerPhone && (
                       <p className="text-[11px] font-bold text-gray-900 mt-1.5">

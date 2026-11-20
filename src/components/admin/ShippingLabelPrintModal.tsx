@@ -683,9 +683,9 @@ function ShippingLabelThermalContent({
         {/* PINCODE & PHONE ROW */}
         <div className="mt-1.5 flex items-center justify-between gap-2">
           {addr.postalCode ? (
-            <div className="flex items-center gap-1.5 bg-black text-white px-2 py-0.5 rounded-xs">
-              <span className="text-[8.5px] font-bold uppercase tracking-wider">PINCODE:</span>
-              <span className="text-[16px] font-mono font-black tracking-widest leading-none">
+            <div className="flex items-center gap-1.5 border-2 border-black bg-white text-black px-2 py-0.5 rounded-xs">
+              <span className="text-[8.5px] font-black uppercase tracking-wider text-black">PINCODE:</span>
+              <span className="text-[16px] font-mono font-black tracking-widest leading-none text-black">
                 {addr.postalCode}
               </span>
             </div>
