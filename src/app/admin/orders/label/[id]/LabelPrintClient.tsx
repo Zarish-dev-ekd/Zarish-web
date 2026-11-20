@@ -208,6 +208,9 @@ export default function LabelPrintClient({
             <span className="text-[15px] font-mono font-black tracking-widest block text-black mt-0.5">
               {trackingBarcode}
             </span>
+            <span className="text-[10px] text-gray-700 font-mono font-bold block mt-0.5">
+              Ref: {order.order_number}
+            </span>
           </div>
 
           {/* Delivery / To Section */}
@@ -238,37 +241,42 @@ export default function LabelPrintClient({
             )}
           </div>
 
-          {/* Packed Item Details: Clean Text + Size + Qty (No photo to prevent dark thermal printer blob) */}
+          {/* Packed Item Details: Clean Text + Size + Color + Search Code (SKU) + Qty (No photo to prevent dark blob) */}
           {order.items && order.items.length > 0 && (
             <div className="border-b-2 border-black pb-1.5 mb-2 bg-gray-50 p-2 rounded-xs">
               <span className="text-[9px] font-black uppercase text-gray-700 tracking-wider block mb-1">
                 PACKED ITEM / CONTENTS:
               </span>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 {order.items.slice(0, 3).map((it, itemIdx) => {
                   const itemColor =
                     (it as any).color || (it as any).color_name || (it as any).variant_color || null;
+                  const itemCode =
+                    (it as any).product?.sku || (it as any).sku || (it as any).product_sku || (it as any).code || null;
                   return (
-                    <div key={it.id || itemIdx} className="flex items-center justify-between gap-2 border-b border-gray-200 pb-1 last:border-b-0 last:pb-0">
-                      <div className="min-w-0 flex-1 leading-tight">
-                        <span className="text-[10.5px] font-black text-black block truncate">
-                          {it.quantity}x {it.product_name}
-                        </span>
-                        <div className="flex items-center gap-1.5 text-[9px] font-bold text-gray-800 mt-0.5 flex-wrap">
-                          {it.size && (
-                            <span className="inline-block bg-black text-white px-1.5 py-0.2 rounded-2xs font-mono font-bold text-[8.5px]">
-                              SIZE: {it.size}
-                            </span>
-                          )}
-                          {itemColor && (
-                            <span className="inline-block bg-gray-200 text-black border border-gray-400 px-1.5 py-0.2 rounded-2xs font-bold text-[8px]">
-                              COLOR: {itemColor}
-                            </span>
-                          )}
-                          <span className="inline-block bg-amber-100 text-amber-950 border border-amber-300 px-1.5 py-0.2 rounded-2xs font-black text-[8px]">
-                            QTY: {it.quantity}
+                    <div key={it.id || itemIdx} className="border-b border-gray-200 pb-1 last:border-b-0 last:pb-0">
+                      <span className="text-[11px] font-black text-black block truncate leading-tight">
+                        {it.quantity}x {it.product_name}
+                      </span>
+                      <div className="flex items-center gap-1.5 text-[9px] font-bold text-gray-800 mt-1 flex-wrap">
+                        {it.size && (
+                          <span className="inline-block bg-black text-white px-1.5 py-0.2 rounded-2xs font-mono font-bold text-[8.5px]">
+                            SIZE: {it.size}
                           </span>
-                        </div>
+                        )}
+                        {itemColor && (
+                          <span className="inline-block bg-gray-200 text-black border border-gray-400 px-1.5 py-0.2 rounded-2xs font-bold text-[8px]">
+                            COLOR: {itemColor}
+                          </span>
+                        )}
+                        {itemCode && (
+                          <span className="inline-block bg-white text-black border border-black font-mono font-bold px-1.5 py-0.2 rounded-2xs text-[8px]">
+                            CODE: {itemCode}
+                          </span>
+                        )}
+                        <span className="inline-block bg-amber-100 text-amber-950 border border-amber-300 px-1.5 py-0.2 rounded-2xs font-black text-[8px]">
+                          QTY: {it.quantity}
+                        </span>
                       </div>
                     </div>
                   );

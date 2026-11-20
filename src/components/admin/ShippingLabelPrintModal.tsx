@@ -711,6 +711,8 @@ function ShippingLabelThermalContent({
             order.items.slice(0, 3).map((it, idx) => {
               const itemColor =
                 (it as any).color || (it as any).color_name || (it as any).variant_color || null;
+              const itemCode =
+                (it as any).product?.sku || (it as any).sku || (it as any).product_sku || (it as any).code || null;
               return (
                 <div
                   key={it.id || idx}
@@ -729,6 +731,11 @@ function ShippingLabelThermalContent({
                       {itemColor && (
                         <span className="font-bold px-1.5 py-0.2 rounded-2xs bg-gray-200 text-black border border-gray-300 text-[8px]">
                           COLOR: {itemColor}
+                        </span>
+                      )}
+                      {itemCode && (
+                        <span className="font-mono font-bold px-1.5 py-0.2 rounded-2xs bg-white text-black border border-black text-[8px]">
+                          CODE: {itemCode}
                         </span>
                       )}
                       <span className="font-extrabold text-black bg-amber-100 px-1.5 py-0.2 rounded-2xs border border-amber-300 text-[8px]">
@@ -763,6 +770,9 @@ function ShippingLabelThermalContent({
             />
             <span className="text-[9px] font-mono font-bold tracking-widest text-black mt-0.5">
               {barcodeValue}
+            </span>
+            <span className="text-[8px] font-mono font-bold text-gray-700 mt-0.5">
+              Ref: {order.order_number}
             </span>
           </div>
         )}
@@ -940,6 +950,8 @@ function ShippingLabelRowContent({
               order.items.slice(0, 2).map((it, idx) => {
                 const itemColor =
                   (it as any).color || (it as any).color_name || (it as any).variant_color || null;
+                const itemCode =
+                  (it as any).product?.sku || (it as any).sku || (it as any).product_sku || (it as any).code || null;
                 return (
                   <div
                     key={it.id || idx}
@@ -977,6 +989,11 @@ function ShippingLabelRowContent({
                         {itemColor && (
                           <span className="font-bold px-1.5 py-0.5 rounded bg-gray-200 text-black border border-gray-300 text-[8px]">
                             {itemColor}
+                          </span>
+                        )}
+                        {itemCode && (
+                          <span className="font-bold px-1.5 py-0.5 rounded bg-white text-black border border-black font-mono text-[8px]">
+                            CODE: {itemCode}
                           </span>
                         )}
                         <span className="font-extrabold text-black bg-yellow-100 px-1.5 py-0.5 rounded border border-yellow-400 text-[8px]">

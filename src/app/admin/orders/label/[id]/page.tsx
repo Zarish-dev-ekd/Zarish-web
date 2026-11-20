@@ -22,7 +22,7 @@ export default async function IndiaPostLabelPage({ params }: LabelPageProps) {
 
   const { data: order } = await supabase
     .from('orders')
-    .select('*, items:order_items(*)')
+    .select('*, items:order_items(*, product:products(sku))')
     .eq('id', id)
     .maybeSingle();
 

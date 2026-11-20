@@ -152,7 +152,7 @@ export default function AdminOrdersPage() {
         .from('orders')
         .select(`
           *,
-          items:order_items(*)
+          items:order_items(*, product:products(sku))
         `)
         .order('created_at', { ascending: false });
 

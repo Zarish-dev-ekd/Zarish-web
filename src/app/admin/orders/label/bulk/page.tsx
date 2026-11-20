@@ -36,7 +36,7 @@ export default async function BulkIndiaPostLabelPage({ searchParams }: BulkLabel
 
   const { data: orders, error } = await supabase
     .from('orders')
-    .select('*, items:order_items(*)')
+    .select('*, items:order_items(*, product:products(sku))')
     .in('id', orderIds);
 
   if (error || !orders || orders.length === 0) {
